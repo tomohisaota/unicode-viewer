@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import HtmlLangSetter from "./components/HtmlLangSetter";
+import ServiceWorkerRegistrar from "./components/ServiceWorkerRegistrar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,6 +18,8 @@ export const metadata: Metadata = {
   title: "Unicode Viewer",
   description:
     "Unicode code point viewer — view encodings, categories, and details for each character",
+  manifest: "/manifest.json",
+  themeColor: "#171717",
 };
 
 export default function RootLayout({
@@ -31,6 +34,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <HtmlLangSetter />
+        <ServiceWorkerRegistrar />
         {children}
       </body>
     </html>
