@@ -44,18 +44,6 @@ let sjisMap: Map<number, number[]> | null = null;
 let eucjpMap: Map<number, number[]> | null = null;
 let iso2022jpMap: Map<number, number[]> | null = null;
 
-/** Check if a byte sequence is in the CP932-only extension ranges */
-function isCp932Extension(bytes: number[]): boolean {
-  if (bytes.length !== 2) return false;
-  const w = (bytes[0] << 8) | bytes[1];
-  // NEC special characters (row 13)
-  if (w >= 0x8740 && w <= 0x879e) return true;
-  // NEC-selected IBM extensions (rows 89-92)
-  if (w >= 0xed40 && w <= 0xeefc) return true;
-  // IBM extensions (rows 115-119)
-  if (w >= 0xfa40 && w <= 0xfc4b) return true;
-  return false;
-}
 
 /** Decode bytes and return the single code point, or -1 if invalid */
 function tryDecode(decoder: TextDecoder, bytes: Uint8Array): number {
@@ -171,13 +159,42 @@ function getCp932Map(): Map<number, number[]> {
   return cp932Map;
 }
 
+/** JIS X 0208 standard rows: 1-8 (symbols/kana) and 16-84 (kanji) */
+function isJisX0208Row(row: number): boolean {
+  return (row >= 1 && row <= 8) || (row >= 16 && row <= 84);
+}
+
 function getSjisMap(): Map<number, number[]> {
   if (!sjisMap) {
-    // Shift_JIS = CP932 minus extension ranges
+    // Shift_JIS = JIS X 0208 (rows 1-8, 16-84) + ASCII + half-width katakana
+    //
+    // The WHATWG ISO-2022-JP decoder includes non-standard rows (e.g. row 13
+    // NEC special chars) for web compatibility. We filter by standard JIS X 0208
+    // row ranges to get the true Shift_JIS character set.
     const cp932 = getCp932Map();
+    const jis0208 = getIso2022JpMap();
     sjisMap = new Map();
+
+    for (const [cp, isoBytes] of jis0208) {
+      // ASCII entries (single byte) are always included
+      if (isoBytes.length === 1) {
+        const cpBytes = cp932.get(cp);
+        if (cpBytes) sjisMap.set(cp, cpBytes);
+        continue;
+      }
+      // Multi-byte: ESC $ B b1 b2 → JIS row = b1 - 0x20
+      if (isoBytes.length >= 5) {
+        const row = isoBytes[3] - 0x20;
+        if (isJisX0208Row(row)) {
+          const cpBytes = cp932.get(cp);
+          if (cpBytes) sjisMap.set(cp, cpBytes);
+        }
+      }
+    }
+
+    // Half-width katakana (single-byte 0xA1-0xDF) are in Shift_JIS but not ISO-2022-JP
     for (const [cp, bytes] of cp932) {
-      if (!isCp932Extension(bytes)) {
+      if (bytes.length === 1 && bytes[0] >= 0xa1 && bytes[0] <= 0xdf) {
         sjisMap.set(cp, bytes);
       }
     }
