@@ -41,46 +41,42 @@ let sjisMap: Map<number, number[]> | null = null;
 let eucjpMap: Map<number, number[]> | null = null;
 let iso2022jpMap: Map<number, number[]> | null = null;
 
+/** Decode bytes and return the single code point, or -1 if invalid */
+function tryDecode(decoder: TextDecoder, bytes: Uint8Array): number {
+  const str = decoder.decode(bytes);
+  const chars = Array.from(str);
+  if (chars.length === 1) {
+    const cp = chars[0].codePointAt(0)!;
+    if (cp !== 0xfffd) return cp;
+  }
+  return -1;
+}
+
 function buildShiftJISMap(): Map<number, number[]> {
   const map = new Map<number, number[]>();
-  const decoder = new TextDecoder("shift_jis", { fatal: true });
+  const decoder = new TextDecoder("shift_jis");
 
   // ASCII range
   for (let b = 0x20; b <= 0x7e; b++) {
     map.set(b, [b]);
   }
-  // Control characters
   for (const b of [0x09, 0x0a, 0x0d]) {
     map.set(b, [b]);
   }
 
   // Single-byte half-width katakana (0xA1-0xDF)
   for (let b = 0xa1; b <= 0xdf; b++) {
-    try {
-      const str = decoder.decode(new Uint8Array([b]));
-      const cp = str.codePointAt(0)!;
-      if (str.length === 1 && cp !== 0xfffd) {
-        map.set(cp, [b]);
-      }
-    } catch {
-      /* invalid sequence */
-    }
+    const cp = tryDecode(decoder, new Uint8Array([b]));
+    if (cp >= 0) map.set(cp, [b]);
   }
 
-  // Double-byte characters
-  for (let b1 = 0x81; b1 <= 0xef; b1++) {
+  // Double-byte characters (CP932/Windows-31J: first byte up to 0xFC)
+  for (let b1 = 0x81; b1 <= 0xfc; b1++) {
     if (b1 >= 0xa0 && b1 <= 0xdf) continue;
     for (let b2 = 0x40; b2 <= 0xfc; b2++) {
       if (b2 === 0x7f) continue;
-      try {
-        const str = decoder.decode(new Uint8Array([b1, b2]));
-        const cp = str.codePointAt(0)!;
-        if (str.length >= 1 && cp !== 0xfffd) {
-          map.set(cp, [b1, b2]);
-        }
-      } catch {
-        /* invalid sequence */
-      }
+      const cp = tryDecode(decoder, new Uint8Array([b1, b2]));
+      if (cp >= 0) map.set(cp, [b1, b2]);
     }
   }
 
@@ -89,7 +85,7 @@ function buildShiftJISMap(): Map<number, number[]> {
 
 function buildEucJPMap(): Map<number, number[]> {
   const map = new Map<number, number[]>();
-  const decoder = new TextDecoder("euc-jp", { fatal: true });
+  const decoder = new TextDecoder("euc-jp");
 
   // ASCII range
   for (let b = 0x20; b <= 0x7e; b++) {
@@ -101,44 +97,23 @@ function buildEucJPMap(): Map<number, number[]> {
 
   // Half-width katakana (0x8E prefix)
   for (let b2 = 0xa1; b2 <= 0xdf; b2++) {
-    try {
-      const str = decoder.decode(new Uint8Array([0x8e, b2]));
-      const cp = str.codePointAt(0)!;
-      if (str.length >= 1 && cp !== 0xfffd) {
-        map.set(cp, [0x8e, b2]);
-      }
-    } catch {
-      /* invalid */
-    }
+    const cp = tryDecode(decoder, new Uint8Array([0x8e, b2]));
+    if (cp >= 0) map.set(cp, [0x8e, b2]);
   }
 
   // JIS X 0208 (two-byte: 0xA1-0xFE × 0xA1-0xFE)
   for (let b1 = 0xa1; b1 <= 0xfe; b1++) {
     for (let b2 = 0xa1; b2 <= 0xfe; b2++) {
-      try {
-        const str = decoder.decode(new Uint8Array([b1, b2]));
-        const cp = str.codePointAt(0)!;
-        if (str.length >= 1 && cp !== 0xfffd) {
-          map.set(cp, [b1, b2]);
-        }
-      } catch {
-        /* invalid */
-      }
+      const cp = tryDecode(decoder, new Uint8Array([b1, b2]));
+      if (cp >= 0) map.set(cp, [b1, b2]);
     }
   }
 
   // JIS X 0212 (three-byte: 0x8F prefix)
   for (let b1 = 0xa1; b1 <= 0xfe; b1++) {
     for (let b2 = 0xa1; b2 <= 0xfe; b2++) {
-      try {
-        const str = decoder.decode(new Uint8Array([0x8f, b1, b2]));
-        const cp = str.codePointAt(0)!;
-        if (str.length >= 1 && cp !== 0xfffd && !map.has(cp)) {
-          map.set(cp, [0x8f, b1, b2]);
-        }
-      } catch {
-        /* invalid */
-      }
+      const cp = tryDecode(decoder, new Uint8Array([0x8f, b1, b2]));
+      if (cp >= 0 && !map.has(cp)) map.set(cp, [0x8f, b1, b2]);
     }
   }
 
@@ -147,7 +122,6 @@ function buildEucJPMap(): Map<number, number[]> {
 
 function buildIso2022JpMap(): Map<number, number[]> {
   const map = new Map<number, number[]>();
-  const decoder = new TextDecoder("iso-2022-jp", { fatal: true });
 
   // ASCII range (default state)
   for (let b = 0x20; b <= 0x7e; b++) {
@@ -163,17 +137,12 @@ function buildIso2022JpMap(): Map<number, number[]> {
 
   for (let b1 = 0x21; b1 <= 0x7e; b1++) {
     for (let b2 = 0x21; b2 <= 0x7e; b2++) {
-      try {
-        const input = new Uint8Array([...escJIS, b1, b2, ...escASCII]);
-        const str = decoder.decode(input);
-        if (str.length >= 1) {
-          const cp = str.codePointAt(0)!;
-          if (cp !== 0xfffd) {
-            map.set(cp, [...escJIS, b1, b2]);
-          }
-        }
-      } catch {
-        /* invalid */
+      // Create a fresh decoder for each sequence (ISO-2022-JP is stateful)
+      const decoder = new TextDecoder("iso-2022-jp");
+      const input = new Uint8Array([...escJIS, b1, b2, ...escASCII]);
+      const cp = tryDecode(decoder, input);
+      if (cp >= 0) {
+        map.set(cp, [...escJIS, b1, b2]);
       }
     }
   }
