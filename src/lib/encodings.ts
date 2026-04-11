@@ -2,6 +2,7 @@ export type LegacyEncoding =
   | "ascii"
   | "latin1"
   | "shift_jis"
+  | "cp932"
   | "euc-jp"
   | "iso-2022-jp";
 
@@ -16,7 +17,8 @@ export const ENCODING_OPTIONS: { value: EncodingMode; label: string }[] = [
   { value: "unicode", label: "Unicode" },
   { value: "ascii", label: "ASCII" },
   { value: "latin1", label: "Latin-1" },
-  { value: "shift_jis", label: "Shift_JIS (CP932)" },
+  { value: "shift_jis", label: "Shift_JIS" },
+  { value: "cp932", label: "CP932 (Windows-31J)" },
   { value: "euc-jp", label: "EUC-JP" },
   { value: "iso-2022-jp", label: "ISO-2022-JP" },
 ];
@@ -37,9 +39,23 @@ function encodeLatin1(cp: number): EncodingResult {
 
 // --- TextDecoder reverse-mapping ---
 
+let cp932Map: Map<number, number[]> | null = null;
 let sjisMap: Map<number, number[]> | null = null;
 let eucjpMap: Map<number, number[]> | null = null;
 let iso2022jpMap: Map<number, number[]> | null = null;
+
+/** Check if a byte sequence is in the CP932-only extension ranges */
+function isCp932Extension(bytes: number[]): boolean {
+  if (bytes.length !== 2) return false;
+  const w = (bytes[0] << 8) | bytes[1];
+  // NEC special characters (row 13)
+  if (w >= 0x8740 && w <= 0x879e) return true;
+  // NEC-selected IBM extensions (rows 89-92)
+  if (w >= 0xed40 && w <= 0xeefc) return true;
+  // IBM extensions (rows 115-119)
+  if (w >= 0xfa40 && w <= 0xfc4b) return true;
+  return false;
+}
 
 /** Decode bytes and return the single code point, or -1 if invalid */
 function tryDecode(decoder: TextDecoder, bytes: Uint8Array): number {
@@ -52,7 +68,7 @@ function tryDecode(decoder: TextDecoder, bytes: Uint8Array): number {
   return -1;
 }
 
-function buildShiftJISMap(): Map<number, number[]> {
+function buildCp932Map(): Map<number, number[]> {
   const map = new Map<number, number[]>();
   const decoder = new TextDecoder("shift_jis");
 
@@ -150,8 +166,22 @@ function buildIso2022JpMap(): Map<number, number[]> {
   return map;
 }
 
+function getCp932Map(): Map<number, number[]> {
+  if (!cp932Map) cp932Map = buildCp932Map();
+  return cp932Map;
+}
+
 function getSjisMap(): Map<number, number[]> {
-  if (!sjisMap) sjisMap = buildShiftJISMap();
+  if (!sjisMap) {
+    // Shift_JIS = CP932 minus extension ranges
+    const cp932 = getCp932Map();
+    sjisMap = new Map();
+    for (const [cp, bytes] of cp932) {
+      if (!isCp932Extension(bytes)) {
+        sjisMap.set(cp, bytes);
+      }
+    }
+  }
   return sjisMap;
 }
 
@@ -186,6 +216,8 @@ export function getLegacyEncoding(
       return encodeLatin1(cp);
     case "shift_jis":
       return lookupMap(getSjisMap(), cp);
+    case "cp932":
+      return lookupMap(getCp932Map(), cp);
     case "euc-jp":
       return lookupMap(getEucJpMap(), cp);
     case "iso-2022-jp":
