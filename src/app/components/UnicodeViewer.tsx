@@ -286,7 +286,7 @@ function StringSection({
 
       {/* Grid */}
       {data.clusters.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {data.clusters.map((cluster, i) => (
             <CharCell
               key={i}
@@ -362,16 +362,16 @@ function CharCell({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center justify-center rounded-md transition-all cursor-pointer"
+      className="flex flex-col items-center justify-center rounded transition-all cursor-pointer"
       style={{
         backgroundColor: bgColor,
         boxShadow: shadowStyle,
-        width: "4rem",
-        height: "4rem",
+        width: "3rem",
+        height: "3rem",
       }}
     >
       <span
-        className={`text-base leading-none ${
+        className={`leading-none ${
           isControl || isWhitespace ? "font-mono" : ""
         }`}
         style={{
@@ -379,7 +379,7 @@ function CharCell({
             isControl || isWhitespace
               ? "var(--accent-blue-text)"
               : "var(--gray-900)",
-          fontSize: isControl || isWhitespace ? "9px" : undefined,
+          fontSize: isControl || isWhitespace ? "7px" : "14px",
         }}
       >
         {displayChar}
@@ -387,10 +387,10 @@ function CharCell({
       <span
         className="font-mono tabular-nums flex flex-col items-center"
         style={{
-          fontSize: "8px",
+          fontSize: "7px",
           color: labelColor,
-          lineHeight: 1.25,
-          marginTop: "3px",
+          lineHeight: 1.2,
+          marginTop: "1px",
         }}
       >
         {codePointHexes.map((hex, i) => (
