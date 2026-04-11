@@ -20,6 +20,18 @@ function convertCodePointNotation(text: string): string {
   });
 }
 
+/** Convert \uXXXX / \u{XXXXX} sequences to actual characters */
+function convertEscapeNotation(text: string): string {
+  return text.replace(/\\u\{([0-9A-Fa-f]{1,6})\}|\\u([0-9A-Fa-f]{4})/g, (_, braced, plain) => {
+    const hex = braced ?? plain;
+    const cp = parseInt(hex, 16);
+    if (cp >= 0 && cp <= 0x10ffff) {
+      return String.fromCodePoint(cp);
+    }
+    return _;
+  });
+}
+
 interface AnalyzedString {
   text: string;
   clusters: GraphemeCluster[];
@@ -45,15 +57,18 @@ export default function UnicodeViewer() {
   const t = useMessages();
   const [rawInput, setRawInput] = useState("café U+1F44DU+1F3FD ㍻");
   const [convertCP, setConvertCP] = useState(true);
+  const [convertEsc, setConvertEsc] = useState(true);
   const [selected, setSelected] = useState<{
     section: string;
     index: number;
   } | null>(null);
 
-  const input = useMemo(
-    () => (convertCP ? convertCodePointNotation(rawInput) : rawInput),
-    [rawInput, convertCP]
-  );
+  const input = useMemo(() => {
+    let text = rawInput;
+    if (convertCP) text = convertCodePointNotation(text);
+    if (convertEsc) text = convertEscapeNotation(text);
+    return text;
+  }, [rawInput, convertCP, convertEsc]);
   const inputClusters = useMemo(() => analyzeString(input), [input]);
 
   const sections = useMemo(() => {
@@ -122,22 +137,36 @@ export default function UnicodeViewer() {
       />
 
       {/* Options */}
-      <label
-        className="mt-3 inline-flex items-center gap-2 cursor-pointer select-none"
-      >
-        <input
-          type="checkbox"
-          checked={convertCP}
-          onChange={(e) => {
-            setConvertCP(e.target.checked);
-            setSelected(null);
-          }}
-          className="accent-[var(--accent-blue)]"
-        />
-        <span className="text-xs" style={{ color: "var(--gray-600)" }}>
-          {t.convertCodePoints}
-        </span>
-      </label>
+      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
+        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={convertCP}
+            onChange={(e) => {
+              setConvertCP(e.target.checked);
+              setSelected(null);
+            }}
+            className="accent-[var(--accent-blue)]"
+          />
+          <span className="text-xs" style={{ color: "var(--gray-600)" }}>
+            {t.convertCodePoints}
+          </span>
+        </label>
+        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={convertEsc}
+            onChange={(e) => {
+              setConvertEsc(e.target.checked);
+              setSelected(null);
+            }}
+            className="accent-[var(--accent-blue)]"
+          />
+          <span className="text-xs" style={{ color: "var(--gray-600)" }}>
+            {t.convertEscape}
+          </span>
+        </label>
+      </div>
 
       {/* All sections */}
       <div className="mt-8 flex flex-col gap-8">
