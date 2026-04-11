@@ -61,7 +61,8 @@ const translations = {
     thCategory: "Category",
     thBlock: "Block",
     shareOnX: "Share",
-    shareText: "Check out the Unicode details of this string 🔍 #Unicode #UnicodeViewer",
+    shareTextWithInput: "のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
+    shareTextEmpty: "Unicode Viewer — 文字列のUnicode構造を確認できるツール 🔍 #Unicode #UnicodeViewer",
     help: "Help",
     helpTitle: "About Unicode",
     helpSections: [
@@ -124,7 +125,8 @@ const translations = {
     thCategory: "カテゴリ",
     thBlock: "ブロック",
     shareOnX: "共有",
-    shareText: "この文字列のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
+    shareTextWithInput: "のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
+    shareTextEmpty: "Unicode Viewer — 文字列のUnicode構造を確認できるツール 🔍 #Unicode #UnicodeViewer",
     help: "ヘルプ",
     helpTitle: "Unicode について",
     helpSections: [

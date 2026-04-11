@@ -30,7 +30,12 @@ export default function PageHeader() {
               type="button"
               onClick={() => {
                 const url = window.location.href;
-                const tweet = t.shareText + "\n" + url;
+                const params = new URLSearchParams(window.location.search);
+                const inputText = params.get("text") || "";
+                const body = inputText
+                  ? `「${inputText}」${t.shareTextWithInput}`
+                  : t.shareTextEmpty;
+                const tweet = body + "\n" + url;
                 window.open(
                   `https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}`,
                   "_blank",
