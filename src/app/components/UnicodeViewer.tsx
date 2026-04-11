@@ -1,23 +1,91 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
 import type { Messages } from "@/lib/i18n";
 
+type NormForm = "NFC" | "NFD" | "NFKC" | "NFKD";
+const NORM_FORMS: NormForm[] = ["NFC", "NFD", "NFKC", "NFKD"];
+
+/** Convert U+XXXX sequences (e.g. "U+1F44DU+1F3FD") to actual characters */
+function convertCodePointNotation(text: string): string {
+  return text.replace(/U\+([0-9A-Fa-f]{4,6})/g, (_, hex) => {
+    const cp = parseInt(hex, 16);
+    if (cp >= 0 && cp <= 0x10ffff) {
+      return String.fromCodePoint(cp);
+    }
+    return _;
+  });
+}
+
+interface AnalyzedString {
+  text: string;
+  clusters: GraphemeCluster[];
+  /** Per-cluster: true if this cluster's code points differ from the input */
+  diffMask: boolean[];
+}
+
+function buildDiffMask(
+  inputClusters: GraphemeCluster[],
+  normClusters: GraphemeCluster[]
+): boolean[] {
+  return normClusters.map((nc, i) => {
+    if (i >= inputClusters.length) return true;
+    const ic = inputClusters[i];
+    if (nc.codePoints.length !== ic.codePoints.length) return true;
+    return nc.codePoints.some(
+      (cp, j) => cp.codePoint !== ic.codePoints[j].codePoint
+    );
+  });
+}
+
 export default function UnicodeViewer() {
   const t = useMessages();
-  const [input, setInput] = useState("Hello! こんにちは 👍🏽");
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const clusters = analyzeString(input);
-  const utf8Size = new Blob([input]).size;
-  const totalCodePoints = clusters.reduce(
-    (sum, c) => sum + c.codePoints.length,
-    0
-  );
+  const [rawInput, setRawInput] = useState("café U+1F44DU+1F3FD ㍻");
+  const [convertCP, setConvertCP] = useState(true);
+  const [selected, setSelected] = useState<{
+    section: string;
+    index: number;
+  } | null>(null);
 
-  const selected = selectedIndex !== null ? clusters[selectedIndex] : null;
+  const input = useMemo(
+    () => (convertCP ? convertCodePointNotation(rawInput) : rawInput),
+    [rawInput, convertCP]
+  );
+  const inputClusters = useMemo(() => analyzeString(input), [input]);
+
+  const sections = useMemo(() => {
+    const result: { key: string; label: string; desc: string; data: AnalyzedString }[] = [
+      {
+        key: "input",
+        label: t.inputLabel,
+        desc: "",
+        data: {
+          text: input,
+          clusters: inputClusters,
+          diffMask: inputClusters.map(() => false),
+        },
+      },
+    ];
+    for (const form of NORM_FORMS) {
+      const text = input.normalize(form);
+      const clusters = analyzeString(text);
+      const desc = t[`${form.toLowerCase()}Desc` as keyof typeof t] as string;
+      result.push({
+        key: form,
+        label: form,
+        desc,
+        data: {
+          text,
+          clusters,
+          diffMask: buildDiffMask(inputClusters, clusters),
+        },
+      });
+    }
+    return result;
+  }, [input, inputClusters, t]);
 
   return (
     <div className="w-full">
@@ -29,10 +97,10 @@ export default function UnicodeViewer() {
         {t.inputLabel}
       </label>
       <textarea
-        value={input}
+        value={rawInput}
         onChange={(e) => {
-          setInput(e.target.value);
-          setSelectedIndex(null);
+          setRawInput(e.target.value);
+          setSelected(null);
         }}
         placeholder={t.inputPlaceholder}
         className="w-full rounded-lg px-5 py-4 text-lg font-mono leading-relaxed resize-y focus:outline-none transition-shadow"
@@ -53,59 +121,161 @@ export default function UnicodeViewer() {
         rows={3}
       />
 
-      {/* Stats Bar */}
-      <div className="mt-5 flex flex-wrap gap-3">
-        <StatPill label={t.characters} value={clusters.length} />
-        <StatPill label={t.codePoints} value={totalCodePoints} />
-        <StatPill label={t.utf8Bytes} value={utf8Size} />
-        <StatPill label={t.utf16Units} value={input.length} />
+      {/* Options */}
+      <label
+        className="mt-3 inline-flex items-center gap-2 cursor-pointer select-none"
+      >
+        <input
+          type="checkbox"
+          checked={convertCP}
+          onChange={(e) => {
+            setConvertCP(e.target.checked);
+            setSelected(null);
+          }}
+          className="accent-[var(--accent-blue)]"
+        />
+        <span className="text-xs" style={{ color: "var(--gray-600)" }}>
+          {t.convertCodePoints}
+        </span>
+      </label>
+
+      {/* All sections */}
+      <div className="mt-8 flex flex-col gap-8">
+        {sections.map(({ key, label, desc, data }) => {
+          const isInput = key === "input";
+          const identical = !isInput && data.text === input;
+          return (
+            <StringSection
+              key={key}
+              t={t}
+              sectionKey={key}
+              label={label}
+              desc={desc}
+              data={data}
+              identical={identical}
+              selectedIndex={
+                selected?.section === key ? selected.index : null
+              }
+              onSelect={(i) =>
+                setSelected(
+                  selected?.section === key && selected.index === i
+                    ? null
+                    : { section: key, index: i }
+                )
+              }
+              onDeselect={() => setSelected(null)}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─── String Section ─── */
+
+function StringSection({
+  t,
+  sectionKey,
+  label,
+  desc,
+  data,
+  identical,
+  selectedIndex,
+  onSelect,
+  onDeselect,
+}: {
+  t: Messages;
+  sectionKey: string;
+  label: string;
+  desc: string;
+  data: AnalyzedString;
+  identical: boolean;
+  selectedIndex: number | null;
+  onSelect: (i: number) => void;
+  onDeselect: () => void;
+}) {
+  const utf8Size = new Blob([data.text]).size;
+  const totalCodePoints = data.clusters.reduce(
+    (sum, c) => sum + c.codePoints.length,
+    0
+  );
+  const hasDiff = data.diffMask.some(Boolean);
+  const selectedCluster =
+    selectedIndex !== null ? data.clusters[selectedIndex] : null;
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+        <span
+          className="text-sm font-semibold font-mono"
+          style={{ color: "var(--gray-900)" }}
+        >
+          {label}
+        </span>
+        {desc && (
+          <span className="text-xs" style={{ color: "var(--gray-400)" }}>
+            {desc}
+          </span>
+        )}
+        {identical && (
+          <span
+            className="text-xs rounded-full px-2 py-0.5"
+            style={{
+              color: "var(--gray-400)",
+              backgroundColor: "var(--gray-50)",
+              boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+            }}
+          >
+            = {t.inputLabel}
+          </span>
+        )}
+        <div className="flex flex-wrap gap-2 ml-auto">
+          <StatPill label={t.codePoints} value={totalCodePoints} />
+          <StatPill label={t.utf8Bytes} value={utf8Size} />
+        </div>
       </div>
 
-      {/* Character Grid */}
-      {clusters.length > 0 && (
-        <div
-          className="mt-8 rounded-xl p-3 flex flex-wrap gap-2"
-          style={{
-            boxShadow:
-              "0px 0px 0px 1px var(--shadow-border), 0px 2px 2px var(--shadow-subtle)",
-          }}
-        >
-          {clusters.map((cluster, i) => (
+      {/* Grid */}
+      {data.clusters.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {data.clusters.map((cluster, i) => (
             <CharCell
               key={i}
-              index={i}
               cluster={cluster}
               isSelected={selectedIndex === i}
-              onClick={() =>
-                setSelectedIndex(selectedIndex === i ? null : i)
-              }
+              isDiff={data.diffMask[i]}
+              onClick={() => onSelect(i)}
             />
           ))}
         </div>
       )}
 
-      {/* Detail Panel */}
-      {selected && selectedIndex !== null && (
+      {/* Detail */}
+      {selectedCluster && selectedIndex !== null && (
         <DetailPanel
           t={t}
           index={selectedIndex}
-          cluster={selected}
-          onClose={() => setSelectedIndex(null)}
+          cluster={selectedCluster}
+          onClose={onDeselect}
         />
       )}
     </div>
   );
 }
 
+/* ─── CharCell ─── */
+
 function CharCell({
-  index,
   cluster,
   isSelected,
+  isDiff,
   onClick,
 }: {
-  index: number;
   cluster: GraphemeCluster;
   isSelected: boolean;
+  isDiff: boolean;
   onClick: () => void;
 }) {
   const cp0 = cluster.codePoints[0];
@@ -125,55 +295,66 @@ function CharCell({
       ? "␣"
       : cluster.grapheme;
 
-  const codePointLabel =
-    cluster.codePoints.length === 1
-      ? cp0.hex
-      : cluster.codePoints.map((c) => c.hex).join(" + ");
+  const codePointHexes = cluster.codePoints.map((c) => c.hex);
+
+  let bgColor = "transparent";
+  let shadowStyle = "0px 0px 0px 1px var(--shadow-border)";
+  let labelColor = "var(--gray-400)";
+
+  if (isSelected) {
+    bgColor = "var(--accent-blue-bg)";
+    shadowStyle = "0px 0px 0px 1.5px var(--accent-blue)";
+    labelColor = "var(--accent-blue)";
+  } else if (isDiff) {
+    bgColor = "var(--diff-bg)";
+    shadowStyle = "0px 0px 0px 1.5px var(--diff-border)";
+    labelColor = "var(--diff-text)";
+  }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-all cursor-pointer"
+      className="flex flex-col items-center justify-center rounded-md transition-all cursor-pointer"
       style={{
-        backgroundColor: isSelected
-          ? "var(--accent-blue-bg)"
-          : "transparent",
-        boxShadow: isSelected
-          ? "0px 0px 0px 1.5px var(--accent-blue)"
-          : "0px 0px 0px 1px var(--shadow-border)",
-        minWidth: "4.5rem",
+        backgroundColor: bgColor,
+        boxShadow: shadowStyle,
+        width: "4rem",
+        height: "4rem",
       }}
     >
       <span
-        className={`text-xl leading-none ${
-          isControl || isWhitespace ? "font-mono text-xs" : ""
+        className={`text-base leading-none ${
+          isControl || isWhitespace ? "font-mono" : ""
         }`}
         style={{
           color:
             isControl || isWhitespace
               ? "var(--accent-blue-text)"
               : "var(--gray-900)",
-          height: "1.75rem",
-          display: "flex",
-          alignItems: "center",
+          fontSize: isControl || isWhitespace ? "9px" : undefined,
         }}
       >
         {displayChar}
       </span>
       <span
-        className="font-mono tabular-nums"
+        className="font-mono tabular-nums flex flex-col items-center"
         style={{
-          fontSize: "10px",
-          color: isSelected ? "var(--accent-blue)" : "var(--gray-400)",
-          lineHeight: 1.2,
+          fontSize: "8px",
+          color: labelColor,
+          lineHeight: 1.25,
+          marginTop: "3px",
         }}
       >
-        {codePointLabel}
+        {codePointHexes.map((hex, i) => (
+          <span key={i}>{hex}</span>
+        ))}
       </span>
     </button>
   );
 }
+
+/* ─── DetailPanel ─── */
 
 function DetailPanel({
   t,
@@ -196,7 +377,6 @@ function DetailPanel({
           "0px 0px 0px 1px var(--shadow-border), 0px 4px 8px var(--shadow-subtle)",
       }}
     >
-      {/* Header */}
       <div
         className="flex items-center justify-between px-5 py-3"
         style={{
@@ -240,7 +420,6 @@ function DetailPanel({
         </button>
       </div>
 
-      {/* Code point details */}
       <div className="overflow-x-auto">
         <table
           className="w-full text-sm"
@@ -271,6 +450,8 @@ function DetailPanel({
   );
 }
 
+/* ─── Shared sub-components ─── */
+
 function CodePointRow({
   info,
   isLast,
@@ -279,11 +460,7 @@ function CodePointRow({
   isLast: boolean;
 }) {
   return (
-    <tr
-      style={{
-        borderBottom: isLast ? "none" : "1px solid var(--gray-100)",
-      }}
-    >
+    <tr style={{ borderBottom: isLast ? "none" : "1px solid var(--gray-100)" }}>
       <td
         className="px-5 py-2.5 font-mono text-xs font-medium"
         style={{ color: "var(--accent-blue)" }}
@@ -296,54 +473,36 @@ function CodePointRow({
       >
         {info.name}
       </td>
-      <td
-        className="px-5 py-2.5 font-mono text-xs"
-        style={{ color: "var(--gray-600)" }}
-      >
+      <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
         <span className="inline-flex gap-1">
           {info.utf8Bytes.map((b, i) => (
             <code
               key={i}
               className="rounded px-1 py-0.5"
-              style={{
-                backgroundColor: "var(--gray-50)",
-                fontSize: "11px",
-              }}
+              style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
             >
               {formatByte(b)}
             </code>
           ))}
         </span>
       </td>
-      <td
-        className="px-5 py-2.5 font-mono text-xs"
-        style={{ color: "var(--gray-600)" }}
-      >
+      <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
         <span className="inline-flex gap-1">
           {info.utf16Units.map((u, i) => (
             <code
               key={i}
               className="rounded px-1 py-0.5"
-              style={{
-                backgroundColor: "var(--gray-50)",
-                fontSize: "11px",
-              }}
+              style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
             >
               {formatUtf16(u)}
             </code>
           ))}
         </span>
       </td>
-      <td
-        className="px-5 py-2.5 text-xs whitespace-nowrap"
-        style={{ color: "var(--gray-500)" }}
-      >
+      <td className="px-5 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--gray-500)" }}>
         {info.category}
       </td>
-      <td
-        className="px-5 py-2.5 text-xs whitespace-nowrap"
-        style={{ color: "var(--gray-500)" }}
-      >
+      <td className="px-5 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--gray-500)" }}>
         {info.blockName}
       </td>
     </tr>
@@ -353,7 +512,7 @@ function CodePointRow({
 function StatPill({ label, value }: { label: string; value: number }) {
   return (
     <span
-      className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium"
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
       style={{
         boxShadow: "0px 0px 0px 1px var(--shadow-border)",
         color: "var(--gray-600)",
@@ -362,7 +521,7 @@ function StatPill({ label, value }: { label: string; value: number }) {
     >
       <span
         className="font-mono font-semibold tabular-nums"
-        style={{ color: "var(--gray-900)", fontSize: "13px" }}
+        style={{ color: "var(--gray-900)", fontSize: "12px" }}
       >
         {value}
       </span>
