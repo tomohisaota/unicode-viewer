@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
-import { getLegacyEncoding, getLegacyByteCount, ENCODING_OPTIONS } from "@/lib/encodings";
+import { getLegacyEncoding, getLegacyByteCount, ENCODING_OPTIONS, ALL_LEGACY_ENCODINGS } from "@/lib/encodings";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
 import type { Messages } from "@/lib/i18n";
 import type { EncodingMode, LegacyEncoding } from "@/lib/encodings";
@@ -418,7 +418,6 @@ function StringSection({
           t={t}
           index={selectedIndex}
           cluster={selectedCluster}
-          encodingMode={encodingMode}
           onClose={onDeselect}
         />
       )}
@@ -562,18 +561,14 @@ function DetailPanel({
   t,
   index,
   cluster,
-  encodingMode,
   onClose,
 }: {
   t: Messages;
   index: number;
   cluster: GraphemeCluster;
-  encodingMode: EncodingMode;
   onClose: () => void;
 }) {
   const isMulti = cluster.codePoints.length > 1;
-  const isLegacy = encodingMode !== "unicode";
-  const encLabel = ENCODING_OPTIONS.find((o) => o.value === encodingMode)?.label ?? "";
 
   return (
     <div
@@ -626,41 +621,9 @@ function DetailPanel({
         </button>
       </div>
 
+      {/* Code point details */}
       <div className="overflow-x-auto">
-        <table
-          className="w-full text-sm"
-          style={{ borderCollapse: "separate", borderSpacing: 0 }}
-        >
-          <thead>
-            <tr style={{ borderBottom: "1px solid var(--gray-100)" }}>
-              <Th width="6.5rem">{t.thCodePoint}</Th>
-              <Th>{t.thName}</Th>
-              {isLegacy ? (
-                <>
-                  <Th width="10rem">{encLabel}</Th>
-                  <Th width="9rem">{t.thUtf8}</Th>
-                </>
-              ) : (
-                <>
-                  <Th width="9rem">{t.thUtf8}</Th>
-                  <Th width="7.5rem">{t.thUtf16}</Th>
-                  <Th>{t.thCategory}</Th>
-                  <Th>{t.thBlock}</Th>
-                </>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {cluster.codePoints.map((info, j) => (
-              <CodePointRow
-                key={j}
-                info={info}
-                encodingMode={encodingMode}
-                isLast={j === cluster.codePoints.length - 1}
-              />
-            ))}
-          </tbody>
-        </table>
+        <AllCodePointsTable t={t} codePoints={cluster.codePoints} />
       </div>
     </div>
   );
@@ -684,74 +647,124 @@ function BytePills({ bytes }: { bytes: number[] }) {
   );
 }
 
-function CodePointRow({
-  info,
-  encodingMode,
-  isLast,
+function AllCodePointsTable({
+  t,
+  codePoints,
 }: {
-  info: CodePointInfo;
-  encodingMode: EncodingMode;
-  isLast: boolean;
+  t: Messages;
+  codePoints: CodePointInfo[];
 }) {
-  const isLegacy = encodingMode !== "unicode";
-  const encResult = isLegacy
-    ? getLegacyEncoding(info.codePoint, encodingMode as LegacyEncoding)
-    : null;
+  const rows: { label: string; cells: React.ReactNode[] }[] = [
+    {
+      label: t.thCodePoint,
+      cells: codePoints.map((cp) => {
+        const isVisible =
+          cp.codePoint > 0x20 &&
+          cp.codePoint !== 0x7f &&
+          !(cp.codePoint >= 0x80 && cp.codePoint <= 0x9f) &&
+          cp.codePoint !== 0xa0 &&
+          cp.codePoint !== 0x3000;
+        return (
+          <span key={cp.hex} className="inline-flex items-center gap-2">
+            {isVisible && (
+              <span style={{ fontSize: "16px" }}>{cp.char}</span>
+            )}
+            <span className="font-mono font-medium" style={{ color: "var(--accent-blue)" }}>
+              {cp.hex}
+            </span>
+          </span>
+        );
+      }),
+    },
+    {
+      label: t.thName,
+      cells: codePoints.map((cp, i) => (
+        <span key={i} style={{ fontFamily: "var(--font-sans)" }}>{cp.name}</span>
+      )),
+    },
+    {
+      label: t.thCategory,
+      cells: codePoints.map((cp, i) => (
+        <span key={i} style={{ color: "var(--gray-500)", fontFamily: "var(--font-sans)" }}>{cp.category}</span>
+      )),
+    },
+    {
+      label: t.thBlock,
+      cells: codePoints.map((cp, i) => (
+        <span key={i} style={{ color: "var(--gray-500)", fontFamily: "var(--font-sans)" }}>{cp.blockName}</span>
+      )),
+    },
+    {
+      label: t.thUtf8,
+      cells: codePoints.map((cp, i) => <BytePills key={i} bytes={cp.utf8Bytes} />),
+    },
+    {
+      label: t.thUtf16,
+      cells: codePoints.map((cp, i) => (
+        <span key={i} className="inline-flex gap-1">
+          {cp.utf16Units.map((u, j) => (
+            <code
+              key={j}
+              className="rounded px-1 py-0.5"
+              style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
+            >
+              {formatUtf16(u)}
+            </code>
+          ))}
+        </span>
+      )),
+    },
+    ...ALL_LEGACY_ENCODINGS.map((enc) => ({
+      label: enc.label,
+      cells: codePoints.map((cp, i) => {
+        const result = getLegacyEncoding(cp.codePoint, enc.value);
+        return result.encodable && result.bytes ? (
+          <BytePills key={i} bytes={result.bytes} />
+        ) : (
+          <span key={i} style={{ color: "var(--unencodable-text)" }}>—</span>
+        );
+      }),
+    })),
+  ];
 
   return (
-    <tr style={{ borderBottom: isLast ? "none" : "1px solid var(--gray-100)" }}>
-      <td
-        className="px-5 py-2.5 font-mono text-xs font-medium"
-        style={{ color: "var(--accent-blue)" }}
-      >
-        {info.hex}
-      </td>
-      <td
-        className="px-5 py-2.5 text-xs truncate max-w-56"
-        style={{ color: "var(--gray-600)" }}
-      >
-        {info.name}
-      </td>
-      {isLegacy ? (
-        <>
-          <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
-            {encResult?.encodable && encResult.bytes ? (
-              <BytePills bytes={encResult.bytes} />
-            ) : (
-              <span style={{ color: "var(--unencodable-text)" }}>—</span>
-            )}
-          </td>
-          <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
-            <BytePills bytes={info.utf8Bytes} />
-          </td>
-        </>
-      ) : (
-        <>
-          <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
-            <BytePills bytes={info.utf8Bytes} />
-          </td>
-          <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
-            <span className="inline-flex gap-1">
-              {info.utf16Units.map((u, i) => (
-                <code
-                  key={i}
-                  className="rounded px-1 py-0.5"
-                  style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
-                >
-                  {formatUtf16(u)}
-                </code>
-              ))}
-            </span>
-          </td>
-          <td className="px-5 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--gray-500)" }}>
-            {info.category}
-          </td>
-          <td className="px-5 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--gray-500)" }}>
-            {info.blockName}
-          </td>
-        </>
-      )}
-    </tr>
+    <table
+      className="w-full text-sm"
+      style={{ borderCollapse: "separate", borderSpacing: 0 }}
+    >
+      <tbody>
+        {rows.map((row, i) => (
+          <tr
+            key={row.label}
+            style={{
+              borderBottom:
+                i < rows.length - 1 ? "1px solid var(--gray-100)" : "none",
+            }}
+          >
+            <td
+              className="px-4 py-1.5 text-xs font-medium whitespace-nowrap sticky left-0 z-10"
+              style={{
+                color: "var(--gray-500)",
+                width: "7.5rem",
+                minWidth: "7.5rem",
+                backgroundColor: "var(--background)",
+              }}
+            >
+              {row.label}
+            </td>
+            {row.cells.map((cell, j) => (
+              <td
+                key={j}
+                className="px-4 py-1.5 font-mono text-xs whitespace-nowrap"
+                style={{ color: "var(--gray-600)", minWidth: "6rem" }}
+              >
+                {cell}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 

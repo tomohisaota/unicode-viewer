@@ -23,6 +23,15 @@ export const ENCODING_OPTIONS: { value: EncodingMode; label: string }[] = [
   { value: "iso-2022-jp", label: "ISO-2022-JP" },
 ];
 
+export const ALL_LEGACY_ENCODINGS: { value: LegacyEncoding; label: string }[] = [
+  { value: "ascii", label: "ASCII" },
+  { value: "latin1", label: "Latin-1" },
+  { value: "shift_jis", label: "Shift_JIS" },
+  { value: "cp932", label: "CP932" },
+  { value: "euc-jp", label: "EUC-JP" },
+  { value: "iso-2022-jp", label: "ISO-2022-JP" },
+];
+
 // --- Trivial encodings ---
 
 function encodeAscii(cp: number): EncodingResult {
