@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -55,13 +55,31 @@ function buildDiffMask(
 
 export default function UnicodeViewer() {
   const t = useMessages();
-  const [rawInput, setRawInput] = useState("café U+1F44DU+1F3FD ㍻");
+  const [rawInput, setRawInput] = useState("");
   const [convertCP, setConvertCP] = useState(true);
   const [convertEsc, setConvertEsc] = useState(true);
   const [selected, setSelected] = useState<{
     section: string;
     index: number;
   } | null>(null);
+
+  // Read URL param on mount (client only)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const text = params.get("text");
+    if (text !== null) setRawInput(text);
+  }, []);
+
+  // Sync rawInput to URL query parameter
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (rawInput) {
+      url.searchParams.set("text", rawInput);
+    } else {
+      url.searchParams.delete("text");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }, [rawInput]);
 
   const input = useMemo(() => {
     let text = rawInput;
