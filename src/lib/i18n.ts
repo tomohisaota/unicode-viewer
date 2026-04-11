@@ -25,6 +25,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — Combining marks stacking", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
     { label: "2⁰ H₂O — Super/subscripts", value: "2⁰ H₂O" },
     { label: "\\u0000 — NULL character", value: "\\u0000" },
+    { label: "高髙 — JIS level 1 vs CP932 IBM extension", value: "高髙" },
   ],
   ja: [
     { label: "👨‍👩‍👧‍👦 家族絵文字（ZWJ結合）", value: "👨‍👩‍👧‍👦" },
@@ -38,6 +39,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — 結合マークの重ね", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
     { label: "2⁰ H₂O — 上付き・下付き文字", value: "2⁰ H₂O" },
     { label: "\\u0000 — NULL 文字", value: "\\u0000" },
+    { label: "高髙 — JIS第一水準 vs CP932 IBM拡張", value: "高髙" },
   ],
 };
 
