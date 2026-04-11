@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import HtmlLangSetter from "./components/HtmlLangSetter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Unicode Viewer",
-  description: "文字列のユニコードコードポイントを表示するツール",
+  description:
+    "Unicode code point viewer — view encodings, categories, and details for each character",
 };
 
 export default function RootLayout({
@@ -24,10 +26,13 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="ja"
+      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <HtmlLangSetter />
+        {children}
+      </body>
     </html>
   );
 }

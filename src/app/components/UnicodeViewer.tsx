@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
+import { useMessages } from "@/lib/i18n";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
+import type { Messages } from "@/lib/i18n";
 
 export default function UnicodeViewer() {
+  const t = useMessages();
   const [input, setInput] = useState("Hello! こんにちは 👍🏽");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const clusters = analyzeString(input);
@@ -23,7 +26,7 @@ export default function UnicodeViewer() {
         className="block text-xs font-medium mb-2"
         style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
       >
-        INPUT
+        {t.inputLabel}
       </label>
       <textarea
         value={input}
@@ -31,7 +34,7 @@ export default function UnicodeViewer() {
           setInput(e.target.value);
           setSelectedIndex(null);
         }}
-        placeholder="文字列を入力してください…"
+        placeholder={t.inputPlaceholder}
         className="w-full rounded-lg px-5 py-4 text-lg font-mono leading-relaxed resize-y focus:outline-none transition-shadow"
         style={{
           backgroundColor: "var(--input-bg)",
@@ -52,10 +55,10 @@ export default function UnicodeViewer() {
 
       {/* Stats Bar */}
       <div className="mt-5 flex flex-wrap gap-3">
-        <StatPill label="Characters" value={clusters.length} />
-        <StatPill label="Code Points" value={totalCodePoints} />
-        <StatPill label="UTF-8 Bytes" value={utf8Size} />
-        <StatPill label="UTF-16 Units" value={input.length} />
+        <StatPill label={t.characters} value={clusters.length} />
+        <StatPill label={t.codePoints} value={totalCodePoints} />
+        <StatPill label={t.utf8Bytes} value={utf8Size} />
+        <StatPill label={t.utf16Units} value={input.length} />
       </div>
 
       {/* Character Grid */}
@@ -84,6 +87,7 @@ export default function UnicodeViewer() {
       {/* Detail Panel */}
       {selected && selectedIndex !== null && (
         <DetailPanel
+          t={t}
           index={selectedIndex}
           cluster={selected}
           onClose={() => setSelectedIndex(null)}
@@ -172,10 +176,12 @@ function CharCell({
 }
 
 function DetailPanel({
+  t,
   index,
   cluster,
   onClose,
 }: {
+  t: Messages;
   index: number;
   cluster: GraphemeCluster;
   onClose: () => void;
@@ -214,7 +220,7 @@ function DetailPanel({
                 color: "var(--accent-blue-text)",
               }}
             >
-              {cluster.codePoints.length} code points
+              {t.nCodePoints(cluster.codePoints.length)}
             </span>
           )}
         </div>
@@ -230,7 +236,7 @@ function DetailPanel({
             (e.currentTarget.style.backgroundColor = "transparent")
           }
         >
-          Close
+          {t.close}
         </button>
       </div>
 
@@ -242,12 +248,12 @@ function DetailPanel({
         >
           <thead>
             <tr style={{ borderBottom: "1px solid var(--gray-100)" }}>
-              <Th width="6.5rem">Code Point</Th>
-              <Th>Name</Th>
-              <Th width="9rem">UTF-8</Th>
-              <Th width="7.5rem">UTF-16</Th>
-              <Th>Category</Th>
-              <Th>Block</Th>
+              <Th width="6.5rem">{t.thCodePoint}</Th>
+              <Th>{t.thName}</Th>
+              <Th width="9rem">{t.thUtf8}</Th>
+              <Th width="7.5rem">{t.thUtf16}</Th>
+              <Th>{t.thCategory}</Th>
+              <Th>{t.thBlock}</Th>
             </tr>
           </thead>
           <tbody>
