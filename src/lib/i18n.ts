@@ -170,7 +170,7 @@ const translations = {
   },
 } as const;
 
-export type Messages = typeof translations.en;
+export type Messages = (typeof translations)[Locale];
 
 function detectLocale(): Locale {
   if (typeof navigator === "undefined") return "en";
