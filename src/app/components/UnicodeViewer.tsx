@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -141,12 +141,21 @@ export default function UnicodeViewer() {
   return (
     <div className="w-full">
       {/* Input Area */}
-      <label
-        className="block text-xs font-medium mb-2"
-        style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
-      >
-        {t.inputLabel}
-      </label>
+      <div className="flex items-center gap-3 mb-2">
+        <label
+          className="text-xs font-medium"
+          style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
+        >
+          {t.inputLabel}
+        </label>
+        <SampleMenu
+          t={t}
+          onSelect={(value) => {
+            setRawInput(value);
+            setSelected(null);
+          }}
+        />
+      </div>
       <textarea
         value={rawInput}
         onChange={(e) => {
@@ -327,19 +336,23 @@ function StringSection({
       </div>
 
       {/* Grid */}
-      {data.clusters.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {data.clusters.map((cluster, i) => (
-            <CharCell
-              key={i}
-              cluster={cluster}
-              isSelected={selectedIndex === i}
-              isDiff={data.diffMask[i]}
-              onClick={() => onSelect(i)}
-            />
-          ))}
-        </div>
-      )}
+      {data.clusters.length > 0 && (() => {
+        const maxCPs = Math.max(...data.clusters.map(c => c.codePoints.length));
+        return (
+          <div className="flex flex-wrap gap-1">
+            {data.clusters.map((cluster, i) => (
+              <CharCell
+                key={i}
+                cluster={cluster}
+                isSelected={selectedIndex === i}
+                isDiff={data.diffMask[i]}
+                maxCodePoints={maxCPs}
+                onClick={() => onSelect(i)}
+              />
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Detail */}
       {selectedCluster && selectedIndex !== null && (
@@ -360,11 +373,13 @@ function CharCell({
   cluster,
   isSelected,
   isDiff,
+  maxCodePoints,
   onClick,
 }: {
   cluster: GraphemeCluster;
   isSelected: boolean;
   isDiff: boolean;
+  maxCodePoints: number;
   onClick: () => void;
 }) {
   const cp0 = cluster.codePoints[0];
@@ -400,6 +415,9 @@ function CharCell({
     labelColor = "var(--diff-text)";
   }
 
+  // 18px char + 10px per code point line + 8px padding
+  const cellHeight = 18 + maxCodePoints * 10 + 8;
+
   return (
     <button
       type="button"
@@ -409,7 +427,7 @@ function CharCell({
         backgroundColor: bgColor,
         boxShadow: shadowStyle,
         width: "3rem",
-        height: "3rem",
+        height: `${cellHeight}px`,
       }}
     >
       <span
@@ -616,6 +634,73 @@ function StatPill({ label, value }: { label: string; value: number }) {
       </span>
       {label}
     </span>
+  );
+}
+
+function SampleMenu({
+  t,
+  onSelect,
+}: {
+  t: Messages;
+  onSelect: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="text-xs cursor-pointer transition-colors"
+        style={{ color: "var(--accent-blue)" }}
+      >
+        {t.samples} ▾
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 top-full mt-1 z-20 rounded-lg py-1 overflow-hidden"
+          style={{
+            backgroundColor: "var(--background)",
+            boxShadow:
+              "0px 0px 0px 1px var(--shadow-border), 0px 8px 16px rgba(0,0,0,0.12)",
+            minWidth: "20rem",
+          }}
+        >
+          {t.sampleList.map((sample, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => {
+                onSelect(sample.value);
+                setOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 text-xs cursor-pointer transition-colors"
+              style={{ color: "var(--gray-600)" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "var(--gray-50)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
+            >
+              {sample.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -7,11 +7,47 @@ export interface HelpSection {
   body: string;
 }
 
+export interface Sample {
+  label: string;
+  value: string;
+}
+
+const samples: { en: Sample[]; ja: Sample[] } = {
+  en: [
+    { label: "👨‍👩‍👧‍👦 Family emoji (ZWJ sequence)", value: "👨‍👩‍👧‍👦" },
+    { label: "🏳️‍🌈 Rainbow flag (ZWJ + VS)", value: "🏳️‍🌈" },
+    { label: "👍🏽 Skin tone modifier", value: "👍🏽" },
+    { label: "café — NFC vs NFD", value: "café" },
+    { label: "㍻㌔㍑ — NFKC decomposition", value: "㍻㌔㍑" },
+    { label: "ﬁﬄ — Ligature characters", value: "ﬁﬄ" },
+    { label: "Å Å Å — Same glyph, 3 different code points", value: "U+00C5 U+212B U+0041U+030A" },
+    { label: "‮RLO‬ — Bidi override", value: "‮abc‬" },
+    { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — Combining marks stacking", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
+    { label: "2⁰ H₂O — Super/subscripts", value: "2⁰ H₂O" },
+    { label: "\\u0000 — NULL character", value: "\\u0000" },
+  ],
+  ja: [
+    { label: "👨‍👩‍👧‍👦 家族絵文字（ZWJ結合）", value: "👨‍👩‍👧‍👦" },
+    { label: "🏳️‍🌈 レインボーフラグ（ZWJ + 異体字セレクタ）", value: "🏳️‍🌈" },
+    { label: "👍🏽 肌色修飾子", value: "👍🏽" },
+    { label: "café — NFC と NFD の違い", value: "café" },
+    { label: "㍻㌔㍑ — NFKC で分解される文字", value: "㍻㌔㍑" },
+    { label: "ﬁﬄ — 合字（リガチャ）", value: "ﬁﬄ" },
+    { label: "Å Å Å — 見た目は同じ、コードポイントは3種類", value: "U+00C5 U+212B U+0041U+030A" },
+    { label: "‮RLO‬ — 双方向制御文字", value: "‮abc‬" },
+    { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — 結合マークの重ね", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
+    { label: "2⁰ H₂O — 上付き・下付き文字", value: "2⁰ H₂O" },
+    { label: "\\u0000 — NULL 文字", value: "\\u0000" },
+  ],
+};
+
 const translations = {
   en: {
     siteTitle: "Unicode Viewer",
     inputLabel: "INPUT",
     inputPlaceholder: "Enter a string…",
+    samples: "Samples",
+    sampleList: samples.en,
     characters: "Characters",
     codePoints: "Code Points",
     utf8Bytes: "UTF-8 Bytes",
@@ -73,6 +109,8 @@ const translations = {
     siteTitle: "Unicode Viewer",
     inputLabel: "入力",
     inputPlaceholder: "文字列を入力してください…",
+    samples: "サンプルから入力",
+    sampleList: samples.ja,
     characters: "文字数",
     codePoints: "コードポイント",
     utf8Bytes: "UTF-8 バイト",
