@@ -24,6 +24,8 @@ const translations = {
     thUtf16: "UTF-16",
     thCategory: "Category",
     thBlock: "Block",
+    shareOnX: "Share",
+    shareText: "Check out the Unicode details of this string 🔍 #Unicode #UnicodeViewer",
     help: "Help",
     helpTitle: "About Unicode",
     helpSections: [
@@ -83,6 +85,8 @@ const translations = {
     thUtf16: "UTF-16",
     thCategory: "カテゴリ",
     thBlock: "ブロック",
+    shareOnX: "共有",
+    shareText: "この文字列のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
     help: "ヘルプ",
     helpTitle: "Unicode について",
     helpSections: [
