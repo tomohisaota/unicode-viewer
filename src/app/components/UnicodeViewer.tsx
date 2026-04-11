@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, getLegacyByteCount, ENCODING_OPTIONS, ALL_LEGACY_ENCODINGS } from "@/lib/encodings";
+import { getJisLevel } from "@/lib/jis-level";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
 import type { Messages } from "@/lib/i18n";
 import type { EncodingMode, LegacyEncoding } from "@/lib/encodings";
@@ -693,6 +694,26 @@ function AllCodePointsTable({
       cells: codePoints.map((cp, i) => (
         <span key={i} style={{ color: "var(--gray-500)", fontFamily: "var(--font-sans)" }}>{cp.blockName}</span>
       )),
+    },
+    {
+      label: t.thJisLevel,
+      cells: codePoints.map((cp, i) => {
+        const level = getJisLevel(cp.codePoint);
+        if (level === null) {
+          return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
+        }
+        const labels: Record<number, string> = {
+          1: "第一水準",
+          2: "第二水準",
+          3: "第三水準",
+          4: "第四水準",
+        };
+        return (
+          <span key={i} style={{ color: "var(--gray-500)", fontFamily: "var(--font-sans)" }}>
+            {labels[level]}
+          </span>
+        );
+      }),
     },
     {
       label: t.thUtf8,

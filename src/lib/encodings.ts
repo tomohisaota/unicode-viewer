@@ -216,7 +216,7 @@ function getEucJpMap(): Map<number, number[]> {
   return eucjpMap;
 }
 
-function getIso2022JpMap(): Map<number, number[]> {
+export function getIso2022JpMap(): Map<number, number[]> {
   if (!iso2022jpMap) iso2022jpMap = buildIso2022JpMap();
   return iso2022jpMap;
 }
