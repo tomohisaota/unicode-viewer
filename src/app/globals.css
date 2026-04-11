@@ -3,6 +3,20 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --gray-50: #fafafa;
+  --gray-100: #ebebeb;
+  --gray-400: #808080;
+  --gray-500: #666666;
+  --gray-600: #4d4d4d;
+  --gray-900: #171717;
+  --accent-blue: #0072f5;
+  --accent-blue-bg: #ebf5ff;
+  --accent-blue-text: #0068d6;
+  --shadow-border: rgba(0, 0, 0, 0.08);
+  --shadow-subtle: rgba(0, 0, 0, 0.04);
+  --input-bg: #f5f5f5;
+  --input-border: #d0d0d0;
+  --input-focus-ring: rgba(0, 114, 245, 0.15);
 }
 
 @theme inline {
@@ -14,13 +28,28 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #08090a;
+    --foreground: #f7f8f8;
+    --gray-50: #0f1011;
+    --gray-100: #191a1b;
+    --gray-400: #62666d;
+    --gray-500: #8a8f98;
+    --gray-600: #d0d6e0;
+    --gray-900: #f7f8f8;
+    --accent-blue: #7170ff;
+    --accent-blue-bg: rgba(113, 112, 255, 0.1);
+    --accent-blue-text: #828fff;
+    --shadow-border: rgba(255, 255, 255, 0.08);
+    --shadow-subtle: rgba(0, 0, 0, 0.2);
+    --input-bg: #141516;
+    --input-border: #3e3e44;
+    --input-focus-ring: rgba(113, 112, 255, 0.2);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-feature-settings: "liga";
 }
