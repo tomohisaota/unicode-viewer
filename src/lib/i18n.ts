@@ -65,6 +65,7 @@ const translations = {
     nfkdLabel: "NFKD",
     nfkdDesc: "Compatibility Decomposition",
     noChange: "No change",
+    copyToInput: "Use as input",
   },
   ja: {
     siteTitle: "Unicode Viewer",
@@ -123,6 +124,7 @@ const translations = {
     nfkdLabel: "NFKD",
     nfkdDesc: "互換分解",
     noChange: "変化なし",
+    copyToInput: "入力にコピー",
   },
 } as const;
 

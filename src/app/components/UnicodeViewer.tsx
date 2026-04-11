@@ -20,6 +20,24 @@ function convertCodePointNotation(text: string): string {
   });
 }
 
+/**
+ * Encode a string so that combining marks are represented as U+XXXX.
+ * This prevents the browser/IME from recomposing decomposed characters.
+ */
+function toSafeNotation(text: string): string {
+  const codePoints = Array.from(text);
+  return codePoints
+    .map((ch) => {
+      // Encode combining marks (Unicode category M) as U+XXXX
+      if (/\p{M}/u.test(ch)) {
+        const cp = ch.codePointAt(0)!;
+        return "U+" + cp.toString(16).toUpperCase().padStart(4, "0");
+      }
+      return ch;
+    })
+    .join("");
+}
+
 /** Convert \uXXXX / \u{XXXXX} sequences to actual characters */
 function convertEscapeNotation(text: string): string {
   return text.replace(/\\u\{([0-9A-Fa-f]{1,6})\}|\\u([0-9A-Fa-f]{4})/g, (_, braced, plain) => {
@@ -211,6 +229,14 @@ export default function UnicodeViewer() {
                 )
               }
               onDeselect={() => setSelected(null)}
+              onCopyToInput={
+                !isInput
+                  ? () => {
+                      setRawInput(toSafeNotation(data.text));
+                      setSelected(null);
+                    }
+                  : undefined
+              }
             />
           );
         })}
@@ -231,6 +257,7 @@ function StringSection({
   selectedIndex,
   onSelect,
   onDeselect,
+  onCopyToInput,
 }: {
   t: Messages;
   sectionKey: string;
@@ -241,6 +268,7 @@ function StringSection({
   selectedIndex: number | null;
   onSelect: (i: number) => void;
   onDeselect: () => void;
+  onCopyToInput?: () => void;
 }) {
   const utf8Size = new Blob([data.text]).size;
   const totalCodePoints = data.clusters.reduce(
@@ -277,6 +305,20 @@ function StringSection({
           >
             = {t.inputLabel}
           </span>
+        )}
+        {onCopyToInput && !identical && (
+          <button
+            type="button"
+            onClick={onCopyToInput}
+            className="text-xs rounded-full px-2 py-0.5 cursor-pointer transition-colors"
+            style={{
+              color: "var(--accent-blue-text)",
+              backgroundColor: "var(--accent-blue-bg)",
+              boxShadow: "0px 0px 0px 1px var(--accent-blue)",
+            }}
+          >
+            {t.copyToInput}
+          </button>
         )}
         <div className="flex flex-wrap gap-2 ml-auto">
           <StatPill label={t.codePoints} value={totalCodePoints} />
