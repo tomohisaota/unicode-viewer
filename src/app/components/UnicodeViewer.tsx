@@ -3,8 +3,10 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
+import { getLegacyEncoding, getLegacyByteCount, ENCODING_OPTIONS } from "@/lib/encodings";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
 import type { Messages } from "@/lib/i18n";
+import type { EncodingMode, LegacyEncoding } from "@/lib/encodings";
 
 type NormForm = "NFC" | "NFD" | "NFKC" | "NFKD";
 const NORM_FORMS: NormForm[] = ["NFC", "NFD", "NFKC", "NFKD"];
@@ -76,6 +78,7 @@ export default function UnicodeViewer() {
   const [rawInput, setRawInput] = useState("");
   const [convertCP, setConvertCP] = useState(true);
   const [convertEsc, setConvertEsc] = useState(true);
+  const [encodingMode, setEncodingMode] = useState<EncodingMode>("unicode");
   const [selected, setSelected] = useState<{
     section: string;
     index: number;
@@ -213,6 +216,35 @@ export default function UnicodeViewer() {
         </label>
       </div>
 
+      {/* Encoding selector */}
+      <div className="mt-3 flex items-center gap-2">
+        <span
+          className="text-xs font-medium"
+          style={{ color: "var(--gray-500)" }}
+        >
+          {t.encoding}
+        </span>
+        <select
+          value={encodingMode}
+          onChange={(e) => {
+            setEncodingMode(e.target.value as EncodingMode);
+            setSelected(null);
+          }}
+          className="text-xs rounded-md px-2 py-1 cursor-pointer"
+          style={{
+            backgroundColor: "var(--input-bg)",
+            color: "var(--gray-900)",
+            border: "1.5px solid var(--input-border)",
+          }}
+        >
+          {ENCODING_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* All sections */}
       <div className="mt-8 flex flex-col gap-8">
         {sections.map(({ key, label, desc, data }) => {
@@ -227,6 +259,7 @@ export default function UnicodeViewer() {
               desc={desc}
               data={data}
               identical={identical}
+              encodingMode={encodingMode}
               selectedIndex={
                 selected?.section === key ? selected.index : null
               }
@@ -267,6 +300,7 @@ function StringSection({
   onSelect,
   onDeselect,
   onCopyToInput,
+  encodingMode,
 }: {
   t: Messages;
   sectionKey: string;
@@ -274,6 +308,7 @@ function StringSection({
   desc: string;
   data: AnalyzedString;
   identical: boolean;
+  encodingMode: EncodingMode;
   selectedIndex: number | null;
   onSelect: (i: number) => void;
   onDeselect: () => void;
@@ -284,7 +319,11 @@ function StringSection({
     (sum, c) => sum + c.codePoints.length,
     0
   );
-  const hasDiff = data.diffMask.some(Boolean);
+  const allCPs = data.clusters.flatMap((c) => c.codePoints.map((p) => p.codePoint));
+  const isLegacy = encodingMode !== "unicode";
+  const legacyStats = isLegacy
+    ? getLegacyByteCount(allCPs, encodingMode as LegacyEncoding)
+    : null;
   const selectedCluster =
     selectedIndex !== null ? data.clusters[selectedIndex] : null;
 
@@ -331,7 +370,25 @@ function StringSection({
         )}
         <div className="flex flex-wrap gap-2 ml-auto">
           <StatPill label={t.codePoints} value={totalCodePoints} />
-          <StatPill label={t.utf8Bytes} value={utf8Size} />
+          {isLegacy && legacyStats ? (
+            <>
+              <StatPill
+                label={t.encBytes(
+                  ENCODING_OPTIONS.find((o) => o.value === encodingMode)?.label ?? ""
+                )}
+                value={legacyStats.total}
+              />
+              {legacyStats.unencodable > 0 && (
+                <StatPill
+                  label={t.nUnencodable(legacyStats.unencodable)}
+                  value={legacyStats.unencodable}
+                  warn
+                />
+              )}
+            </>
+          ) : (
+            <StatPill label={t.utf8Bytes} value={utf8Size} />
+          )}
         </div>
       </div>
 
@@ -347,6 +404,7 @@ function StringSection({
                 isSelected={selectedIndex === i}
                 isDiff={data.diffMask[i]}
                 maxCodePoints={maxCPs}
+                encodingMode={encodingMode}
                 onClick={() => onSelect(i)}
               />
             ))}
@@ -360,6 +418,7 @@ function StringSection({
           t={t}
           index={selectedIndex}
           cluster={selectedCluster}
+          encodingMode={encodingMode}
           onClose={onDeselect}
         />
       )}
@@ -374,12 +433,14 @@ function CharCell({
   isSelected,
   isDiff,
   maxCodePoints,
+  encodingMode,
   onClick,
 }: {
   cluster: GraphemeCluster;
   isSelected: boolean;
   isDiff: boolean;
   maxCodePoints: number;
+  encodingMode: EncodingMode;
   onClick: () => void;
 }) {
   const cp0 = cluster.codePoints[0];
@@ -399,7 +460,25 @@ function CharCell({
       ? "␣"
       : cluster.grapheme;
 
-  const codePointHexes = cluster.codePoints.map((c) => c.hex);
+  const isLegacy = encodingMode !== "unicode";
+
+  // Check if any code point in this cluster is unencodable
+  const unencodable =
+    isLegacy &&
+    cluster.codePoints.some(
+      (cp) => !getLegacyEncoding(cp.codePoint, encodingMode as LegacyEncoding).encodable
+    );
+
+  // Build label lines
+  const labelLines: string[] = isLegacy
+    ? cluster.codePoints.map((cp) => {
+        const result = getLegacyEncoding(cp.codePoint, encodingMode as LegacyEncoding);
+        if (result.encodable && result.bytes) {
+          return result.bytes.map((b) => formatByte(b)).join(" ");
+        }
+        return "—";
+      })
+    : cluster.codePoints.map((c) => c.hex);
 
   let bgColor = "transparent";
   let shadowStyle = "0px 0px 0px 1px var(--shadow-border)";
@@ -409,6 +488,10 @@ function CharCell({
     bgColor = "var(--accent-blue-bg)";
     shadowStyle = "0px 0px 0px 1.5px var(--accent-blue)";
     labelColor = "var(--accent-blue)";
+  } else if (unencodable) {
+    bgColor = "var(--unencodable-bg)";
+    shadowStyle = "0px 0px 0px 1.5px var(--unencodable-border)";
+    labelColor = "var(--unencodable-text)";
   } else if (isDiff) {
     bgColor = "var(--diff-bg)";
     shadowStyle = "0px 0px 0px 1.5px var(--diff-border)";
@@ -422,7 +505,7 @@ function CharCell({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center justify-center rounded transition-all cursor-pointer"
+      className="flex flex-col items-center justify-center rounded transition-all cursor-pointer relative"
       style={{
         backgroundColor: bgColor,
         boxShadow: shadowStyle,
@@ -430,6 +513,18 @@ function CharCell({
         height: `${cellHeight}px`,
       }}
     >
+      {unencodable && (
+        <span
+          className="absolute font-bold"
+          style={{
+            color: "var(--unencodable-border)",
+            fontSize: "24px",
+            opacity: 0.3,
+          }}
+        >
+          ✕
+        </span>
+      )}
       <span
         className={`leading-none ${
           isControl || isWhitespace ? "font-mono" : ""
@@ -453,8 +548,8 @@ function CharCell({
           marginTop: "1px",
         }}
       >
-        {codePointHexes.map((hex, i) => (
-          <span key={i}>{hex}</span>
+        {labelLines.map((line, i) => (
+          <span key={i}>{line}</span>
         ))}
       </span>
     </button>
@@ -467,14 +562,18 @@ function DetailPanel({
   t,
   index,
   cluster,
+  encodingMode,
   onClose,
 }: {
   t: Messages;
   index: number;
   cluster: GraphemeCluster;
+  encodingMode: EncodingMode;
   onClose: () => void;
 }) {
   const isMulti = cluster.codePoints.length > 1;
+  const isLegacy = encodingMode !== "unicode";
+  const encLabel = ENCODING_OPTIONS.find((o) => o.value === encodingMode)?.label ?? "";
 
   return (
     <div
@@ -536,10 +635,19 @@ function DetailPanel({
             <tr style={{ borderBottom: "1px solid var(--gray-100)" }}>
               <Th width="6.5rem">{t.thCodePoint}</Th>
               <Th>{t.thName}</Th>
-              <Th width="9rem">{t.thUtf8}</Th>
-              <Th width="7.5rem">{t.thUtf16}</Th>
-              <Th>{t.thCategory}</Th>
-              <Th>{t.thBlock}</Th>
+              {isLegacy ? (
+                <>
+                  <Th width="10rem">{encLabel}</Th>
+                  <Th width="9rem">{t.thUtf8}</Th>
+                </>
+              ) : (
+                <>
+                  <Th width="9rem">{t.thUtf8}</Th>
+                  <Th width="7.5rem">{t.thUtf16}</Th>
+                  <Th>{t.thCategory}</Th>
+                  <Th>{t.thBlock}</Th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -547,6 +655,7 @@ function DetailPanel({
               <CodePointRow
                 key={j}
                 info={info}
+                encodingMode={encodingMode}
                 isLast={j === cluster.codePoints.length - 1}
               />
             ))}
@@ -559,13 +668,36 @@ function DetailPanel({
 
 /* ─── Shared sub-components ─── */
 
+function BytePills({ bytes }: { bytes: number[] }) {
+  return (
+    <span className="inline-flex gap-1">
+      {bytes.map((b, i) => (
+        <code
+          key={i}
+          className="rounded px-1 py-0.5"
+          style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
+        >
+          {formatByte(b)}
+        </code>
+      ))}
+    </span>
+  );
+}
+
 function CodePointRow({
   info,
+  encodingMode,
   isLast,
 }: {
   info: CodePointInfo;
+  encodingMode: EncodingMode;
   isLast: boolean;
 }) {
+  const isLegacy = encodingMode !== "unicode";
+  const encResult = isLegacy
+    ? getLegacyEncoding(info.codePoint, encodingMode as LegacyEncoding)
+    : null;
+
   return (
     <tr style={{ borderBottom: isLast ? "none" : "1px solid var(--gray-100)" }}>
       <td
@@ -580,55 +712,75 @@ function CodePointRow({
       >
         {info.name}
       </td>
-      <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
-        <span className="inline-flex gap-1">
-          {info.utf8Bytes.map((b, i) => (
-            <code
-              key={i}
-              className="rounded px-1 py-0.5"
-              style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
-            >
-              {formatByte(b)}
-            </code>
-          ))}
-        </span>
-      </td>
-      <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
-        <span className="inline-flex gap-1">
-          {info.utf16Units.map((u, i) => (
-            <code
-              key={i}
-              className="rounded px-1 py-0.5"
-              style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
-            >
-              {formatUtf16(u)}
-            </code>
-          ))}
-        </span>
-      </td>
-      <td className="px-5 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--gray-500)" }}>
-        {info.category}
-      </td>
-      <td className="px-5 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--gray-500)" }}>
-        {info.blockName}
-      </td>
+      {isLegacy ? (
+        <>
+          <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
+            {encResult?.encodable && encResult.bytes ? (
+              <BytePills bytes={encResult.bytes} />
+            ) : (
+              <span style={{ color: "var(--unencodable-text)" }}>—</span>
+            )}
+          </td>
+          <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
+            <BytePills bytes={info.utf8Bytes} />
+          </td>
+        </>
+      ) : (
+        <>
+          <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
+            <BytePills bytes={info.utf8Bytes} />
+          </td>
+          <td className="px-5 py-2.5 font-mono text-xs" style={{ color: "var(--gray-600)" }}>
+            <span className="inline-flex gap-1">
+              {info.utf16Units.map((u, i) => (
+                <code
+                  key={i}
+                  className="rounded px-1 py-0.5"
+                  style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
+                >
+                  {formatUtf16(u)}
+                </code>
+              ))}
+            </span>
+          </td>
+          <td className="px-5 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--gray-500)" }}>
+            {info.category}
+          </td>
+          <td className="px-5 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--gray-500)" }}>
+            {info.blockName}
+          </td>
+        </>
+      )}
     </tr>
   );
 }
 
-function StatPill({ label, value }: { label: string; value: number }) {
+function StatPill({
+  label,
+  value,
+  warn,
+}: {
+  label: string;
+  value: number;
+  warn?: boolean;
+}) {
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
       style={{
-        boxShadow: "0px 0px 0px 1px var(--shadow-border)",
-        color: "var(--gray-600)",
-        backgroundColor: "var(--background)",
+        boxShadow: warn
+          ? "0px 0px 0px 1px var(--unencodable-border)"
+          : "0px 0px 0px 1px var(--shadow-border)",
+        color: warn ? "var(--unencodable-text)" : "var(--gray-600)",
+        backgroundColor: warn ? "var(--unencodable-bg)" : "var(--background)",
       }}
     >
       <span
         className="font-mono font-semibold tabular-nums"
-        style={{ color: "var(--gray-900)", fontSize: "12px" }}
+        style={{
+          color: warn ? "var(--unencodable-text)" : "var(--gray-900)",
+          fontSize: "12px",
+        }}
       >
         {value}
       </span>

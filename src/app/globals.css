@@ -20,6 +20,9 @@
   --diff-bg: #fff7ed;
   --diff-border: #f59e0b;
   --diff-text: #b45309;
+  --unencodable-bg: #fef2f2;
+  --unencodable-border: #ef4444;
+  --unencodable-text: #dc2626;
 }
 
 @theme inline {
@@ -50,6 +53,9 @@
     --diff-bg: rgba(245, 158, 11, 0.1);
     --diff-border: #f59e0b;
     --diff-text: #fbbf24;
+    --unencodable-bg: rgba(239, 68, 68, 0.1);
+    --unencodable-border: #ef4444;
+    --unencodable-text: #f87171;
   }
 }
 
