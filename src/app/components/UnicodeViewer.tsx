@@ -5,6 +5,7 @@ import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, getLegacyByteCount, ENCODING_OPTIONS, ALL_LEGACY_ENCODINGS } from "@/lib/encodings";
 import { getJisLevel } from "@/lib/jis-level";
+import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
 import type { Messages } from "@/lib/i18n";
 import type { EncodingMode, LegacyEncoding } from "@/lib/encodings";
@@ -683,6 +684,29 @@ function AllCodePointsTable({
         <span key={i} style={{ fontFamily: "var(--font-sans)" }}>{cp.name}</span>
       )),
     },
+  ];
+
+  // Conditionally add Note row if any code point has an annotation
+  const annotationKeys = codePoints.map((cp) => getAnnotationKey(cp.codePoint));
+  if (annotationKeys.some((k) => k !== null)) {
+    rows.push({
+      label: t.thNote,
+      cells: codePoints.map((cp, i) => {
+        const key = annotationKeys[i];
+        if (!key) return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
+        const text = t.annotations[key];
+        const lines = text.split("\n");
+        return (
+          <span key={i} className="flex flex-col" style={{ fontFamily: "var(--font-sans)", fontSize: "11px" }}>
+            <span style={{ color: "var(--gray-700)", fontWeight: 500 }}>{lines[0]}</span>
+            {lines[1] && <span style={{ color: "var(--gray-400)" }}>{lines[1]}</span>}
+          </span>
+        );
+      }),
+    });
+  }
+
+  rows.push(
     {
       label: t.thCategory,
       cells: codePoints.map((cp, i) => (
@@ -746,7 +770,7 @@ function AllCodePointsTable({
         );
       }),
     })),
-  ];
+  );
 
   return (
     <table
