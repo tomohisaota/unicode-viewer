@@ -248,35 +248,33 @@ export default function UnicodeViewer() {
         </select>
       </div>
 
-      {/* Mapping variant selector (visible only for JIS-based encodings) */}
-      {encodingMode !== "unicode" && encodingMode !== "ascii" && encodingMode !== "latin1" && encodingMode !== "cp932" && (
-        <div className="mt-2 flex items-center gap-3">
-          <span
-            className="text-xs font-medium"
-            style={{ color: "var(--gray-500)" }}
-          >
-            {t.mappingVariant}
-          </span>
-          {(["whatwg", "unicode.org"] as const).map((v) => (
-            <label key={v} className="inline-flex items-center gap-1 cursor-pointer select-none">
-              <input
-                type="radio"
-                name="mappingVariant"
-                value={v}
-                checked={mappingVariant === v}
-                onChange={() => {
-                  setMappingVariant(v);
-                  setSelected(null);
-                }}
-                className="accent-[var(--accent-blue)]"
-              />
-              <span className="text-xs" style={{ color: "var(--gray-600)" }}>
-                {v === "whatwg" ? t.mappingWhatwg : t.mappingUnicodeOrg}
-              </span>
-            </label>
-          ))}
-        </div>
-      )}
+      {/* Mapping variant selector — affects JIS-based encoding rows in detail panel */}
+      <div className="mt-2 flex items-center gap-3">
+        <span
+          className="text-xs font-medium"
+          style={{ color: "var(--gray-500)" }}
+        >
+          {t.mappingVariant}
+        </span>
+        {(["whatwg", "unicode.org"] as const).map((v) => (
+          <label key={v} className="inline-flex items-center gap-1 cursor-pointer select-none">
+            <input
+              type="radio"
+              name="mappingVariant"
+              value={v}
+              checked={mappingVariant === v}
+              onChange={() => {
+                setMappingVariant(v);
+                setSelected(null);
+              }}
+              className="accent-[var(--accent-blue)]"
+            />
+            <span className="text-xs" style={{ color: "var(--gray-600)" }}>
+              {v === "whatwg" ? t.mappingWhatwg : t.mappingUnicodeOrg}
+            </span>
+          </label>
+        ))}
+      </div>
 
       {/* All sections */}
       <div className="mt-8 flex flex-col gap-8">
