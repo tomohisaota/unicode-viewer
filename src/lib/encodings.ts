@@ -121,7 +121,10 @@ function buildEucJPMap(): Map<number, number[]> {
   }
 
   // JIS X 0208 (two-byte: 0xA1-0xFE × 0xA1-0xFE)
+  // Filter by standard JIS X 0208 rows to exclude WHATWG vendor extensions
   for (let b1 = 0xa1; b1 <= 0xfe; b1++) {
+    const row = b1 - 0xa0;
+    if (!isJisX0208Row(row)) continue;
     for (let b2 = 0xa1; b2 <= 0xfe; b2++) {
       const cp = tryDecode(decoder, new Uint8Array([b1, b2]));
       if (cp >= 0) map.set(cp, [b1, b2]);
