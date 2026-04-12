@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Unicode Viewer
 
-## Getting Started
+Unicode コードポイントレベルでテキストを解析する Web アプリケーションです。グラフェムクラスタの分解、Unicode 正規化形式の比較、レガシー日本語エンコーディングへの変換をブラウザ上で行えます。
 
-First, run the development server:
+**https://unicode-viewer.appbatake.com**
+
+## Features
+
+- **Unicode 解析** - テキストをグラフェムクラスタに分解し、各コードポイントの名前・カテゴリ・ブロック・UTF-8/UTF-16 バイト列を表示
+- **正規化形式の比較** - NFC / NFD / NFKC / NFKD の 4 形式を並べて差分をハイライト
+- **レガシーエンコーディング** - Shift_JIS, CP932, EUC-JP, ISO-2022-JP, Shift_JIS-2004, ASCII, Latin-1 に対応
+- **マッピングバリアント切替** - WHATWG (Microsoft) と Unicode.org (JIS 標準) の変換テーブルを切り替え可能（Wave Dash 問題対応）
+- **JIS 水準表示** - JIS X 0208 / JIS X 0213 に基づく第一〜第四水準の分類
+- **特殊文字アノテーション** - ZWJ、異体字セレクタ、Bidi 制御文字など 25 種の特殊文字に注釈を表示
+- **日英バイリンガル** - ブラウザの言語設定に応じて自動切替
+- **PWA 対応** - ホーム画面に追加してオフラインで利用可能
+
+## Quick Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 で開発サーバーが起動します。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| カテゴリ | 技術 |
+|---|---|
+| フレームワーク | Next.js 16 (App Router, Static Export) |
+| UI | React 19, Tailwind CSS 4 |
+| 言語 | TypeScript 6 |
+| テスト | Vitest |
+| デプロイ | Cloudflare Pages |
 
-## Learn More
+## Documentation
 
-To learn more about Next.js, take a look at the following resources:
+詳細なドキュメントは [doc/](./doc/README.md) を参照してください。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Architecture](./doc/architecture.md) - プロジェクト構成、コンポーネント階層、データフロー
+- [Features](./doc/features.md) - 各機能の詳細な説明
+- [Encodings](./doc/encodings.md) - レガシーエンコーディングの実装詳細、Wave Dash 問題
+- [Development](./doc/development.md) - 開発環境のセットアップ、ビルド、テスト、デプロイ
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT](./LICENSE)
