@@ -8,7 +8,7 @@ import { getJisLevel } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
 import type { Messages } from "@/lib/i18n";
-import type { EncodingMode, LegacyEncoding } from "@/lib/encodings";
+import type { EncodingMode, LegacyEncoding, MappingVariant } from "@/lib/encodings";
 
 type NormForm = "NFC" | "NFD" | "NFKC" | "NFKD";
 const NORM_FORMS: NormForm[] = ["NFC", "NFD", "NFKC", "NFKD"];
@@ -81,6 +81,7 @@ export default function UnicodeViewer() {
   const [convertCP, setConvertCP] = useState(true);
   const [convertEsc, setConvertEsc] = useState(true);
   const [encodingMode, setEncodingMode] = useState<EncodingMode>("unicode");
+  const [mappingVariant, setMappingVariant] = useState<MappingVariant>("whatwg");
   const [selected, setSelected] = useState<{
     section: string;
     index: number;
@@ -247,6 +248,36 @@ export default function UnicodeViewer() {
         </select>
       </div>
 
+      {/* Mapping variant selector (visible only for JIS-based encodings) */}
+      {encodingMode !== "unicode" && encodingMode !== "ascii" && encodingMode !== "latin1" && encodingMode !== "cp932" && (
+        <div className="mt-2 flex items-center gap-3">
+          <span
+            className="text-xs font-medium"
+            style={{ color: "var(--gray-500)" }}
+          >
+            {t.mappingVariant}
+          </span>
+          {(["whatwg", "unicode.org"] as const).map((v) => (
+            <label key={v} className="inline-flex items-center gap-1 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="mappingVariant"
+                value={v}
+                checked={mappingVariant === v}
+                onChange={() => {
+                  setMappingVariant(v);
+                  setSelected(null);
+                }}
+                className="accent-[var(--accent-blue)]"
+              />
+              <span className="text-xs" style={{ color: "var(--gray-600)" }}>
+                {v === "whatwg" ? t.mappingWhatwg : t.mappingUnicodeOrg}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+
       {/* All sections */}
       <div className="mt-8 flex flex-col gap-8">
         {sections.map(({ key, label, desc, data }) => {
@@ -262,6 +293,7 @@ export default function UnicodeViewer() {
               data={data}
               identical={identical}
               encodingMode={encodingMode}
+              mappingVariant={mappingVariant}
               selectedIndex={
                 selected?.section === key ? selected.index : null
               }
@@ -303,6 +335,7 @@ function StringSection({
   onDeselect,
   onCopyToInput,
   encodingMode,
+  mappingVariant,
 }: {
   t: Messages;
   sectionKey: string;
@@ -311,6 +344,7 @@ function StringSection({
   data: AnalyzedString;
   identical: boolean;
   encodingMode: EncodingMode;
+  mappingVariant: MappingVariant;
   selectedIndex: number | null;
   onSelect: (i: number) => void;
   onDeselect: () => void;
@@ -324,7 +358,7 @@ function StringSection({
   const allCPs = data.clusters.flatMap((c) => c.codePoints.map((p) => p.codePoint));
   const isLegacy = encodingMode !== "unicode";
   const legacyStats = isLegacy
-    ? getLegacyByteCount(allCPs, encodingMode as LegacyEncoding)
+    ? getLegacyByteCount(allCPs, encodingMode as LegacyEncoding, mappingVariant)
     : null;
   const selectedCluster =
     selectedIndex !== null ? data.clusters[selectedIndex] : null;
@@ -407,6 +441,7 @@ function StringSection({
                 isDiff={data.diffMask[i]}
                 maxCodePoints={maxCPs}
                 encodingMode={encodingMode}
+                mappingVariant={mappingVariant}
                 onClick={() => onSelect(i)}
               />
             ))}
@@ -421,6 +456,7 @@ function StringSection({
           index={selectedIndex}
           cluster={selectedCluster}
           onClose={onDeselect}
+          mappingVariant={mappingVariant}
         />
       )}
     </div>
@@ -435,6 +471,7 @@ function CharCell({
   isDiff,
   maxCodePoints,
   encodingMode,
+  mappingVariant,
   onClick,
 }: {
   cluster: GraphemeCluster;
@@ -442,6 +479,7 @@ function CharCell({
   isDiff: boolean;
   maxCodePoints: number;
   encodingMode: EncodingMode;
+  mappingVariant: MappingVariant;
   onClick: () => void;
 }) {
   const cp0 = cluster.codePoints[0];
@@ -467,13 +505,13 @@ function CharCell({
   const unencodable =
     isLegacy &&
     cluster.codePoints.some(
-      (cp) => !getLegacyEncoding(cp.codePoint, encodingMode as LegacyEncoding).encodable
+      (cp) => !getLegacyEncoding(cp.codePoint, encodingMode as LegacyEncoding, mappingVariant).encodable
     );
 
   // Build label lines
   const labelLines: string[] = isLegacy
     ? cluster.codePoints.map((cp) => {
-        const result = getLegacyEncoding(cp.codePoint, encodingMode as LegacyEncoding);
+        const result = getLegacyEncoding(cp.codePoint, encodingMode as LegacyEncoding, mappingVariant);
         if (result.encodable && result.bytes) {
           return result.bytes.map((b) => formatByte(b)).join(" ");
         }
@@ -564,11 +602,13 @@ function DetailPanel({
   index,
   cluster,
   onClose,
+  mappingVariant,
 }: {
   t: Messages;
   index: number;
   cluster: GraphemeCluster;
   onClose: () => void;
+  mappingVariant: MappingVariant;
 }) {
   const isMulti = cluster.codePoints.length > 1;
 
@@ -625,7 +665,7 @@ function DetailPanel({
 
       {/* Code point details */}
       <div className="overflow-x-auto">
-        <AllCodePointsTable t={t} codePoints={cluster.codePoints} />
+        <AllCodePointsTable t={t} codePoints={cluster.codePoints} mappingVariant={mappingVariant} />
       </div>
     </div>
   );
@@ -652,9 +692,11 @@ function BytePills({ bytes }: { bytes: number[] }) {
 function AllCodePointsTable({
   t,
   codePoints,
+  mappingVariant,
 }: {
   t: Messages;
   codePoints: CodePointInfo[];
+  mappingVariant: MappingVariant;
 }) {
   const rows: { label: string; cells: React.ReactNode[] }[] = [
     {
@@ -762,7 +804,7 @@ function AllCodePointsTable({
     ...ALL_LEGACY_ENCODINGS.map((enc) => ({
       label: enc.label,
       cells: codePoints.map((cp, i) => {
-        const result = getLegacyEncoding(cp.codePoint, enc.value);
+        const result = getLegacyEncoding(cp.codePoint, enc.value, mappingVariant);
         return result.encodable && result.bytes ? (
           <BytePills key={i} bytes={result.bytes} />
         ) : (

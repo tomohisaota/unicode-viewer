@@ -26,6 +26,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "2⁰ H₂O — Super/subscripts", value: "2⁰ H₂O" },
     { label: "\\u0000 — NULL character", value: "\\u0000" },
     { label: "高髙 — JIS level 1 vs CP932 IBM extension", value: "高髙" },
+    { label: "～〜 — WHATWG vs Unicode.org mapping (wave dash)", value: "～〜" },
   ],
   ja: [
     { label: "👨‍👩‍👧‍👦 家族絵文字（ZWJ結合）", value: "👨‍👩‍👧‍👦" },
@@ -40,6 +41,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "2⁰ H₂O — 上付き・下付き文字", value: "2⁰ H₂O" },
     { label: "\\u0000 — NULL 文字", value: "\\u0000" },
     { label: "高髙 — JIS第一水準 vs CP932 IBM拡張", value: "高髙" },
+    { label: "～〜 — WHATWG vs Unicode.org マッピング（波ダッシュ問題）", value: "～〜" },
   ],
 };
 
@@ -92,6 +94,9 @@ const translations = {
       privateUse: "Private Use Area\nUser-defined characters; meaning depends on the font or application",
     } as Record<string, string>,
     encoding: "Encoding",
+    mappingVariant: "JIS ↔ Unicode mapping",
+    mappingWhatwg: "WHATWG (Microsoft)",
+    mappingUnicodeOrg: "Unicode.org (JIS standard)",
     unencodable: "N/A",
     nUnencodable: (n: number) => `${n} unencodable`,
     encBytes: (name: string) => `${name} Bytes`,
@@ -189,6 +194,9 @@ const translations = {
       privateUse: "私用領域\nユーザー定義の文字；意味はフォントやアプリケーションに依存する",
     } as Record<string, string>,
     encoding: "エンコーディング",
+    mappingVariant: "JIS ↔ Unicode マッピング",
+    mappingWhatwg: "WHATWG (Microsoft)",
+    mappingUnicodeOrg: "Unicode.org (JIS標準)",
     unencodable: "非対応",
     nUnencodable: (n: number) => `${n} 文字非対応`,
     encBytes: (name: string) => `${name} バイト`,

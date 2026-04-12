@@ -9,10 +9,29 @@ export type LegacyEncoding =
 
 export type EncodingMode = "unicode" | LegacyEncoding;
 
+/** Mapping variant for the 7 JIS/Unicode discrepancies (wave dash problem, etc.) */
+export type MappingVariant = "whatwg" | "unicode.org";
+
 export interface EncodingResult {
   encodable: boolean;
   bytes: number[] | null;
 }
+
+// 7 positions where Unicode.org SHIFTJIS.TXT and Microsoft/WHATWG chose different
+// Unicode code points for the same JIS byte position.
+// Affects: Shift_JIS, Shift_JIS-2004, EUC-JP, ISO-2022-JP (NOT CP932)
+const JIS_MAPPING_DISCREPANCIES: { whatwg: number; unicodeOrg: number }[] = [
+  { whatwg: 0xff3c, unicodeOrg: 0x005c }, // ＼ vs \ (SJIS 81 5F)
+  { whatwg: 0xff5e, unicodeOrg: 0x301c }, // ～ vs 〜 (SJIS 81 60)
+  { whatwg: 0x2225, unicodeOrg: 0x2016 }, // ∥ vs ‖ (SJIS 81 61)
+  { whatwg: 0xff0d, unicodeOrg: 0x2212 }, // － vs − (SJIS 81 7C)
+  { whatwg: 0xffe0, unicodeOrg: 0x00a2 }, // ￠ vs ¢ (SJIS 81 91)
+  { whatwg: 0xffe1, unicodeOrg: 0x00a3 }, // ￡ vs £ (SJIS 81 92)
+  { whatwg: 0xffe2, unicodeOrg: 0x00ac }, // ￢ vs ¬ (SJIS 81 CA)
+];
+
+const whatwgToOrg = new Map(JIS_MAPPING_DISCREPANCIES.map((d) => [d.whatwg, d.unicodeOrg]));
+const orgToWhatwg = new Map(JIS_MAPPING_DISCREPANCIES.map((d) => [d.unicodeOrg, d.whatwg]));
 
 export const ENCODING_OPTIONS: { value: EncodingMode; label: string }[] = [
   { value: "unicode", label: "Unicode" },
@@ -90,12 +109,14 @@ function buildCp932Map(): Map<number, number[]> {
   }
 
   // Double-byte characters (CP932/Windows-31J: first byte up to 0xFC)
+  // Prefer the first (standard area) entry when a character has multiple byte
+  // sequences (e.g. U+FFE2 at both 81 CA standard and FA 54 IBM extension).
   for (let b1 = 0x81; b1 <= 0xfc; b1++) {
     if (b1 >= 0xa0 && b1 <= 0xdf) continue;
     for (let b2 = 0x40; b2 <= 0xfc; b2++) {
       if (b2 === 0x7f) continue;
       const cp = tryDecode(decoder, new Uint8Array([b1, b2]));
-      if (cp >= 0) map.set(cp, [b1, b2]);
+      if (cp >= 0 && !map.has(cp)) map.set(cp, [b1, b2]);
     }
   }
 
@@ -163,7 +184,10 @@ function buildIso2022JpMap(): Map<number, number[]> {
       const decoder = new TextDecoder("iso-2022-jp");
       const input = new Uint8Array([...escJIS, b1, b2, ...escASCII]);
       const cp = tryDecode(decoder, input);
-      if (cp >= 0) {
+      // Prefer the first (lowest-row) entry: standard JIS X 0208 rows (1-8, 16-84)
+      // come before WHATWG vendor extension rows (e.g. row 13, 89-92), so keeping
+      // the first entry preserves the standard mapping when duplicates exist.
+      if (cp >= 0 && !map.has(cp)) {
         map.set(cp, [...escJIS, b1, b2]);
       }
     }
@@ -251,9 +275,37 @@ function lookupMap(
     : { encodable: false, bytes: null };
 }
 
+/** JIS-based encodings affected by the WHATWG/Unicode.org mapping variant */
+const JIS_BASED_ENCODINGS = new Set<LegacyEncoding>([
+  "shift_jis", "sjis2004", "euc-jp", "iso-2022-jp",
+]);
+
+function applyVariant(
+  cp: number,
+  encoding: LegacyEncoding,
+  variant: MappingVariant,
+  lookupFn: (cp: number) => EncodingResult
+): EncodingResult {
+  if (variant === "whatwg" || !JIS_BASED_ENCODINGS.has(encoding)) {
+    return lookupFn(cp);
+  }
+  // unicode.org variant: swap the 7 discrepancy mappings
+  // If querying a WHATWG-side CP → not encodable
+  if (whatwgToOrg.has(cp)) {
+    return { encodable: false, bytes: null };
+  }
+  // If querying a Unicode.org-side CP → use the WHATWG counterpart's bytes
+  const whatwgCp = orgToWhatwg.get(cp);
+  if (whatwgCp !== undefined) {
+    return lookupFn(whatwgCp);
+  }
+  return lookupFn(cp);
+}
+
 export function getLegacyEncoding(
   cp: number,
-  encoding: LegacyEncoding
+  encoding: LegacyEncoding,
+  variant: MappingVariant = "whatwg"
 ): EncodingResult {
   switch (encoding) {
     case "ascii":
@@ -261,27 +313,28 @@ export function getLegacyEncoding(
     case "latin1":
       return encodeLatin1(cp);
     case "shift_jis":
-      return lookupMap(getSjisMap(), cp);
+      return applyVariant(cp, encoding, variant, (c) => lookupMap(getSjisMap(), c));
     case "sjis2004":
-      return lookupMap(getSjis2004Map(), cp);
+      return applyVariant(cp, encoding, variant, (c) => lookupMap(getSjis2004Map(), c));
     case "cp932":
       return lookupMap(getCp932Map(), cp);
     case "euc-jp":
-      return lookupMap(getEucJpMap(), cp);
+      return applyVariant(cp, encoding, variant, (c) => lookupMap(getEucJpMap(), c));
     case "iso-2022-jp":
-      return lookupMap(getIso2022JpMap(), cp);
+      return applyVariant(cp, encoding, variant, (c) => lookupMap(getIso2022JpMap(), c));
   }
 }
 
 /** Get total byte count for a string in a legacy encoding, or null if any char is unencodable */
 export function getLegacyByteCount(
   codePoints: number[],
-  encoding: LegacyEncoding
+  encoding: LegacyEncoding,
+  variant: MappingVariant = "whatwg"
 ): { total: number; unencodable: number } {
   let total = 0;
   let unencodable = 0;
   for (const cp of codePoints) {
-    const result = getLegacyEncoding(cp, encoding);
+    const result = getLegacyEncoding(cp, encoding, variant);
     if (result.encodable && result.bytes) {
       total += result.bytes.length;
     } else {
