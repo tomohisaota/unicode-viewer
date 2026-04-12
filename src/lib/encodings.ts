@@ -2,6 +2,7 @@ export type LegacyEncoding =
   | "ascii"
   | "latin1"
   | "shift_jis"
+  | "sjis2004"
   | "cp932"
   | "euc-jp"
   | "iso-2022-jp";
@@ -18,6 +19,7 @@ export const ENCODING_OPTIONS: { value: EncodingMode; label: string }[] = [
   { value: "ascii", label: "ASCII" },
   { value: "latin1", label: "Latin-1" },
   { value: "shift_jis", label: "Shift_JIS" },
+  { value: "sjis2004", label: "Shift_JIS-2004" },
   { value: "cp932", label: "CP932 (Windows-31J)" },
   { value: "euc-jp", label: "EUC-JP" },
   { value: "iso-2022-jp", label: "ISO-2022-JP" },
@@ -27,6 +29,7 @@ export const ALL_LEGACY_ENCODINGS: { value: LegacyEncoding; label: string }[] = 
   { value: "ascii", label: "ASCII" },
   { value: "latin1", label: "Latin-1" },
   { value: "shift_jis", label: "Shift_JIS" },
+  { value: "sjis2004", label: "Shift_JIS-2004" },
   { value: "cp932", label: "CP932" },
   { value: "euc-jp", label: "EUC-JP" },
   { value: "iso-2022-jp", label: "ISO-2022-JP" },
@@ -48,8 +51,11 @@ function encodeLatin1(cp: number): EncodingResult {
 
 // --- TextDecoder reverse-mapping ---
 
+import { parseSjis2004Additions } from "./sjis2004-data";
+
 let cp932Map: Map<number, number[]> | null = null;
 let sjisMap: Map<number, number[]> | null = null;
+let sjis2004Map: Map<number, number[]> | null = null;
 let eucjpMap: Map<number, number[]> | null = null;
 let iso2022jpMap: Map<number, number[]> | null = null;
 
@@ -211,6 +217,17 @@ function getSjisMap(): Map<number, number[]> {
   return sjisMap;
 }
 
+function getSjis2004Map(): Map<number, number[]> {
+  if (!sjis2004Map) {
+    // Shift_JIS-2004 = Shift_JIS (JIS X 0208) + JIS X 0213 additions
+    sjis2004Map = new Map(getSjisMap());
+    for (const [cp, bytes] of parseSjis2004Additions()) {
+      if (!sjis2004Map.has(cp)) sjis2004Map.set(cp, bytes);
+    }
+  }
+  return sjis2004Map;
+}
+
 function getEucJpMap(): Map<number, number[]> {
   if (!eucjpMap) eucjpMap = buildEucJPMap();
   return eucjpMap;
@@ -242,6 +259,8 @@ export function getLegacyEncoding(
       return encodeLatin1(cp);
     case "shift_jis":
       return lookupMap(getSjisMap(), cp);
+    case "sjis2004":
+      return lookupMap(getSjis2004Map(), cp);
     case "cp932":
       return lookupMap(getCp932Map(), cp);
     case "euc-jp":
