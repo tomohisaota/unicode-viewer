@@ -7,6 +7,11 @@ export interface HelpSection {
   body: string;
 }
 
+export interface HelpTab {
+  label: string;
+  sections: HelpSection[];
+}
+
 export interface Sample {
   label: string;
   value: string;
@@ -118,33 +123,67 @@ const translations = {
     shareTextWithInput: "のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
     shareTextEmpty: "Unicode Viewer — 文字列のUnicode構造を確認できるツール 🔍 #Unicode #UnicodeViewer",
     help: "Help",
-    helpTitle: "About Unicode",
-    helpSections: [
+    helpTitle: "Help",
+    helpTabs: [
       {
-        title: "Characters (Grapheme Clusters)",
-        body: "What humans perceive as a single character is called a grapheme cluster. For example, 👍🏽 looks like one character but is composed of two code points: 👍 (U+1F44D) + a skin tone modifier 🏽 (U+1F3FD). This tool splits text by grapheme cluster so you can see the internal structure of each visible character.",
+        label: "Unicode",
+        sections: [
+          {
+            title: "Characters (Grapheme Clusters)",
+            body: "What humans perceive as a single character is called a grapheme cluster. For example, 👍🏽 looks like one character but is composed of two code points: 👍 (U+1F44D) + a skin tone modifier 🏽 (U+1F3FD). This tool splits text by grapheme cluster so you can see the internal structure of each visible character.",
+          },
+          {
+            title: "Code Points",
+            body: "A code point is the basic unit of Unicode — a unique number assigned to each character. Written as U+XXXX (e.g., U+0041 = A). The Unicode standard defines over 150,000 code points. A single grapheme cluster may consist of one or more code points.",
+          },
+          {
+            title: "UTF-8",
+            body: "UTF-8 is a variable-length encoding that represents each code point in 1 to 4 bytes. ASCII characters (U+0000–U+007F) use 1 byte, making it backward-compatible with ASCII. Most web content uses UTF-8. CJK characters typically use 3 bytes, and emoji use 4 bytes.",
+          },
+          {
+            title: "UTF-16",
+            body: "UTF-16 encodes each code point in one or two 16-bit code units. Characters in the Basic Multilingual Plane (U+0000–U+FFFF) use 1 unit, while characters above U+FFFF use a surrogate pair (2 units). JavaScript strings use UTF-16, so string.length counts UTF-16 code units, not code points.",
+          },
+          {
+            title: "Code Points vs UTF-16 Units",
+            body: "For most text these numbers are the same. They differ when the string contains characters above U+FFFF (like emoji 🌍 or rare CJK characters), which require two UTF-16 units (a surrogate pair) per code point.",
+          },
+          {
+            title: "Category & Block",
+            body: "Each code point belongs to a General Category (e.g., Lu = Uppercase Letter, Nd = Decimal Number, So = Other Symbol) and a Block (a named range like 'Basic Latin' or 'Emoticons'). These help identify what kind of character it is.",
+          },
+        ],
       },
       {
-        title: "Code Points",
-        body: "A code point is the basic unit of Unicode — a unique number assigned to each character. Written as U+XXXX (e.g., U+0041 = A). The Unicode standard defines over 150,000 code points. A single grapheme cluster may consist of one or more code points.",
+        label: "JIS",
+        sections: [
+          {
+            title: "JIS X 0208 & JIS X 0213",
+            body: "JIS X 0208 (1978/1983/1990/1997) is the core Japanese character set standard, defining about 6,355 kanji plus kana, symbols, and Latin letters. JIS X 0213 (2000/2004) extends it with additional kanji and symbols across two planes, bringing total coverage close to 11,000 characters. This tool shows which standard each character belongs to.",
+          },
+          {
+            title: "JIS Levels (水準)",
+            body: "JIS kanji are grouped by frequency and importance. Level 1 (第1水準, ~2,965 chars) covers common everyday kanji; Level 2 (第2水準, ~3,390 chars) covers less common kanji. JIS X 0213 adds Level 3 and Level 4 for rarely used kanji, including characters needed for names and historical text. The JIS Level column shows this classification.",
+          },
+          {
+            title: "Kuten (区点) Code",
+            body: "Kuten is the traditional positional notation for JIS characters: 区 (row) and 点 (column) in a 94×94 grid. For example, 16-01 is the first character of Level 1 (亜). JIS X 0213 additionally identifies a plane (面) — 1-16-01 or 2-XX-XX. This tool displays the kuten code alongside the JIS Level.",
+          },
+          {
+            title: "Shift_JIS & CP932 (Windows-31J)",
+            body: "Shift_JIS is the legacy Japanese encoding that combines ASCII with JIS X 0208, encoding most kanji in 2 bytes. CP932 (also Windows-31J / MS932) is Microsoft's extension adding IBM extension characters and NEC special characters. What browsers call 'Shift_JIS' is usually CP932 in practice — that's why the same byte sequence can map to different Unicode characters depending on the variant.",
+          },
+          {
+            title: "EUC-JP & ISO-2022-JP",
+            body: "EUC-JP is the Unix-family Japanese encoding, also 2 bytes per kanji but with a different byte layout from Shift_JIS. ISO-2022-JP is a 7-bit-safe encoding historically used in email; it uses escape sequences to switch between ASCII and JIS character sets.",
+          },
+          {
+            title: "JIS ↔ Unicode Mapping Variants",
+            body: "Some JIS characters — notably WAVE DASH (〜 vs ～), FULLWIDTH TILDE, MINUS SIGN, and a few others — map to different Unicode code points depending on the mapping table. Microsoft/WHATWG uses one set of mappings; the Unicode.org / JIS standard tables use another. Switch variants in Settings to see how the same byte sequence can produce different Unicode characters.",
+          },
+        ],
       },
-      {
-        title: "UTF-8",
-        body: "UTF-8 is a variable-length encoding that represents each code point in 1 to 4 bytes. ASCII characters (U+0000–U+007F) use 1 byte, making it backward-compatible with ASCII. Most web content uses UTF-8. CJK characters typically use 3 bytes, and emoji use 4 bytes.",
-      },
-      {
-        title: "UTF-16",
-        body: "UTF-16 encodes each code point in one or two 16-bit code units. Characters in the Basic Multilingual Plane (U+0000–U+FFFF) use 1 unit, while characters above U+FFFF use a surrogate pair (2 units). JavaScript strings use UTF-16, so string.length counts UTF-16 code units, not code points.",
-      },
-      {
-        title: "Code Points vs UTF-16 Units",
-        body: "For most text these numbers are the same. They differ when the string contains characters above U+FFFF (like emoji 🌍 or rare CJK characters), which require two UTF-16 units (a surrogate pair) per code point.",
-      },
-      {
-        title: "Category & Block",
-        body: "Each code point belongs to a General Category (e.g., Lu = Uppercase Letter, Nd = Decimal Number, So = Other Symbol) and a Block (a named range like 'Basic Latin' or 'Emoticons'). These help identify what kind of character it is.",
-      },
-    ] as HelpSection[],
+    ] as HelpTab[],
     convertCodePoints: "Convert U+XXXX notation",
     convertEscape: "Convert \\uXXXX notation",
     normalize: "Normalize",
@@ -232,33 +271,67 @@ const translations = {
     shareTextWithInput: "のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
     shareTextEmpty: "Unicode Viewer — 文字列のUnicode構造を確認できるツール 🔍 #Unicode #UnicodeViewer",
     help: "ヘルプ",
-    helpTitle: "Unicode について",
-    helpSections: [
+    helpTitle: "ヘルプ",
+    helpTabs: [
       {
-        title: "文字数（書記素クラスタ）",
-        body: "人間が「1文字」と認識する単位を書記素クラスタといいます。例えば 👍🏽 は見た目上1文字ですが、👍（U+1F44D）と肌色修飾子 🏽（U+1F3FD）の2つのコードポイントから構成されています。このツールは書記素クラスタ単位で分割し、各文字の内部構造を表示します。",
+        label: "Unicode",
+        sections: [
+          {
+            title: "文字数（書記素クラスタ）",
+            body: "人間が「1文字」と認識する単位を書記素クラスタといいます。例えば 👍🏽 は見た目上1文字ですが、👍（U+1F44D）と肌色修飾子 🏽（U+1F3FD）の2つのコードポイントから構成されています。このツールは書記素クラスタ単位で分割し、各文字の内部構造を表示します。",
+          },
+          {
+            title: "コードポイント",
+            body: "コードポイントは Unicode の基本単位で、各文字に割り当てられた一意の番号です。U+XXXX の形式で表記します（例: U+0041 = A）。Unicode 規格では15万以上のコードポイントが定義されています。1つの書記素クラスタは1つ以上のコードポイントで構成されます。",
+          },
+          {
+            title: "UTF-8",
+            body: "UTF-8 は可変長エンコーディングで、各コードポイントを1〜4バイトで表現します。ASCII 文字（U+0000〜U+007F）は1バイトで表現され、ASCII と互換性があります。Web コンテンツの大半は UTF-8 を使用しています。日本語の文字は通常3バイト、絵文字は4バイトです。",
+          },
+          {
+            title: "UTF-16",
+            body: "UTF-16 は各コードポイントを1つまたは2つの16ビットコードユニットで表現します。基本多言語面（U+0000〜U+FFFF）の文字は1ユニット、U+FFFF を超える文字はサロゲートペア（2ユニット）を使います。JavaScript の文字列は UTF-16 を使うため、string.length はコードポイント数ではなく UTF-16 コードユニット数を返します。",
+          },
+          {
+            title: "コードポイント数と UTF-16 ユニット数の違い",
+            body: "多くのテキストではこの2つは同じ値になります。違いが出るのは U+FFFF を超える文字（絵文字 🌍 や一部の漢字など）を含む場合で、これらは1コードポイントにつき2つの UTF-16 ユニット（サロゲートペア）が必要になります。",
+          },
+          {
+            title: "カテゴリとブロック",
+            body: "各コードポイントには General Category（例: Lu = 大文字、Nd = 10進数字、So = その他の記号）と Block（Basic Latin、Emoticons などの名前付き範囲）が割り当てられています。文字の種類を識別するのに役立ちます。",
+          },
+        ],
       },
       {
-        title: "コードポイント",
-        body: "コードポイントは Unicode の基本単位で、各文字に割り当てられた一意の番号です。U+XXXX の形式で表記します（例: U+0041 = A）。Unicode 規格では15万以上のコードポイントが定義されています。1つの書記素クラスタは1つ以上のコードポイントで構成されます。",
+        label: "JIS",
+        sections: [
+          {
+            title: "JIS X 0208 と JIS X 0213",
+            body: "JIS X 0208（1978/1983/1990/1997）は日本語の基本的な文字集合規格で、約 6,355 字の漢字に加え、ひらがな・カタカナ・記号・英数字などを定義しています。JIS X 0213（2000/2004）はこれを拡張し、2つの面にわたって漢字と記号を追加することで、合計約 11,000 字までカバーします。このツールでは各文字がどの規格に含まれるかを表示します。",
+          },
+          {
+            title: "JIS 水準",
+            body: "JIS の漢字は使用頻度や重要度で分類されています。第1水準（約 2,965 字）は日常的に使われる漢字、第2水準（約 3,390 字）はやや使用頻度の低い漢字です。JIS X 0213 では第3水準・第4水準が追加され、人名・歴史的文献などで使われる稀少な漢字もカバーします。「JIS 水準」列でこの分類を確認できます。",
+          },
+          {
+            title: "区点コード（Kuten）",
+            body: "区点は JIS 文字の伝統的な位置表記で、「区」（行）と「点」（列）の 94×94 マトリクスで表します。例えば 16-01 は第1水準の先頭文字「亜」です。JIS X 0213 では面（1面・2面）も含めて 1-16-01 や 2-XX-XX のように表記します。このツールでは JIS 水準の隣に区点コードを併記しています。",
+          },
+          {
+            title: "Shift_JIS と CP932（Windows-31J）",
+            body: "Shift_JIS は ASCII と JIS X 0208 を組み合わせた日本語のレガシーエンコーディングで、ほとんどの漢字を 2 バイトで表現します。CP932（別名 Windows-31J / MS932）は Microsoft による拡張で、IBM 拡張文字や NEC 特殊文字を追加しています。ブラウザが「Shift_JIS」と呼ぶものは、実際にはこの CP932 のことがほとんどです。そのため、同じバイト列でも採用するマッピングによって異なる Unicode 文字に対応することがあります。",
+          },
+          {
+            title: "EUC-JP と ISO-2022-JP",
+            body: "EUC-JP は Unix 系で使われてきた日本語エンコーディングで、Shift_JIS とは異なるバイト配置ながら同じく漢字 2 バイトです。ISO-2022-JP は主にメールで使われた 7 ビット安全なエンコーディングで、エスケープシーケンスによって ASCII と JIS 文字集合を切り替えます。",
+          },
+          {
+            title: "JIS ↔ Unicode マッピングの相違",
+            body: "一部の JIS 文字（代表例: 波ダッシュ〜／全角チルダ～、マイナス記号、全角ハイフン等）は、採用するマッピング表によって異なる Unicode コードポイントに対応します。Microsoft / WHATWG のマッピングと、Unicode.org / JIS 標準のマッピングでは結果が変わります。設定から切り替えると、同じバイト列が異なる Unicode 文字にマップされる様子を確認できます。",
+          },
+        ],
       },
-      {
-        title: "UTF-8",
-        body: "UTF-8 は可変長エンコーディングで、各コードポイントを1〜4バイトで表現します。ASCII 文字（U+0000〜U+007F）は1バイトで表現され、ASCII と互換性があります。Web コンテンツの大半は UTF-8 を使用しています。日本語の文字は通常3バイト、絵文字は4バイトです。",
-      },
-      {
-        title: "UTF-16",
-        body: "UTF-16 は各コードポイントを1つまたは2つの16ビットコードユニットで表現します。基本多言語面（U+0000〜U+FFFF）の文字は1ユニット、U+FFFF を超える文字はサロゲートペア（2ユニット）を使います。JavaScript の文字列は UTF-16 を使うため、string.length はコードポイント数ではなく UTF-16 コードユニット数を返します。",
-      },
-      {
-        title: "コードポイント数と UTF-16 ユニット数の違い",
-        body: "多くのテキストではこの2つは同じ値になります。違いが出るのは U+FFFF を超える文字（絵文字 🌍 や一部の漢字など）を含む場合で、これらは1コードポイントにつき2つの UTF-16 ユニット（サロゲートペア）が必要になります。",
-      },
-      {
-        title: "カテゴリとブロック",
-        body: "各コードポイントには General Category（例: Lu = 大文字、Nd = 10進数字、So = その他の記号）と Block（Basic Latin、Emoticons などの名前付き範囲）が割り当てられています。文字の種類を識別するのに役立ちます。",
-      },
-    ] as HelpSection[],
+    ] as HelpTab[],
     convertCodePoints: "U+XXXX 表記を変換する",
     convertEscape: "\\uXXXX 表記を変換する",
     normalize: "正規化",

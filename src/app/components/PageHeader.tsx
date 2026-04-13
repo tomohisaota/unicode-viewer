@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useMessages } from "@/lib/i18n";
-import type { HelpSection } from "@/lib/i18n";
+import type { HelpTab } from "@/lib/i18n";
 
 export default function PageHeader() {
   const t = useMessages();
@@ -119,7 +119,7 @@ export default function PageHeader() {
       {helpOpen && (
         <HelpDialog
           title={t.helpTitle}
-          sections={t.helpSections}
+          tabs={t.helpTabs}
           closeLabel={t.close}
           onClose={() => setHelpOpen(false)}
         />
@@ -130,16 +130,17 @@ export default function PageHeader() {
 
 function HelpDialog({
   title,
-  sections,
+  tabs,
   closeLabel,
   onClose,
 }: {
   title: string;
-  sections: readonly HelpSection[];
+  tabs: readonly HelpTab[];
   closeLabel: string;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -147,6 +148,8 @@ function HelpDialog({
     dialog.showModal();
     return () => dialog.close();
   }, []);
+
+  const sections = tabs[activeTab]?.sections ?? [];
 
   return (
     <dialog
@@ -194,6 +197,46 @@ function HelpDialog({
           {closeLabel}
         </button>
       </div>
+
+      {/* Tabs */}
+      {tabs.length > 1 && (
+        <div
+          className="flex items-center gap-1 px-4 sm:px-6 pt-2"
+          style={{ borderBottom: "1px solid var(--gray-100)" }}
+          role="tablist"
+        >
+          {tabs.map((tab, i) => {
+            const active = i === activeTab;
+            return (
+              <button
+                key={tab.label}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveTab(i)}
+                className="relative px-3 py-2 text-sm font-medium cursor-pointer transition-colors"
+                style={{
+                  color: active ? "var(--gray-900)" : "var(--gray-500)",
+                  borderBottom: active
+                    ? "2px solid var(--accent-blue)"
+                    : "2px solid transparent",
+                  marginBottom: "-1px",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active)
+                    e.currentTarget.style.color = "var(--gray-700)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!active)
+                    e.currentTarget.style.color = "var(--gray-500)";
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Body */}
       <div className="overflow-y-auto max-h-[70vh] px-4 sm:px-6 py-4 sm:py-6 flex flex-col gap-6 sm:gap-8">
