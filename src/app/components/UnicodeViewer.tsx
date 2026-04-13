@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
-import { getLegacyEncoding, getLegacyByteCount, ENCODING_OPTIONS, ALL_LEGACY_ENCODINGS } from "@/lib/encodings";
+import { getLegacyEncoding, ENCODING_OPTIONS, ALL_LEGACY_ENCODINGS } from "@/lib/encodings";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -87,6 +87,7 @@ export default function UnicodeViewer() {
     index: number;
   } | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showNormalization, setShowNormalization] = useState(false);
 
   // Read URL param on mount (client only)
   useEffect(() => {
@@ -127,23 +128,34 @@ export default function UnicodeViewer() {
         },
       },
     ];
-    for (const form of NORM_FORMS) {
-      const text = input.normalize(form);
-      const clusters = analyzeString(text);
-      const desc = t[`${form.toLowerCase()}Desc` as keyof typeof t] as string;
-      result.push({
-        key: form,
-        label: form,
-        desc,
-        data: {
-          text,
-          clusters,
-          diffMask: buildDiffMask(inputClusters, clusters),
-        },
-      });
+    if (showNormalization) {
+      for (const form of NORM_FORMS) {
+        const text = input.normalize(form);
+        const clusters = analyzeString(text);
+        const desc = t[`${form.toLowerCase()}Desc` as keyof typeof t] as string;
+        result.push({
+          key: form,
+          label: form,
+          desc,
+          data: {
+            text,
+            clusters,
+            diffMask: buildDiffMask(inputClusters, clusters),
+          },
+        });
+      }
     }
     return result;
-  }, [input, inputClusters, t]);
+  }, [input, inputClusters, t, showNormalization]);
+
+  // When normalization comparison is off, auto-select the first cluster of the
+  // input section so the detail panel is always visible.
+  useEffect(() => {
+    if (showNormalization) return;
+    if (inputClusters.length === 0) return;
+    if (selected !== null) return;
+    setSelected({ section: "input", index: 0 });
+  }, [showNormalization, inputClusters.length, selected]);
 
   return (
     <div className="w-full">
@@ -237,14 +249,18 @@ export default function UnicodeViewer() {
               selectedIndex={
                 selected?.section === key ? selected.index : null
               }
-              onSelect={(i) =>
-                setSelected(
-                  selected?.section === key && selected.index === i
-                    ? null
-                    : { section: key, index: i }
-                )
+              onSelect={(i) => {
+                const sameAsCurrent =
+                  selected?.section === key && selected.index === i;
+                if (sameAsCurrent && showNormalization) {
+                  setSelected(null);
+                } else {
+                  setSelected({ section: key, index: i });
+                }
+              }}
+              onDeselect={
+                showNormalization ? () => setSelected(null) : undefined
               }
-              onDeselect={() => setSelected(null)}
               onCopyToInput={
                 !isInput
                   ? () => {
@@ -281,6 +297,11 @@ export default function UnicodeViewer() {
             setMappingVariant(v);
             setSelected(null);
           }}
+          showNormalization={showNormalization}
+          onShowNormalizationChange={(v) => {
+            setShowNormalization(v);
+            setSelected(null);
+          }}
           onClose={() => setSettingsOpen(false)}
         />
       )}
@@ -296,10 +317,12 @@ function SettingsDialog({
   convertEsc,
   encodingMode,
   mappingVariant,
+  showNormalization,
   onConvertCPChange,
   onConvertEscChange,
   onEncodingChange,
   onMappingVariantChange,
+  onShowNormalizationChange,
   onClose,
 }: {
   t: Messages;
@@ -307,10 +330,12 @@ function SettingsDialog({
   convertEsc: boolean;
   encodingMode: EncodingMode;
   mappingVariant: MappingVariant;
+  showNormalization: boolean;
   onConvertCPChange: (v: boolean) => void;
   onConvertEscChange: (v: boolean) => void;
   onEncodingChange: (v: EncodingMode) => void;
   onMappingVariantChange: (v: MappingVariant) => void;
+  onShowNormalizationChange: (v: boolean) => void;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -460,6 +485,27 @@ function SettingsDialog({
             ))}
           </div>
         </section>
+
+        {/* Display */}
+        <section>
+          <h3
+            className="text-xs font-semibold uppercase mb-2"
+            style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
+          >
+            {t.display}
+          </h3>
+          <label className="inline-flex items-start gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showNormalization}
+              onChange={(e) => onShowNormalizationChange(e.target.checked)}
+              className="accent-[var(--accent-blue)] mt-0.5"
+            />
+            <span className="text-sm" style={{ color: "var(--gray-700)" }}>
+              {t.showNormalization}
+            </span>
+          </label>
+        </section>
       </div>
     </dialog>
   );
@@ -491,19 +537,9 @@ function StringSection({
   mappingVariant: MappingVariant;
   selectedIndex: number | null;
   onSelect: (i: number) => void;
-  onDeselect: () => void;
+  onDeselect?: () => void;
   onCopyToInput?: () => void;
 }) {
-  const utf8Size = new Blob([data.text]).size;
-  const totalCodePoints = data.clusters.reduce(
-    (sum, c) => sum + c.codePoints.length,
-    0
-  );
-  const allCPs = data.clusters.flatMap((c) => c.codePoints.map((p) => p.codePoint));
-  const isLegacy = encodingMode !== "unicode";
-  const legacyStats = isLegacy
-    ? getLegacyByteCount(allCPs, encodingMode as LegacyEncoding, mappingVariant)
-    : null;
   const selectedCluster =
     selectedIndex !== null ? data.clusters[selectedIndex] : null;
 
@@ -579,10 +615,6 @@ function StringSection({
           cluster={selectedCluster}
           onClose={onDeselect}
           mappingVariant={mappingVariant}
-          encodingMode={encodingMode}
-          totalCodePoints={totalCodePoints}
-          utf8Size={utf8Size}
-          legacyStats={legacyStats}
         />
       )}
     </div>
@@ -729,23 +761,21 @@ function DetailPanel({
   cluster,
   onClose,
   mappingVariant,
-  encodingMode,
-  totalCodePoints,
-  utf8Size,
-  legacyStats,
 }: {
   t: Messages;
   index: number;
   cluster: GraphemeCluster;
-  onClose: () => void;
+  onClose?: () => void;
   mappingVariant: MappingVariant;
-  encodingMode: EncodingMode;
-  totalCodePoints: number;
-  utf8Size: number;
-  legacyStats: { total: number; unencodable: number } | null;
 }) {
-  const isMulti = cluster.codePoints.length > 1;
-  const isLegacy = encodingMode !== "unicode";
+  const utf8ByteCount = cluster.codePoints.reduce(
+    (sum, cp) => sum + cp.utf8Bytes.length,
+    0
+  );
+  const utf16UnitCount = cluster.codePoints.reduce(
+    (sum, cp) => sum + cp.utf16Units.length,
+    0
+  );
 
   return (
     <div
@@ -756,33 +786,49 @@ function DetailPanel({
       }}
     >
       <div
-        className="flex flex-col gap-2 px-3 sm:px-5 py-2.5 sm:py-3"
+        className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 sm:py-3"
         style={{
           backgroundColor: "var(--gray-50)",
           borderBottom: "1px solid var(--gray-100)",
         }}
       >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <span
-              className="text-xs font-mono"
-              style={{ color: "var(--gray-400)" }}
-            >
-              #{index}
-            </span>
-            <span className="text-xl sm:text-2xl">{cluster.grapheme}</span>
-            {isMulti && (
-              <span
-                className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                style={{
-                  backgroundColor: "var(--accent-blue-bg)",
-                  color: "var(--accent-blue-text)",
-                }}
-              >
-                {t.nCodePoints(cluster.codePoints.length)}
-              </span>
-            )}
-          </div>
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
+          <span
+            className="text-xs font-mono"
+            style={{ color: "var(--gray-400)" }}
+          >
+            #{index}
+          </span>
+          <span className="text-xl sm:text-2xl">{cluster.grapheme}</span>
+          <span
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+            style={{
+              backgroundColor: "var(--accent-blue-bg)",
+              color: "var(--accent-blue-text)",
+            }}
+          >
+            {t.nCodePoints(cluster.codePoints.length)}
+          </span>
+          <span
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+            style={{
+              backgroundColor: "var(--accent-blue-bg)",
+              color: "var(--accent-blue-text)",
+            }}
+          >
+            {t.nUtf16Units(utf16UnitCount)}
+          </span>
+          <span
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+            style={{
+              backgroundColor: "var(--accent-blue-bg)",
+              color: "var(--accent-blue-text)",
+            }}
+          >
+            {t.nUtf8Bytes(utf8ByteCount)}
+          </span>
+        </div>
+        {onClose && (
           <button
             type="button"
             onClick={onClose}
@@ -797,29 +843,7 @@ function DetailPanel({
           >
             {t.close}
           </button>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          <StatPill label={t.codePoints} value={totalCodePoints} />
-          {isLegacy && legacyStats ? (
-            <>
-              <StatPill
-                label={t.encBytes(
-                  ENCODING_OPTIONS.find((o) => o.value === encodingMode)?.label ?? ""
-                )}
-                value={legacyStats.total}
-              />
-              {legacyStats.unencodable > 0 && (
-                <StatPill
-                  label={t.nUnencodable(legacyStats.unencodable)}
-                  value={legacyStats.unencodable}
-                  warn
-                />
-              )}
-            </>
-          ) : (
-            <StatPill label={t.utf8Bytes} value={utf8Size} />
-          )}
-        </div>
+        )}
       </div>
 
       {/* Code point details */}
