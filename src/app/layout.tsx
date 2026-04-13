@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import HtmlLangSetter from "./components/HtmlLangSetter";
 import ServiceWorkerRegistrar from "./components/ServiceWorkerRegistrar";
@@ -19,7 +19,13 @@ export const metadata: Metadata = {
   description:
     "Unicode code point viewer — view encodings, categories, and details for each character",
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#171717",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

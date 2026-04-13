@@ -86,6 +86,7 @@ export default function UnicodeViewer() {
     section: string;
     index: number;
   } | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Read URL param on mount (client only)
   useEffect(() => {
@@ -161,6 +162,36 @@ export default function UnicodeViewer() {
             setSelected(null);
           }}
         />
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"
+          style={{
+            boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+            color: "var(--gray-600)",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--gray-50)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "transparent")
+          }
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span className="hidden sm:inline">{t.settings}</span>
+        </button>
       </div>
       <textarea
         value={rawInput}
@@ -169,7 +200,7 @@ export default function UnicodeViewer() {
           setSelected(null);
         }}
         placeholder={t.inputPlaceholder}
-        className="w-full rounded-lg px-5 py-4 text-lg font-mono leading-relaxed resize-y focus:outline-none transition-shadow"
+        className="w-full rounded-lg px-2.5 py-2 sm:px-4 sm:py-3 text-base sm:text-base font-mono leading-relaxed resize-y focus:outline-none transition-shadow"
         style={{
           backgroundColor: "var(--input-bg)",
           color: "var(--gray-900)",
@@ -184,100 +215,11 @@ export default function UnicodeViewer() {
           e.currentTarget.style.border = "1.5px solid var(--input-border)";
           e.currentTarget.style.boxShadow = "none";
         }}
-        rows={3}
+        rows={2}
       />
 
-      {/* Options */}
-      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
-        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={convertCP}
-            onChange={(e) => {
-              setConvertCP(e.target.checked);
-              setSelected(null);
-            }}
-            className="accent-[var(--accent-blue)]"
-          />
-          <span className="text-xs" style={{ color: "var(--gray-600)" }}>
-            {t.convertCodePoints}
-          </span>
-        </label>
-        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={convertEsc}
-            onChange={(e) => {
-              setConvertEsc(e.target.checked);
-              setSelected(null);
-            }}
-            className="accent-[var(--accent-blue)]"
-          />
-          <span className="text-xs" style={{ color: "var(--gray-600)" }}>
-            {t.convertEscape}
-          </span>
-        </label>
-      </div>
-
-      {/* Encoding selector */}
-      <div className="mt-3 flex items-center gap-2">
-        <span
-          className="text-xs font-medium"
-          style={{ color: "var(--gray-500)" }}
-        >
-          {t.encoding}
-        </span>
-        <select
-          value={encodingMode}
-          onChange={(e) => {
-            setEncodingMode(e.target.value as EncodingMode);
-            setSelected(null);
-          }}
-          className="text-xs rounded-md px-2 py-1 cursor-pointer"
-          style={{
-            backgroundColor: "var(--input-bg)",
-            color: "var(--gray-900)",
-            border: "1.5px solid var(--input-border)",
-          }}
-        >
-          {ENCODING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Mapping variant selector — affects JIS-based encoding rows in detail panel */}
-      <div className="mt-2 flex items-center gap-3">
-        <span
-          className="text-xs font-medium"
-          style={{ color: "var(--gray-500)" }}
-        >
-          {t.mappingVariant}
-        </span>
-        {(["whatwg", "unicode.org"] as const).map((v) => (
-          <label key={v} className="inline-flex items-center gap-1 cursor-pointer select-none">
-            <input
-              type="radio"
-              name="mappingVariant"
-              value={v}
-              checked={mappingVariant === v}
-              onChange={() => {
-                setMappingVariant(v);
-                setSelected(null);
-              }}
-              className="accent-[var(--accent-blue)]"
-            />
-            <span className="text-xs" style={{ color: "var(--gray-600)" }}>
-              {v === "whatwg" ? t.mappingWhatwg : t.mappingUnicodeOrg}
-            </span>
-          </label>
-        ))}
-      </div>
-
       {/* All sections */}
-      <div className="mt-8 flex flex-col gap-8">
+      <div className="mt-6 sm:mt-8 flex flex-col gap-6 sm:gap-8">
         {sections.map(({ key, label, desc, data }) => {
           const isInput = key === "input";
           const identical = !isInput && data.text === input;
@@ -315,7 +257,211 @@ export default function UnicodeViewer() {
           );
         })}
       </div>
+
+      {settingsOpen && (
+        <SettingsDialog
+          t={t}
+          convertCP={convertCP}
+          convertEsc={convertEsc}
+          encodingMode={encodingMode}
+          mappingVariant={mappingVariant}
+          onConvertCPChange={(v) => {
+            setConvertCP(v);
+            setSelected(null);
+          }}
+          onConvertEscChange={(v) => {
+            setConvertEsc(v);
+            setSelected(null);
+          }}
+          onEncodingChange={(v) => {
+            setEncodingMode(v);
+            setSelected(null);
+          }}
+          onMappingVariantChange={(v) => {
+            setMappingVariant(v);
+            setSelected(null);
+          }}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </div>
+  );
+}
+
+/* ─── Settings Dialog ─── */
+
+function SettingsDialog({
+  t,
+  convertCP,
+  convertEsc,
+  encodingMode,
+  mappingVariant,
+  onConvertCPChange,
+  onConvertEscChange,
+  onEncodingChange,
+  onMappingVariantChange,
+  onClose,
+}: {
+  t: Messages;
+  convertCP: boolean;
+  convertEsc: boolean;
+  encodingMode: EncodingMode;
+  mappingVariant: MappingVariant;
+  onConvertCPChange: (v: boolean) => void;
+  onConvertEscChange: (v: boolean) => void;
+  onEncodingChange: (v: EncodingMode) => void;
+  onMappingVariantChange: (v: MappingVariant) => void;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="w-[calc(100vw-1rem)] max-w-md rounded-xl overflow-hidden p-0 backdrop:bg-black/40"
+      style={{
+        backgroundColor: "var(--background)",
+        color: "var(--foreground)",
+        boxShadow:
+          "0px 0px 0px 1px var(--shadow-border), 0px 16px 32px rgba(0,0,0,0.16)",
+        margin: "auto",
+        inset: 0,
+        position: "fixed",
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4"
+        style={{
+          borderBottom: "1px solid var(--gray-100)",
+          backgroundColor: "var(--gray-50)",
+        }}
+      >
+        <h2
+          className="text-lg font-semibold"
+          style={{ color: "var(--gray-900)", letterSpacing: "-0.5px" }}
+        >
+          {t.settingsTitle}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-md px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors"
+          style={{ color: "var(--gray-500)" }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--gray-100)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "transparent")
+          }
+        >
+          {t.close}
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-4 sm:px-6 py-4 sm:py-6 flex flex-col gap-5">
+        {/* Input processing */}
+        <section>
+          <h3
+            className="text-xs font-semibold uppercase mb-2"
+            style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
+          >
+            {t.inputProcessing}
+          </h3>
+          <div className="flex flex-col gap-2">
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={convertCP}
+                onChange={(e) => onConvertCPChange(e.target.checked)}
+                className="accent-[var(--accent-blue)]"
+              />
+              <span className="text-sm" style={{ color: "var(--gray-700)" }}>
+                {t.convertCodePoints}
+              </span>
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={convertEsc}
+                onChange={(e) => onConvertEscChange(e.target.checked)}
+                className="accent-[var(--accent-blue)]"
+              />
+              <span className="text-sm" style={{ color: "var(--gray-700)" }}>
+                {t.convertEscape}
+              </span>
+            </label>
+          </div>
+        </section>
+
+        {/* Encoding */}
+        <section>
+          <h3
+            className="text-xs font-semibold uppercase mb-2"
+            style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
+          >
+            {t.encoding}
+          </h3>
+          <select
+            value={encodingMode}
+            onChange={(e) => onEncodingChange(e.target.value as EncodingMode)}
+            className="w-full text-sm rounded-md px-3 py-2 cursor-pointer"
+            style={{
+              backgroundColor: "var(--input-bg)",
+              color: "var(--gray-900)",
+              border: "1.5px solid var(--input-border)",
+            }}
+          >
+            {ENCODING_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </section>
+
+        {/* Mapping variant */}
+        <section>
+          <h3
+            className="text-xs font-semibold uppercase mb-2"
+            style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
+          >
+            {t.mappingVariant}
+          </h3>
+          <div className="flex flex-col gap-2">
+            {(["whatwg", "unicode.org"] as const).map((v) => (
+              <label
+                key={v}
+                className="inline-flex items-center gap-2 cursor-pointer select-none"
+              >
+                <input
+                  type="radio"
+                  name="settingsMappingVariant"
+                  value={v}
+                  checked={mappingVariant === v}
+                  onChange={() => onMappingVariantChange(v)}
+                  className="accent-[var(--accent-blue)]"
+                />
+                <span className="text-sm" style={{ color: "var(--gray-700)" }}>
+                  {v === "whatwg" ? t.mappingWhatwg : t.mappingUnicodeOrg}
+                </span>
+              </label>
+            ))}
+          </div>
+        </section>
+      </div>
+    </dialog>
   );
 }
 
@@ -402,28 +548,6 @@ function StringSection({
             {t.copyToInput}
           </button>
         )}
-        <div className="flex flex-wrap gap-2 ml-auto">
-          <StatPill label={t.codePoints} value={totalCodePoints} />
-          {isLegacy && legacyStats ? (
-            <>
-              <StatPill
-                label={t.encBytes(
-                  ENCODING_OPTIONS.find((o) => o.value === encodingMode)?.label ?? ""
-                )}
-                value={legacyStats.total}
-              />
-              {legacyStats.unencodable > 0 && (
-                <StatPill
-                  label={t.nUnencodable(legacyStats.unencodable)}
-                  value={legacyStats.unencodable}
-                  warn
-                />
-              )}
-            </>
-          ) : (
-            <StatPill label={t.utf8Bytes} value={utf8Size} />
-          )}
-        </div>
       </div>
 
       {/* Grid */}
@@ -455,6 +579,10 @@ function StringSection({
           cluster={selectedCluster}
           onClose={onDeselect}
           mappingVariant={mappingVariant}
+          encodingMode={encodingMode}
+          totalCodePoints={totalCodePoints}
+          utf8Size={utf8Size}
+          legacyStats={legacyStats}
         />
       )}
     </div>
@@ -601,14 +729,23 @@ function DetailPanel({
   cluster,
   onClose,
   mappingVariant,
+  encodingMode,
+  totalCodePoints,
+  utf8Size,
+  legacyStats,
 }: {
   t: Messages;
   index: number;
   cluster: GraphemeCluster;
   onClose: () => void;
   mappingVariant: MappingVariant;
+  encodingMode: EncodingMode;
+  totalCodePoints: number;
+  utf8Size: number;
+  legacyStats: { total: number; unencodable: number } | null;
 }) {
   const isMulti = cluster.codePoints.length > 1;
+  const isLegacy = encodingMode !== "unicode";
 
   return (
     <div
@@ -619,46 +756,70 @@ function DetailPanel({
       }}
     >
       <div
-        className="flex items-center justify-between px-5 py-3"
+        className="flex flex-col gap-2 px-3 sm:px-5 py-2.5 sm:py-3"
         style={{
           backgroundColor: "var(--gray-50)",
           borderBottom: "1px solid var(--gray-100)",
         }}
       >
-        <div className="flex items-center gap-3">
-          <span
-            className="text-xs font-mono"
-            style={{ color: "var(--gray-400)" }}
-          >
-            #{index}
-          </span>
-          <span className="text-2xl">{cluster.grapheme}</span>
-          {isMulti && (
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-              style={{
-                backgroundColor: "var(--accent-blue-bg)",
-                color: "var(--accent-blue-text)",
-              }}
+              className="text-xs font-mono"
+              style={{ color: "var(--gray-400)" }}
             >
-              {t.nCodePoints(cluster.codePoints.length)}
+              #{index}
             </span>
+            <span className="text-xl sm:text-2xl">{cluster.grapheme}</span>
+            {isMulti && (
+              <span
+                className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: "var(--accent-blue-bg)",
+                  color: "var(--accent-blue-text)",
+                }}
+              >
+                {t.nCodePoints(cluster.codePoints.length)}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md px-2 py-1 text-xs transition-colors cursor-pointer flex-shrink-0"
+            style={{ color: "var(--gray-500)" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "var(--gray-100)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "transparent")
+            }
+          >
+            {t.close}
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <StatPill label={t.codePoints} value={totalCodePoints} />
+          {isLegacy && legacyStats ? (
+            <>
+              <StatPill
+                label={t.encBytes(
+                  ENCODING_OPTIONS.find((o) => o.value === encodingMode)?.label ?? ""
+                )}
+                value={legacyStats.total}
+              />
+              {legacyStats.unencodable > 0 && (
+                <StatPill
+                  label={t.nUnencodable(legacyStats.unencodable)}
+                  value={legacyStats.unencodable}
+                  warn
+                />
+              )}
+            </>
+          ) : (
+            <StatPill label={t.utf8Bytes} value={utf8Size} />
           )}
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-md px-2 py-1 text-xs transition-colors cursor-pointer"
-          style={{ color: "var(--gray-500)" }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--gray-100)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "transparent")
-          }
-        >
-          {t.close}
-        </button>
       </div>
 
       {/* Code point details */}
@@ -838,12 +999,13 @@ function AllCodePointsTable({
             }}
           >
             <td
-              className="px-4 py-1.5 text-xs font-medium whitespace-nowrap sticky left-0 z-10"
+              className="px-3 sm:px-4 py-1.5 text-xs font-medium whitespace-nowrap sticky left-0 z-10"
               style={{
                 color: "var(--gray-500)",
-                width: "7.5rem",
-                minWidth: "7.5rem",
+                width: "5.5rem",
+                minWidth: "5.5rem",
                 backgroundColor: "var(--background)",
+                boxShadow: "1px 0 0 var(--gray-100)",
               }}
             >
               {row.label}
@@ -851,8 +1013,8 @@ function AllCodePointsTable({
             {row.cells.map((cell, j) => (
               <td
                 key={j}
-                className="px-4 py-1.5 font-mono text-xs whitespace-nowrap"
-                style={{ color: "var(--gray-600)", minWidth: "6rem" }}
+                className="px-3 sm:px-4 py-1.5 font-mono text-xs whitespace-nowrap"
+                style={{ color: "var(--gray-600)", minWidth: "5rem" }}
               >
                 {cell}
               </td>
@@ -931,12 +1093,12 @@ function SampleMenu({
       </button>
       {open && (
         <div
-          className="absolute left-0 top-full mt-1 z-20 rounded-lg py-1 overflow-hidden"
+          className="absolute left-0 top-full mt-1 z-20 rounded-lg py-1 overflow-hidden max-w-[calc(100vw-2rem)]"
           style={{
             backgroundColor: "var(--background)",
             boxShadow:
               "0px 0px 0px 1px var(--shadow-border), 0px 8px 16px rgba(0,0,0,0.12)",
-            minWidth: "20rem",
+            minWidth: "min(20rem, calc(100vw - 2rem))",
           }}
         >
           {t.sampleList.map((sample, i) => (
