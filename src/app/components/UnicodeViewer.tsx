@@ -542,6 +542,20 @@ function StringSection({
 }) {
   const selectedCluster =
     selectedIndex !== null ? data.clusters[selectedIndex] : null;
+  const totalCodePoints = data.clusters.reduce(
+    (sum, c) => sum + c.codePoints.length,
+    0
+  );
+  const totalUtf8Bytes = data.clusters.reduce(
+    (sum, c) =>
+      sum + c.codePoints.reduce((s, cp) => s + cp.utf8Bytes.length, 0),
+    0
+  );
+  const totalUtf16Units = data.clusters.reduce(
+    (sum, c) =>
+      sum + c.codePoints.reduce((s, cp) => s + cp.utf16Units.length, 0),
+    0
+  );
 
   return (
     <div>
@@ -553,6 +567,24 @@ function StringSection({
         >
           {label}
         </span>
+        {data.clusters.length > 0 && (
+          <span
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium gap-2"
+            style={{
+              backgroundColor: "var(--gray-50)",
+              color: "var(--gray-700)",
+              boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+            }}
+          >
+            <StatSegment label={t.statCharacter} value={data.clusters.length} />
+            <span style={{ opacity: 0.4 }}>·</span>
+            <StatSegment label={t.statCodePoint} value={totalCodePoints} />
+            <span style={{ opacity: 0.4 }}>·</span>
+            <StatSegment label={t.statUtf16} value={totalUtf16Units} />
+            <span style={{ opacity: 0.4 }}>·</span>
+            <StatSegment label={t.statUtf8} value={totalUtf8Bytes} />
+          </span>
+        )}
         {desc && (
           <span className="text-xs" style={{ color: "var(--gray-400)" }}>
             {desc}
@@ -611,7 +643,6 @@ function StringSection({
       {selectedCluster && selectedIndex !== null && (
         <DetailPanel
           t={t}
-          index={selectedIndex}
           cluster={selectedCluster}
           onClose={onDeselect}
           mappingVariant={mappingVariant}
@@ -757,13 +788,11 @@ function CharCell({
 
 function DetailPanel({
   t,
-  index,
   cluster,
   onClose,
   mappingVariant,
 }: {
   t: Messages;
-  index: number;
   cluster: GraphemeCluster;
   onClose?: () => void;
   mappingVariant: MappingVariant;
@@ -793,39 +822,19 @@ function DetailPanel({
         }}
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
-          <span
-            className="text-xs font-mono"
-            style={{ color: "var(--gray-400)" }}
-          >
-            #{index}
-          </span>
           <span className="text-xl sm:text-2xl">{cluster.grapheme}</span>
           <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium gap-2"
             style={{
               backgroundColor: "var(--accent-blue-bg)",
               color: "var(--accent-blue-text)",
             }}
           >
-            {t.nCodePoints(cluster.codePoints.length)}
-          </span>
-          <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-            style={{
-              backgroundColor: "var(--accent-blue-bg)",
-              color: "var(--accent-blue-text)",
-            }}
-          >
-            {t.nUtf16Units(utf16UnitCount)}
-          </span>
-          <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-            style={{
-              backgroundColor: "var(--accent-blue-bg)",
-              color: "var(--accent-blue-text)",
-            }}
-          >
-            {t.nUtf8Bytes(utf8ByteCount)}
+            <StatSegment label={t.statCodePoint} value={cluster.codePoints.length} />
+            <span style={{ opacity: 0.4 }}>·</span>
+            <StatSegment label={t.statUtf16} value={utf16UnitCount} />
+            <span style={{ opacity: 0.4 }}>·</span>
+            <StatSegment label={t.statUtf8} value={utf8ByteCount} />
           </span>
         </div>
         {onClose && (
@@ -1050,36 +1059,13 @@ function AllCodePointsTable({
   );
 }
 
-function StatPill({
-  label,
-  value,
-  warn,
-}: {
-  label: string;
-  value: number;
-  warn?: boolean;
-}) {
+function StatSegment({ label, value }: { label: string; value: number }) {
   return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
-      style={{
-        boxShadow: warn
-          ? "0px 0px 0px 1px var(--unencodable-border)"
-          : "0px 0px 0px 1px var(--shadow-border)",
-        color: warn ? "var(--unencodable-text)" : "var(--gray-600)",
-        backgroundColor: warn ? "var(--unencodable-bg)" : "var(--background)",
-      }}
-    >
-      <span
-        className="font-mono font-semibold tabular-nums"
-        style={{
-          color: warn ? "var(--unencodable-text)" : "var(--gray-900)",
-          fontSize: "12px",
-        }}
-      >
-        {value}
+    <span className="inline-flex items-baseline gap-1">
+      <span className="font-mono font-semibold tabular-nums">{value}</span>
+      <span className="opacity-70" style={{ fontSize: "10px" }}>
+        {label}
       </span>
-      {label}
     </span>
   );
 }
