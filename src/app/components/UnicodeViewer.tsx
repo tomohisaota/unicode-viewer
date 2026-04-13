@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, getLegacyByteCount, ENCODING_OPTIONS, ALL_LEGACY_ENCODINGS } from "@/lib/encodings";
-import { getJisLevel } from "@/lib/jis-level";
+import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
 import type { Messages } from "@/lib/i18n";
@@ -763,7 +763,8 @@ function AllCodePointsTable({
       label: t.thJisLevel,
       cells: codePoints.map((cp, i) => {
         const level = getJisLevel(cp.codePoint);
-        if (level === null) {
+        const kuten = getJisKuten(cp.codePoint, mappingVariant);
+        if (level === null && kuten === null) {
           return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
         }
         const labels: Record<number, string> = {
@@ -773,8 +774,18 @@ function AllCodePointsTable({
           4: "第四水準",
         };
         return (
-          <span key={i} style={{ color: "var(--gray-500)", fontFamily: "var(--font-sans)" }}>
-            {labels[level]}
+          <span key={i} className="inline-flex items-center gap-2" style={{ fontFamily: "var(--font-sans)" }}>
+            {level !== null && (
+              <span style={{ color: "var(--gray-500)" }}>{labels[level]}</span>
+            )}
+            {kuten && (
+              <code
+                className="rounded px-1 py-0.5"
+                style={{ backgroundColor: "var(--gray-50)", color: "var(--gray-600)", fontSize: "11px" }}
+              >
+                {formatJisKuten(kuten)}
+              </code>
+            )}
           </span>
         );
       }),

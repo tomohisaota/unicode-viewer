@@ -33,6 +33,20 @@ const JIS_MAPPING_DISCREPANCIES: { whatwg: number; unicodeOrg: number }[] = [
 const whatwgToOrg = new Map(JIS_MAPPING_DISCREPANCIES.map((d) => [d.whatwg, d.unicodeOrg]));
 const orgToWhatwg = new Map(JIS_MAPPING_DISCREPANCIES.map((d) => [d.unicodeOrg, d.whatwg]));
 
+/**
+ * Convert a Unicode code point to its WHATWG-variant equivalent for JIS lookups.
+ * When variant is "unicode.org" and cp is a Unicode.org-side discrepancy char,
+ * returns the WHATWG counterpart. Returns null if cp is unmappable under the variant
+ * (e.g. WHATWG-side char queried under unicode.org variant).
+ */
+export function resolveForJisLookup(cp: number, variant: MappingVariant): number | null {
+  if (variant === "whatwg") return cp;
+  // unicode.org variant: WHATWG-side chars are not encodable
+  if (whatwgToOrg.has(cp)) return null;
+  // unicode.org chars use the WHATWG counterpart's byte position
+  return orgToWhatwg.get(cp) ?? cp;
+}
+
 export const ENCODING_OPTIONS: { value: EncodingMode; label: string }[] = [
   { value: "unicode", label: "Unicode" },
   { value: "ascii", label: "ASCII" },
@@ -244,7 +258,7 @@ function getSjisMap(): Map<number, number[]> {
   return sjisMap;
 }
 
-function getSjis2004Map(): Map<number, number[]> {
+export function getSjis2004Map(): Map<number, number[]> {
   if (!sjis2004Map) {
     // Shift_JIS-2004 = Shift_JIS (JIS X 0208) + JIS X 0213 additions
     sjis2004Map = new Map(getSjisMap());

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getLegacyEncoding } from "../encodings";
-import { getJisLevel } from "../jis-level";
+import { getJisLevel, getJisKuten, formatJisKuten } from "../jis-level";
 import testData from "./encoding-data.json";
 
 // Official data from Unicode Consortium (unicode.org/Public/MAPPINGS/)
@@ -228,5 +228,63 @@ describe("JIS level classification", () => {
 
   it("should return null for hiragana (non-kanji JIS rows)", () => {
     expect(getJisLevel(0x3042)).toBeNull();
+  });
+});
+
+describe("JIS kuten (区点)", () => {
+  it("should return 1-16-1 for 亜 (U+4E9C)", () => {
+    const kuten = getJisKuten(0x4e9c);
+    expect(kuten).toEqual({ plane: 1, row: 16, col: 1 });
+    expect(formatJisKuten(kuten!)).toBe("1面16区1点");
+  });
+
+  it("should return 1-20-33 for 漢 (U+6F22)", () => {
+    // 漢 is at JIS X 0208 row 20, column 33 (JIS bytes 0x34 0x41)
+    const kuten = getJisKuten(0x6f22);
+    expect(kuten).toEqual({ plane: 1, row: 20, col: 33 });
+  });
+
+  it("should return plane 1 kuten for 𠮟 (U+20B9F) - Level 3", () => {
+    const kuten = getJisKuten(0x20b9f);
+    expect(kuten?.plane).toBe(1);
+    expect(kuten).not.toBeNull();
+  });
+
+  it("should return plane 2 kuten for 丂 (U+4E02) - Level 4", () => {
+    const kuten = getJisKuten(0x4e02);
+    expect(kuten?.plane).toBe(2);
+    expect(kuten).not.toBeNull();
+  });
+
+  it("should return null for 髙 (U+9AD9) - CP932-only", () => {
+    // 髙 is not in standard JIS X 0208 or JIS X 0213
+    expect(getJisKuten(0x9ad9)).toBeNull();
+  });
+
+  it("should return null for arbitrary non-JIS characters", () => {
+    expect(getJisKuten(0x1f600)).toBeNull(); // 😀
+  });
+
+  it("should return kuten for hiragana あ (U+3042)", () => {
+    // あ is at JIS X 0208 row 4 (hiragana), column 2
+    const kuten = getJisKuten(0x3042);
+    expect(kuten).toEqual({ plane: 1, row: 4, col: 2 });
+  });
+
+  it("should handle wave dash U+FF5E under WHATWG variant", () => {
+    const kuten = getJisKuten(0xff5e, "whatwg");
+    expect(kuten?.plane).toBe(1);
+    expect(kuten?.row).toBe(1);
+  });
+
+  it("should handle wave dash U+301C under unicode.org variant", () => {
+    const kuten = getJisKuten(0x301c, "unicode.org");
+    expect(kuten?.plane).toBe(1);
+    expect(kuten?.row).toBe(1);
+  });
+
+  it("should return null for U+FF5E under unicode.org variant", () => {
+    // Under unicode.org variant, WHATWG-side discrepancy chars are unmappable
+    expect(getJisKuten(0xff5e, "unicode.org")).toBeNull();
   });
 });

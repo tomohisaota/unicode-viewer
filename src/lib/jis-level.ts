@@ -2,7 +2,8 @@
 // Source: JIS X 0213:2004 mapping table (x0213.org)
 // License: Free to use, modify, distribute
 
-import { getIso2022JpMap } from "./encodings";
+import { getIso2022JpMap, getSjis2004Map, resolveForJisLookup } from "./encodings";
+import type { MappingVariant } from "./encodings";
 
 // JIS X 0213 Level 3 (第三水準) - Plane 1 additions not in JIS X 0208
 // 1893 code points (single-codepoint mappings only)
@@ -417,4 +418,84 @@ export function getJisLevel(cp: number): JisLevel | null {
   if (row >= 48 && row <= 84) return 2;
 
   return null;
+}
+
+export interface JisKuten {
+  plane: 1 | 2;
+  row: number;
+  col: number;
+}
+
+/**
+ * Convert a Shift_JIS-2004 byte pair to JIS X 0213 kuten (面-区-点).
+ * Returns null if the bytes don't form a valid plane 1 or plane 2 kuten position.
+ */
+function sjisBytesToKuten(b1: number, b2: number): JisKuten | null {
+  // Column calculation (shared between planes)
+  let col: number;
+  let isSecondHalf: boolean;
+  if (b2 >= 0x40 && b2 <= 0x7e) {
+    col = b2 - 0x3f;
+    isSecondHalf = false;
+  } else if (b2 >= 0x80 && b2 <= 0x9e) {
+    col = b2 - 0x40;
+    isSecondHalf = false;
+  } else if (b2 >= 0x9f && b2 <= 0xfc) {
+    col = b2 - 0x9e;
+    isSecondHalf = true;
+  } else {
+    return null;
+  }
+
+  // Plane 1, rows 1-62
+  if (b1 >= 0x81 && b1 <= 0x9f) {
+    const row = (b1 - 0x81) * 2 + 1 + (isSecondHalf ? 1 : 0);
+    return { plane: 1, row, col };
+  }
+  // Plane 1, rows 63-94
+  if (b1 >= 0xe0 && b1 <= 0xef) {
+    const row = (b1 - 0xe0) * 2 + 63 + (isSecondHalf ? 1 : 0);
+    return { plane: 1, row, col };
+  }
+  // Plane 2 (JIS X 0213), b1 in [0xF0, 0xFC]
+  if (b1 >= 0xf0 && b1 <= 0xfc) {
+    // Plane 2 row distribution per Shift_JIS-2004 spec
+    const plane2Rows: Record<number, [number, number]> = {
+      0xf0: [1, 8],
+      0xf1: [3, 4],
+      0xf2: [5, 12],
+      0xf3: [13, 14],
+      0xf4: [15, 78],
+    };
+    let row: number;
+    if (b1 in plane2Rows) {
+      row = plane2Rows[b1][isSecondHalf ? 1 : 0];
+    } else {
+      // 0xF5-0xFC: rows 79-94 evenly distributed
+      row = (b1 - 0xf5) * 2 + 79 + (isSecondHalf ? 1 : 0);
+    }
+    return { plane: 2, row, col };
+  }
+  return null;
+}
+
+/**
+ * Get the JIS X 0213 kuten (面-区-点) for a Unicode code point.
+ * Handles the 7 WHATWG/Unicode.org mapping discrepancies via the variant parameter.
+ * Returns null if the character has no JIS X 0208/0213 kuten position.
+ */
+export function getJisKuten(
+  cp: number,
+  variant: MappingVariant = "whatwg"
+): JisKuten | null {
+  const resolvedCp = resolveForJisLookup(cp, variant);
+  if (resolvedCp === null) return null;
+  const bytes = getSjis2004Map().get(resolvedCp);
+  if (!bytes || bytes.length !== 2) return null;
+  return sjisBytesToKuten(bytes[0], bytes[1]);
+}
+
+/** Format a JisKuten as "N面N区N点" (e.g., "1面16区1点"). */
+export function formatJisKuten(kuten: JisKuten): string {
+  return `${kuten.plane}面${kuten.row}区${kuten.col}点`;
 }
