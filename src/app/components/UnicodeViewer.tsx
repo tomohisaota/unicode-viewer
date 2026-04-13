@@ -990,19 +990,32 @@ function AllCodePointsTable({
     },
     {
       label: t.thUtf16,
-      cells: codePoints.map((cp, i) => (
-        <span key={i} className="inline-flex gap-1">
-          {cp.utf16Units.map((u, j) => (
-            <code
-              key={j}
-              className="rounded px-1 py-0.5"
-              style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
-            >
-              {formatUtf16(u)}
-            </code>
-          ))}
-        </span>
-      )),
+      cells: codePoints.map((cp, i) => {
+        const isSurrogatePair = cp.utf16Units.length === 2;
+        return (
+          <span
+            key={i}
+            className="inline-flex gap-1 items-start"
+            title={isSurrogatePair ? t.surrogatePairLabel : undefined}
+          >
+            {cp.utf16Units.map((u, j) => (
+              <span key={j} className="inline-flex flex-col items-center gap-0.5">
+                <code
+                  className="rounded px-1 py-0.5"
+                  style={{ backgroundColor: "var(--gray-50)", fontSize: "11px" }}
+                >
+                  {formatUtf16(u)}
+                </code>
+                {isSurrogatePair && (
+                  <span style={{ fontSize: "9px", color: "var(--gray-500)" }}>
+                    {j === 0 ? t.surrogateHigh : t.surrogateLow}
+                  </span>
+                )}
+              </span>
+            ))}
+          </span>
+        );
+      }),
     },
     ...ALL_LEGACY_ENCODINGS.map((enc) => ({
       label: enc.label,
