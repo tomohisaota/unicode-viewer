@@ -557,16 +557,20 @@ function StringSection({
     0
   );
 
+  const hideLabel = sectionKey === "input" && data.clusters.length === 0;
+
   return (
     <div>
       {/* Header */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
-        <span
-          className="text-sm font-semibold font-mono"
-          style={{ color: "var(--gray-900)" }}
-        >
-          {label}
-        </span>
+        {!hideLabel && (
+          <span
+            className="text-sm font-semibold font-mono"
+            style={{ color: "var(--gray-900)" }}
+          >
+            {label}
+          </span>
+        )}
         {data.clusters.length > 0 && (
           <span
             className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium gap-2"
