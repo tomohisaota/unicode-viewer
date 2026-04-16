@@ -411,9 +411,34 @@ function getEucJpMap(): Map<number, number[]> {
   return eucjpMap;
 }
 
+/** Raw ISO-2022-JP map including WHATWG vendor extensions. Used as source for getSjisMap(). */
 export function getIso2022JpMap(): Map<number, number[]> {
   if (!iso2022jpMap) iso2022jpMap = buildIso2022JpMap();
   return iso2022jpMap;
+}
+
+let iso2022jpFilteredMap: Map<number, number[]> | null = null;
+
+/** ISO-2022-JP map filtered to standard JIS X 0208 rows only (1-8, 16-84). */
+function getFilteredIso2022JpMap(): Map<number, number[]> {
+  if (!iso2022jpFilteredMap) {
+    const raw = getIso2022JpMap();
+    iso2022jpFilteredMap = new Map();
+    for (const [cp, bytes] of raw) {
+      if (bytes.length === 1) {
+        iso2022jpFilteredMap.set(cp, bytes); // ASCII
+        continue;
+      }
+      // ESC $ B b1 b2 → JIS row = b1 - 0x20
+      if (bytes.length >= 5) {
+        const row = bytes[3] - 0x20;
+        if (isJisX0208Row(row)) {
+          iso2022jpFilteredMap.set(cp, bytes);
+        }
+      }
+    }
+  }
+  return iso2022jpFilteredMap;
 }
 
 // --- Generic double-byte builder (Big5, GBK, EUC-KR) ---
@@ -542,7 +567,7 @@ export function getLegacyEncoding(
     case "euc-jp":
       return applyVariant(cp, variant, jis, (c) => lookupMap(getEucJpMap(), c));
     case "iso-2022-jp":
-      return applyVariant(cp, variant, jis, (c) => lookupMap(getIso2022JpMap(), c));
+      return applyVariant(cp, variant, jis, (c) => lookupMap(getFilteredIso2022JpMap(), c));
     case "big5":
       return lookupMap(getBig5Map(), cp);
     case "gbk":
