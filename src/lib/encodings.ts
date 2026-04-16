@@ -35,20 +35,20 @@ export type EncodingMode = "unicode" | LegacyEncoding;
 
 export type LanguageGroup =
   | "auto"
-  | "japanese"
-  | "chinese-traditional"
-  | "chinese-simplified"
-  | "korean"
-  | "western"
-  | "central-european"
-  | "baltic"
-  | "cyrillic"
-  | "greek"
-  | "turkish"
-  | "hebrew"
-  | "arabic"
-  | "vietnamese"
-  | "thai";
+  | "ja"
+  | "zh-Hant"
+  | "zh-Hans"
+  | "ko"
+  | "Latn-WE"
+  | "Latn-CE"
+  | "Latn-Baltic"
+  | "Cyrl"
+  | "el"
+  | "tr"
+  | "he"
+  | "ar"
+  | "vi"
+  | "th";
 
 /** Mapping variant for the 7 JIS/Unicode discrepancies (wave dash problem, etc.) */
 export type MappingVariant = "whatwg" | "unicode.org";
@@ -128,63 +128,63 @@ export const ALL_LEGACY_ENCODINGS: { value: LegacyEncoding; label: string }[] = 
 
 export const LANGUAGE_ENCODINGS: Record<LanguageGroup, { value: LegacyEncoding; label: string }[]> = {
   auto: [],
-  japanese: [
+  ja: [
     { value: "shift_jis", label: "Shift_JIS" },
     { value: "sjis2004", label: "Shift_JIS-2004" },
     { value: "cp932", label: "CP932 (Windows-31J)" },
     { value: "euc-jp", label: "EUC-JP" },
     { value: "iso-2022-jp", label: "ISO-2022-JP" },
   ],
-  "chinese-traditional": [
+  "zh-Hant": [
     { value: "big5", label: "Big5" },
   ],
-  "chinese-simplified": [
+  "zh-Hans": [
     { value: "gbk", label: "GBK" },
     { value: "gb18030", label: "GB18030" },
   ],
-  korean: [
+  ko: [
     { value: "euc-kr", label: "EUC-KR (CP949/UHC)" },
   ],
-  western: [
+  "Latn-WE": [
     { value: "ascii", label: "ASCII" },
     { value: "latin1", label: "Latin-1 (ISO-8859-1)" },
     { value: "iso-8859-15", label: "ISO-8859-15 (Latin-9)" },
     { value: "windows-1252", label: "Windows-1252" },
   ],
-  "central-european": [
+  "Latn-CE": [
     { value: "iso-8859-2", label: "ISO-8859-2" },
     { value: "windows-1250", label: "Windows-1250" },
   ],
-  baltic: [
+  "Latn-Baltic": [
     { value: "iso-8859-13", label: "ISO-8859-13" },
     { value: "windows-1257", label: "Windows-1257" },
   ],
-  cyrillic: [
+  Cyrl: [
     { value: "koi8-r", label: "KOI8-R" },
     { value: "koi8-u", label: "KOI8-U" },
     { value: "iso-8859-5", label: "ISO-8859-5" },
     { value: "windows-1251", label: "Windows-1251" },
   ],
-  greek: [
+  el: [
     { value: "iso-8859-7", label: "ISO-8859-7" },
     { value: "windows-1253", label: "Windows-1253" },
   ],
-  turkish: [
+  tr: [
     { value: "iso-8859-9", label: "ISO-8859-9" },
     { value: "windows-1254", label: "Windows-1254" },
   ],
-  hebrew: [
+  he: [
     { value: "iso-8859-8", label: "ISO-8859-8" },
     { value: "windows-1255", label: "Windows-1255" },
   ],
-  arabic: [
+  ar: [
     { value: "iso-8859-6", label: "ISO-8859-6" },
     { value: "windows-1256", label: "Windows-1256" },
   ],
-  vietnamese: [
+  vi: [
     { value: "windows-1258", label: "Windows-1258" },
   ],
-  thai: [
+  th: [
     { value: "windows-874", label: "Windows-874 (TIS-620)" },
   ],
 };
@@ -588,23 +588,23 @@ export function getLegacyEncoding(
  * GBK is used instead of GB18030 since GB18030 covers all of Unicode.
  */
 const AUTO_CHECK_ENCODING: Partial<Record<LanguageGroup, LegacyEncoding>> = {
-  japanese: "cp932",
-  "chinese-traditional": "big5",
-  "chinese-simplified": "gbk",
-  korean: "euc-kr",
-  western: "windows-1252",
-  "central-european": "windows-1250",
-  baltic: "windows-1257",
-  cyrillic: "windows-1251",
-  greek: "windows-1253",
-  turkish: "windows-1254",
-  hebrew: "windows-1255",
-  arabic: "windows-1256",
-  vietnamese: "windows-1258",
-  thai: "windows-874",
+  ja: "cp932",
+  "zh-Hant": "big5",
+  "zh-Hans": "gbk",
+  ko: "euc-kr",
+  "Latn-WE": "windows-1252",
+  "Latn-CE": "windows-1250",
+  "Latn-Baltic": "windows-1257",
+  Cyrl: "windows-1251",
+  el: "windows-1253",
+  tr: "windows-1254",
+  he: "windows-1255",
+  ar: "windows-1256",
+  vi: "windows-1258",
+  th: "windows-874",
 };
 
-const CJK_GROUPS = new Set<LanguageGroup>(["japanese", "chinese-traditional", "chinese-simplified", "korean"]);
+const CJK_GROUPS = new Set<LanguageGroup>(["ja", "zh-Hant", "zh-Hans", "ko"]);
 
 /** Is this code point in a CJK-relevant Unicode block? */
 function isCjkRelevant(cp: number): boolean {
@@ -654,8 +654,8 @@ function filterCjkByScript(groups: LanguageGroup[], codePoints: number[]): Langu
 
   return groups.filter((g) => {
     if (!CJK_GROUPS.has(g)) return true;
-    if (g === "japanese") return ja;
-    if (g === "korean") return ko;
+    if (g === "ja") return ja;
+    if (g === "ko") return ko;
     return zh; // chinese-traditional, chinese-simplified
   });
 }

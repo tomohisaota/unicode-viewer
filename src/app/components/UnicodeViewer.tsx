@@ -193,20 +193,20 @@ export default function UnicodeViewer() {
             }}
           >
             <option value="auto">{t.langAuto}</option>
-            <option value="japanese">{t.langJapanese}</option>
-            <option value="chinese-traditional">{t.langChineseTraditional}</option>
-            <option value="chinese-simplified">{t.langChineseSimplified}</option>
-            <option value="korean">{t.langKorean}</option>
-            <option value="western">{t.langWestern}</option>
-            <option value="central-european">{t.langCentralEuropean}</option>
-            <option value="baltic">{t.langBaltic}</option>
-            <option value="cyrillic">{t.langCyrillic}</option>
-            <option value="greek">{t.langGreek}</option>
-            <option value="turkish">{t.langTurkish}</option>
-            <option value="hebrew">{t.langHebrew}</option>
-            <option value="arabic">{t.langArabic}</option>
-            <option value="vietnamese">{t.langVietnamese}</option>
-            <option value="thai">{t.langThai}</option>
+            <option value="ja">{t.langJapanese}</option>
+            <option value="zh-Hant">{t.langChineseTraditional}</option>
+            <option value="zh-Hans">{t.langChineseSimplified}</option>
+            <option value="ko">{t.langKorean}</option>
+            <option value="Latn-WE">{t.langWestern}</option>
+            <option value="Latn-CE">{t.langCentralEuropean}</option>
+            <option value="Latn-Baltic">{t.langBaltic}</option>
+            <option value="Cyrl">{t.langCyrillic}</option>
+            <option value="el">{t.langGreek}</option>
+            <option value="tr">{t.langTurkish}</option>
+            <option value="he">{t.langHebrew}</option>
+            <option value="ar">{t.langArabic}</option>
+            <option value="vi">{t.langVietnamese}</option>
+            <option value="th">{t.langThai}</option>
           </select>
           <button
             type="button"
@@ -834,20 +834,20 @@ function AllCodePointsTable({
 }) {
   const langLabelMap: Record<LanguageGroup, string> = {
     auto: "",
-    japanese: t.langJapanese,
-    "chinese-traditional": t.langChineseTraditional,
-    "chinese-simplified": t.langChineseSimplified,
-    korean: t.langKorean,
-    western: t.langWestern,
-    "central-european": t.langCentralEuropean,
-    baltic: t.langBaltic,
-    cyrillic: t.langCyrillic,
-    greek: t.langGreek,
-    turkish: t.langTurkish,
-    hebrew: t.langHebrew,
-    arabic: t.langArabic,
-    vietnamese: t.langVietnamese,
-    thai: t.langThai,
+    ja: t.langJapanese,
+    "zh-Hant": t.langChineseTraditional,
+    "zh-Hans": t.langChineseSimplified,
+    ko: t.langKorean,
+    "Latn-WE": t.langWestern,
+    "Latn-CE": t.langCentralEuropean,
+    "Latn-Baltic": t.langBaltic,
+    Cyrl: t.langCyrillic,
+    el: t.langGreek,
+    tr: t.langTurkish,
+    he: t.langHebrew,
+    ar: t.langArabic,
+    vi: t.langVietnamese,
+    th: t.langThai,
   };
 
   type Row = { kind: "data"; label: string; cells: React.ReactNode[] }
@@ -975,7 +975,7 @@ function AllCodePointsTable({
     });
 
     // JIS level row — only for Japanese
-    if (group === "japanese") {
+    if (group === "ja") {
       rows.push({
         kind: "data",
         label: t.thJisLevel,
