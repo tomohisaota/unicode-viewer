@@ -666,7 +666,7 @@ export function getAutoGroups(
   variant: MappingVariant
 ): LanguageGroup[] {
   const nonAscii = codePoints.filter((cp) => cp > 0x7f);
-  if (nonAscii.length === 0) return [];
+  if (nonAscii.length === 0) return ["Latn-WE"];
 
   const hasCjk = nonAscii.some(isCjkRelevant);
 
