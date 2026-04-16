@@ -3,12 +3,12 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
-import { getLegacyEncoding, ENCODING_OPTIONS, ALL_LEGACY_ENCODINGS } from "@/lib/encodings";
+import { getLegacyEncoding, LANGUAGE_ENCODINGS } from "@/lib/encodings";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
 import type { Messages } from "@/lib/i18n";
-import type { EncodingMode, LegacyEncoding, MappingVariant } from "@/lib/encodings";
+import type { LanguageGroup, MappingVariant } from "@/lib/encodings";
 
 type NormForm = "NFC" | "NFD" | "NFKC" | "NFKD";
 const NORM_FORMS: NormForm[] = ["NFC", "NFD", "NFKC", "NFKD"];
@@ -80,7 +80,7 @@ export default function UnicodeViewer() {
   const [rawInput, setRawInput] = useState("");
   const [convertCP, setConvertCP] = useState(true);
   const [convertEsc, setConvertEsc] = useState(true);
-  const [encodingMode, setEncodingMode] = useState<EncodingMode>("unicode");
+  const [languageGroup, setLanguageGroup] = useState<LanguageGroup>("none");
   const [mappingVariant, setMappingVariant] = useState<MappingVariant>("whatwg");
   const [selected, setSelected] = useState<{
     section: string;
@@ -160,7 +160,7 @@ export default function UnicodeViewer() {
   return (
     <div className="w-full">
       {/* Input Area */}
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-center gap-2 sm:gap-3 mb-2">
         <label
           className="text-xs font-medium"
           style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
@@ -174,36 +174,71 @@ export default function UnicodeViewer() {
             setSelected(null);
           }}
         />
-        <button
-          type="button"
-          onClick={() => setSettingsOpen(true)}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"
-          style={{
-            boxShadow: "0px 0px 0px 1px var(--shadow-border)",
-            color: "var(--gray-600)",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--gray-50)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "transparent")
-          }
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          <select
+            value={languageGroup}
+            onChange={(e) => {
+              setLanguageGroup(e.target.value as LanguageGroup);
+              setSelected(null);
+            }}
+            className="rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors appearance-none"
+            style={{
+              boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+              color: "var(--gray-600)",
+              backgroundColor: "transparent",
+              paddingRight: "1.5rem",
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 0.5rem center",
+            }}
           >
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-          <span className="hidden sm:inline">{t.settings}</span>
-        </button>
+            <option value="none">{t.langNone}</option>
+            <option value="japanese">{t.langJapanese}</option>
+            <option value="chinese-traditional">{t.langChineseTraditional}</option>
+            <option value="chinese-simplified">{t.langChineseSimplified}</option>
+            <option value="korean">{t.langKorean}</option>
+            <option value="western">{t.langWestern}</option>
+            <option value="central-european">{t.langCentralEuropean}</option>
+            <option value="baltic">{t.langBaltic}</option>
+            <option value="cyrillic">{t.langCyrillic}</option>
+            <option value="greek">{t.langGreek}</option>
+            <option value="turkish">{t.langTurkish}</option>
+            <option value="hebrew">{t.langHebrew}</option>
+            <option value="arabic">{t.langArabic}</option>
+            <option value="vietnamese">{t.langVietnamese}</option>
+            <option value="thai">{t.langThai}</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"
+            style={{
+              boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+              color: "var(--gray-600)",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "var(--gray-50)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "transparent")
+            }
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span className="hidden sm:inline">{t.settings}</span>
+          </button>
+        </div>
       </div>
       <textarea
         value={rawInput}
@@ -244,7 +279,7 @@ export default function UnicodeViewer() {
               desc={desc}
               data={data}
               identical={identical}
-              encodingMode={encodingMode}
+              languageGroup={languageGroup}
               mappingVariant={mappingVariant}
               selectedIndex={
                 selected?.section === key ? selected.index : null
@@ -279,7 +314,6 @@ export default function UnicodeViewer() {
           t={t}
           convertCP={convertCP}
           convertEsc={convertEsc}
-          encodingMode={encodingMode}
           mappingVariant={mappingVariant}
           onConvertCPChange={(v) => {
             setConvertCP(v);
@@ -287,10 +321,6 @@ export default function UnicodeViewer() {
           }}
           onConvertEscChange={(v) => {
             setConvertEsc(v);
-            setSelected(null);
-          }}
-          onEncodingChange={(v) => {
-            setEncodingMode(v);
             setSelected(null);
           }}
           onMappingVariantChange={(v) => {
@@ -315,12 +345,10 @@ function SettingsDialog({
   t,
   convertCP,
   convertEsc,
-  encodingMode,
   mappingVariant,
   showNormalization,
   onConvertCPChange,
   onConvertEscChange,
-  onEncodingChange,
   onMappingVariantChange,
   onShowNormalizationChange,
   onClose,
@@ -328,12 +356,10 @@ function SettingsDialog({
   t: Messages;
   convertCP: boolean;
   convertEsc: boolean;
-  encodingMode: EncodingMode;
   mappingVariant: MappingVariant;
   showNormalization: boolean;
   onConvertCPChange: (v: boolean) => void;
   onConvertEscChange: (v: boolean) => void;
-  onEncodingChange: (v: EncodingMode) => void;
   onMappingVariantChange: (v: MappingVariant) => void;
   onShowNormalizationChange: (v: boolean) => void;
   onClose: () => void;
@@ -430,32 +456,6 @@ function SettingsDialog({
           </div>
         </section>
 
-        {/* Encoding */}
-        <section>
-          <h3
-            className="text-xs font-semibold uppercase mb-2"
-            style={{ color: "var(--gray-500)", letterSpacing: "0.04em" }}
-          >
-            {t.encoding}
-          </h3>
-          <select
-            value={encodingMode}
-            onChange={(e) => onEncodingChange(e.target.value as EncodingMode)}
-            className="w-full text-sm rounded-md px-3 py-2 cursor-pointer"
-            style={{
-              backgroundColor: "var(--input-bg)",
-              color: "var(--gray-900)",
-              border: "1.5px solid var(--input-border)",
-            }}
-          >
-            {ENCODING_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </section>
-
         {/* Mapping variant */}
         <section>
           <h3
@@ -524,7 +524,7 @@ function StringSection({
   onSelect,
   onDeselect,
   onCopyToInput,
-  encodingMode,
+  languageGroup,
   mappingVariant,
 }: {
   t: Messages;
@@ -533,7 +533,7 @@ function StringSection({
   desc: string;
   data: AnalyzedString;
   identical: boolean;
-  encodingMode: EncodingMode;
+  languageGroup: LanguageGroup;
   mappingVariant: MappingVariant;
   selectedIndex: number | null;
   onSelect: (i: number) => void;
@@ -623,25 +623,19 @@ function StringSection({
       </div>
 
       {/* Grid */}
-      {data.clusters.length > 0 && (() => {
-        const maxCPs = Math.max(...data.clusters.map(c => c.codePoints.length));
-        return (
-          <div className="flex flex-wrap gap-1">
-            {data.clusters.map((cluster, i) => (
-              <CharCell
-                key={i}
-                cluster={cluster}
-                isSelected={selectedIndex === i}
-                isDiff={data.diffMask[i]}
-                maxCodePoints={maxCPs}
-                encodingMode={encodingMode}
-                mappingVariant={mappingVariant}
-                onClick={() => onSelect(i)}
-              />
-            ))}
-          </div>
-        );
-      })()}
+      {data.clusters.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {data.clusters.map((cluster, i) => (
+            <CharCell
+              key={i}
+              cluster={cluster}
+              isSelected={selectedIndex === i}
+              isDiff={data.diffMask[i]}
+              onClick={() => onSelect(i)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Detail */}
       {selectedCluster && selectedIndex !== null && (
@@ -649,6 +643,7 @@ function StringSection({
           t={t}
           cluster={selectedCluster}
           onClose={onDeselect}
+          languageGroup={languageGroup}
           mappingVariant={mappingVariant}
         />
       )}
@@ -662,17 +657,11 @@ function CharCell({
   cluster,
   isSelected,
   isDiff,
-  maxCodePoints,
-  encodingMode,
-  mappingVariant,
   onClick,
 }: {
   cluster: GraphemeCluster;
   isSelected: boolean;
   isDiff: boolean;
-  maxCodePoints: number;
-  encodingMode: EncodingMode;
-  mappingVariant: MappingVariant;
   onClick: () => void;
 }) {
   const cp0 = cluster.codePoints[0];
@@ -692,71 +681,29 @@ function CharCell({
       ? "␣"
       : cluster.grapheme;
 
-  const isLegacy = encodingMode !== "unicode";
-
-  // Check if any code point in this cluster is unencodable
-  const unencodable =
-    isLegacy &&
-    cluster.codePoints.some(
-      (cp) => !getLegacyEncoding(cp.codePoint, encodingMode as LegacyEncoding, mappingVariant).encodable
-    );
-
-  // Build label lines
-  const labelLines: string[] = isLegacy
-    ? cluster.codePoints.map((cp) => {
-        const result = getLegacyEncoding(cp.codePoint, encodingMode as LegacyEncoding, mappingVariant);
-        if (result.encodable && result.bytes) {
-          return result.bytes.map((b) => formatByte(b)).join(" ");
-        }
-        return "—";
-      })
-    : cluster.codePoints.map((c) => c.hex);
-
   let bgColor = "transparent";
   let shadowStyle = "0px 0px 0px 1px var(--shadow-border)";
-  let labelColor = "var(--gray-400)";
 
   if (isSelected) {
     bgColor = "var(--accent-blue-bg)";
     shadowStyle = "0px 0px 0px 1.5px var(--accent-blue)";
-    labelColor = "var(--accent-blue)";
-  } else if (unencodable) {
-    bgColor = "var(--unencodable-bg)";
-    shadowStyle = "0px 0px 0px 1.5px var(--unencodable-border)";
-    labelColor = "var(--unencodable-text)";
   } else if (isDiff) {
     bgColor = "var(--diff-bg)";
     shadowStyle = "0px 0px 0px 1.5px var(--diff-border)";
-    labelColor = "var(--diff-text)";
   }
-
-  // 18px char + 10px per code point line + 8px padding
-  const cellHeight = 18 + maxCodePoints * 10 + 8;
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center justify-center rounded transition-all cursor-pointer relative"
+      className="flex items-center justify-center rounded transition-all cursor-pointer"
       style={{
         backgroundColor: bgColor,
         boxShadow: shadowStyle,
-        width: "3rem",
-        height: `${cellHeight}px`,
+        width: "2.5rem",
+        height: "2.5rem",
       }}
     >
-      {unencodable && (
-        <span
-          className="absolute font-bold"
-          style={{
-            color: "var(--unencodable-border)",
-            fontSize: "24px",
-            opacity: 0.3,
-          }}
-        >
-          ✕
-        </span>
-      )}
       <span
         className={`leading-none ${
           isControl || isWhitespace ? "font-mono" : ""
@@ -771,19 +718,6 @@ function CharCell({
       >
         {displayChar}
       </span>
-      <span
-        className="font-mono tabular-nums flex flex-col items-center"
-        style={{
-          fontSize: "7px",
-          color: labelColor,
-          lineHeight: 1.2,
-          marginTop: "1px",
-        }}
-      >
-        {labelLines.map((line, i) => (
-          <span key={i}>{line}</span>
-        ))}
-      </span>
     </button>
   );
 }
@@ -794,11 +728,13 @@ function DetailPanel({
   t,
   cluster,
   onClose,
+  languageGroup,
   mappingVariant,
 }: {
   t: Messages;
   cluster: GraphemeCluster;
   onClose?: () => void;
+  languageGroup: LanguageGroup;
   mappingVariant: MappingVariant;
 }) {
   const utf8ByteCount = cluster.codePoints.reduce(
@@ -861,7 +797,7 @@ function DetailPanel({
 
       {/* Code point details */}
       <div className="overflow-x-auto">
-        <AllCodePointsTable t={t} codePoints={cluster.codePoints} mappingVariant={mappingVariant} />
+        <AllCodePointsTable t={t} codePoints={cluster.codePoints} languageGroup={languageGroup} mappingVariant={mappingVariant} />
       </div>
     </div>
   );
@@ -888,14 +824,40 @@ function BytePills({ bytes }: { bytes: number[] }) {
 function AllCodePointsTable({
   t,
   codePoints,
+  languageGroup,
   mappingVariant,
 }: {
   t: Messages;
   codePoints: CodePointInfo[];
+  languageGroup: LanguageGroup;
   mappingVariant: MappingVariant;
 }) {
-  const rows: { label: string; cells: React.ReactNode[] }[] = [
+  const encodings = LANGUAGE_ENCODINGS[languageGroup];
+  const langLabelMap: Record<LanguageGroup, string> = {
+    none: "",
+    japanese: t.langJapanese,
+    "chinese-traditional": t.langChineseTraditional,
+    "chinese-simplified": t.langChineseSimplified,
+    korean: t.langKorean,
+    western: t.langWestern,
+    "central-european": t.langCentralEuropean,
+    baltic: t.langBaltic,
+    cyrillic: t.langCyrillic,
+    greek: t.langGreek,
+    turkish: t.langTurkish,
+    hebrew: t.langHebrew,
+    arabic: t.langArabic,
+    vietnamese: t.langVietnamese,
+    thai: t.langThai,
+  };
+  const langLabel = langLabelMap[languageGroup];
+
+  type Row = { kind: "data"; label: string; cells: React.ReactNode[] }
+    | { kind: "separator"; label: string; colSpan: number };
+
+  const rows: Row[] = [
     {
+      kind: "data",
       label: t.thCodePoint,
       cells: codePoints.map((cp) => {
         const isVisible =
@@ -917,6 +879,7 @@ function AllCodePointsTable({
       }),
     },
     {
+      kind: "data",
       label: t.thName,
       cells: codePoints.map((cp, i) => (
         <span key={i} style={{ fontFamily: "var(--font-sans)" }}>{cp.name}</span>
@@ -928,6 +891,7 @@ function AllCodePointsTable({
   const annotationKeys = codePoints.map((cp) => getAnnotationKey(cp.codePoint));
   if (annotationKeys.some((k) => k !== null)) {
     rows.push({
+      kind: "data",
       label: t.thNote,
       cells: codePoints.map((cp, i) => {
         const key = annotationKeys[i];
@@ -946,53 +910,26 @@ function AllCodePointsTable({
 
   rows.push(
     {
+      kind: "data",
       label: t.thCategory,
       cells: codePoints.map((cp, i) => (
         <span key={i} style={{ color: "var(--gray-500)", fontFamily: "var(--font-sans)" }}>{cp.category}</span>
       )),
     },
     {
+      kind: "data",
       label: t.thBlock,
       cells: codePoints.map((cp, i) => (
         <span key={i} style={{ color: "var(--gray-500)", fontFamily: "var(--font-sans)" }}>{cp.blockName}</span>
       )),
     },
     {
-      label: t.thJisLevel,
-      cells: codePoints.map((cp, i) => {
-        const level = getJisLevel(cp.codePoint);
-        const kuten = getJisKuten(cp.codePoint, mappingVariant);
-        if (level === null && kuten === null) {
-          return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
-        }
-        const labels: Record<number, string> = {
-          1: "第一水準",
-          2: "第二水準",
-          3: "第三水準",
-          4: "第四水準",
-        };
-        return (
-          <span key={i} className="inline-flex items-center gap-2" style={{ fontFamily: "var(--font-sans)" }}>
-            {level !== null && (
-              <span style={{ color: "var(--gray-500)" }}>{labels[level]}</span>
-            )}
-            {kuten && (
-              <code
-                className="rounded px-1 py-0.5"
-                style={{ backgroundColor: "var(--gray-50)", color: "var(--gray-600)", fontSize: "11px" }}
-              >
-                {formatJisKuten(kuten)}
-              </code>
-            )}
-          </span>
-        );
-      }),
-    },
-    {
+      kind: "data",
       label: t.thUtf8,
       cells: codePoints.map((cp, i) => <BytePills key={i} bytes={cp.utf8Bytes} />),
     },
     {
+      kind: "data",
       label: t.thUtf16,
       cells: codePoints.map((cp, i) => {
         const isSurrogatePair = cp.utf16Units.length === 2;
@@ -1021,18 +958,68 @@ function AllCodePointsTable({
         );
       }),
     },
-    ...ALL_LEGACY_ENCODINGS.map((enc) => ({
-      label: enc.label,
-      cells: codePoints.map((cp, i) => {
-        const result = getLegacyEncoding(cp.codePoint, enc.value, mappingVariant);
-        return result.encodable && result.bytes ? (
-          <BytePills key={i} bytes={result.bytes} />
-        ) : (
-          <span key={i} style={{ color: "var(--unencodable-text)" }}>—</span>
-        );
-      }),
-    })),
   );
+
+  // Language-specific section
+  if (languageGroup !== "none") {
+    rows.push({
+      kind: "separator",
+      label: langLabel,
+      colSpan: codePoints.length + 1,
+    });
+
+    // JIS level row — only for Japanese
+    if (languageGroup === "japanese") {
+      rows.push({
+        kind: "data",
+        label: t.thJisLevel,
+        cells: codePoints.map((cp, i) => {
+          const level = getJisLevel(cp.codePoint);
+          const kuten = getJisKuten(cp.codePoint, mappingVariant);
+          if (level === null && kuten === null) {
+            return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
+          }
+          const labels: Record<number, string> = {
+            1: "第一水準",
+            2: "第二水準",
+            3: "第三水準",
+            4: "第四水準",
+          };
+          return (
+            <span key={i} className="inline-flex items-center gap-2" style={{ fontFamily: "var(--font-sans)" }}>
+              {level !== null && (
+                <span style={{ color: "var(--gray-500)" }}>{labels[level]}</span>
+              )}
+              {kuten && (
+                <code
+                  className="rounded px-1 py-0.5"
+                  style={{ backgroundColor: "var(--gray-50)", color: "var(--gray-600)", fontSize: "11px" }}
+                >
+                  {formatJisKuten(kuten)}
+                </code>
+              )}
+            </span>
+          );
+        }),
+      });
+    }
+
+    // Encoding byte rows
+    for (const enc of encodings) {
+      rows.push({
+        kind: "data",
+        label: enc.label,
+        cells: codePoints.map((cp, i) => {
+          const result = getLegacyEncoding(cp.codePoint, enc.value, mappingVariant);
+          return result.encodable && result.bytes ? (
+            <BytePills key={i} bytes={result.bytes} />
+          ) : (
+            <span key={i} style={{ color: "var(--unencodable-text)" }}>—</span>
+          );
+        }),
+      });
+    }
+  }
 
   return (
     <table
@@ -1040,12 +1027,33 @@ function AllCodePointsTable({
       style={{ borderCollapse: "separate", borderSpacing: 0 }}
     >
       <tbody>
-        {rows.map((row, i) => (
+        {rows.map((row, i) => {
+          if (row.kind === "separator") {
+            return (
+              <tr key={`sep-${row.label}`}>
+                <td
+                  colSpan={row.colSpan}
+                  className="px-3 sm:px-4 pt-3 pb-1 text-xs font-semibold uppercase"
+                  style={{
+                    color: "var(--gray-500)",
+                    letterSpacing: "0.04em",
+                    borderTop: "2px solid var(--gray-200)",
+                    backgroundColor: "var(--background)",
+                  }}
+                >
+                  {row.label}
+                </td>
+              </tr>
+            );
+          }
+          return (
           <tr
             key={row.label}
             style={{
               borderBottom:
-                i < rows.length - 1 ? "1px solid var(--gray-100)" : "none",
+                i < rows.length - 1 && rows[i + 1].kind !== "separator"
+                  ? "1px solid var(--gray-100)"
+                  : "none",
             }}
           >
             <td
@@ -1070,7 +1078,8 @@ function AllCodePointsTable({
               </td>
             ))}
           </tr>
-        ))}
+          );
+        })}
       </tbody>
     </table>
   );

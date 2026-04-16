@@ -1,13 +1,54 @@
 export type LegacyEncoding =
   | "ascii"
   | "latin1"
+  | "iso-8859-15"
+  | "windows-1252"
   | "shift_jis"
   | "sjis2004"
   | "cp932"
   | "euc-jp"
-  | "iso-2022-jp";
+  | "iso-2022-jp"
+  | "big5"
+  | "gbk"
+  | "gb18030"
+  | "euc-kr"
+  | "koi8-r"
+  | "koi8-u"
+  | "iso-8859-5"
+  | "windows-1251"
+  | "iso-8859-7"
+  | "windows-1253"
+  | "iso-8859-9"
+  | "windows-1254"
+  | "iso-8859-8"
+  | "windows-1255"
+  | "iso-8859-6"
+  | "windows-1256"
+  | "iso-8859-13"
+  | "windows-1257"
+  | "iso-8859-2"
+  | "windows-1250"
+  | "windows-1258"
+  | "windows-874";
 
 export type EncodingMode = "unicode" | LegacyEncoding;
+
+export type LanguageGroup =
+  | "none"
+  | "japanese"
+  | "chinese-traditional"
+  | "chinese-simplified"
+  | "korean"
+  | "western"
+  | "central-european"
+  | "baltic"
+  | "cyrillic"
+  | "greek"
+  | "turkish"
+  | "hebrew"
+  | "arabic"
+  | "vietnamese"
+  | "thai";
 
 /** Mapping variant for the 7 JIS/Unicode discrepancies (wave dash problem, etc.) */
 export type MappingVariant = "whatwg" | "unicode.org";
@@ -17,10 +58,21 @@ export interface EncodingResult {
   bytes: number[] | null;
 }
 
-// 7 positions where Unicode.org SHIFTJIS.TXT and Microsoft/WHATWG chose different
+// --- Mapping discrepancies (WHATWG vs Unicode.org / official standards) ---
+
+interface MappingDiscrepancy { whatwg: number; unicodeOrg: number }
+
+function buildDiscrepancyMaps(discrepancies: MappingDiscrepancy[]) {
+  return {
+    w2o: new Map(discrepancies.map((d) => [d.whatwg, d.unicodeOrg])),
+    o2w: new Map(discrepancies.map((d) => [d.unicodeOrg, d.whatwg])),
+  };
+}
+
+// JIS: 7 positions where Unicode.org SHIFTJIS.TXT and Microsoft/WHATWG chose different
 // Unicode code points for the same JIS byte position.
 // Affects: Shift_JIS, Shift_JIS-2004, EUC-JP, ISO-2022-JP (NOT CP932)
-const JIS_MAPPING_DISCREPANCIES: { whatwg: number; unicodeOrg: number }[] = [
+const JIS_DISCREPANCIES: MappingDiscrepancy[] = [
   { whatwg: 0xff3c, unicodeOrg: 0x005c }, // ＼ vs \ (SJIS 81 5F)
   { whatwg: 0xff5e, unicodeOrg: 0x301c }, // ～ vs 〜 (SJIS 81 60)
   { whatwg: 0x2225, unicodeOrg: 0x2016 }, // ∥ vs ‖ (SJIS 81 61)
@@ -29,9 +81,15 @@ const JIS_MAPPING_DISCREPANCIES: { whatwg: number; unicodeOrg: number }[] = [
   { whatwg: 0xffe1, unicodeOrg: 0x00a3 }, // ￡ vs £ (SJIS 81 92)
   { whatwg: 0xffe2, unicodeOrg: 0x00ac }, // ￢ vs ¬ (SJIS 81 CA)
 ];
+const jis = buildDiscrepancyMaps(JIS_DISCREPANCIES);
 
-const whatwgToOrg = new Map(JIS_MAPPING_DISCREPANCIES.map((d) => [d.whatwg, d.unicodeOrg]));
-const orgToWhatwg = new Map(JIS_MAPPING_DISCREPANCIES.map((d) => [d.unicodeOrg, d.whatwg]));
+// Note: EUC-KR (KS X 1001) has no WHATWG vs Unicode.org discrepancy.
+// The Unicode.org KSX1001.TXT is based on Microsoft's UHC mapping, so both agree.
+// The wave dash difference (U+223C vs U+301C) is IBM-949-specific, not a WHATWG/Unicode.org split.
+
+// Backward-compat aliases used by resolveForJisLookup and tests
+const whatwgToOrg = jis.w2o;
+const orgToWhatwg = jis.o2w;
 
 /**
  * Convert a Unicode code point to its WHATWG-variant equivalent for JIS lookups.
@@ -68,6 +126,69 @@ export const ALL_LEGACY_ENCODINGS: { value: LegacyEncoding; label: string }[] = 
   { value: "iso-2022-jp", label: "ISO-2022-JP" },
 ];
 
+export const LANGUAGE_ENCODINGS: Record<LanguageGroup, { value: LegacyEncoding; label: string }[]> = {
+  none: [],
+  japanese: [
+    { value: "shift_jis", label: "Shift_JIS" },
+    { value: "sjis2004", label: "Shift_JIS-2004" },
+    { value: "cp932", label: "CP932 (Windows-31J)" },
+    { value: "euc-jp", label: "EUC-JP" },
+    { value: "iso-2022-jp", label: "ISO-2022-JP" },
+  ],
+  "chinese-traditional": [
+    { value: "big5", label: "Big5" },
+  ],
+  "chinese-simplified": [
+    { value: "gbk", label: "GBK" },
+    { value: "gb18030", label: "GB18030" },
+  ],
+  korean: [
+    { value: "euc-kr", label: "EUC-KR (CP949/UHC)" },
+  ],
+  western: [
+    { value: "ascii", label: "ASCII" },
+    { value: "latin1", label: "Latin-1 (ISO-8859-1)" },
+    { value: "iso-8859-15", label: "ISO-8859-15 (Latin-9)" },
+    { value: "windows-1252", label: "Windows-1252" },
+  ],
+  "central-european": [
+    { value: "iso-8859-2", label: "ISO-8859-2" },
+    { value: "windows-1250", label: "Windows-1250" },
+  ],
+  baltic: [
+    { value: "iso-8859-13", label: "ISO-8859-13" },
+    { value: "windows-1257", label: "Windows-1257" },
+  ],
+  cyrillic: [
+    { value: "koi8-r", label: "KOI8-R" },
+    { value: "koi8-u", label: "KOI8-U" },
+    { value: "iso-8859-5", label: "ISO-8859-5" },
+    { value: "windows-1251", label: "Windows-1251" },
+  ],
+  greek: [
+    { value: "iso-8859-7", label: "ISO-8859-7" },
+    { value: "windows-1253", label: "Windows-1253" },
+  ],
+  turkish: [
+    { value: "iso-8859-9", label: "ISO-8859-9" },
+    { value: "windows-1254", label: "Windows-1254" },
+  ],
+  hebrew: [
+    { value: "iso-8859-8", label: "ISO-8859-8" },
+    { value: "windows-1255", label: "Windows-1255" },
+  ],
+  arabic: [
+    { value: "iso-8859-6", label: "ISO-8859-6" },
+    { value: "windows-1256", label: "Windows-1256" },
+  ],
+  vietnamese: [
+    { value: "windows-1258", label: "Windows-1258" },
+  ],
+  thai: [
+    { value: "windows-874", label: "Windows-874 (TIS-620)" },
+  ],
+};
+
 // --- Trivial encodings ---
 
 function encodeAscii(cp: number): EncodingResult {
@@ -91,6 +212,22 @@ let sjisMap: Map<number, number[]> | null = null;
 let sjis2004Map: Map<number, number[]> | null = null;
 let eucjpMap: Map<number, number[]> | null = null;
 let iso2022jpMap: Map<number, number[]> | null = null;
+let big5Map: Map<number, number[]> | null = null;
+let gbkMap: Map<number, number[]> | null = null;
+let gb18030Map: Map<number, number[]> | null = null;
+let euckrMap: Map<number, number[]> | null = null;
+
+/** Lazy cache for single-byte encoding maps */
+const singleByteMaps = new Map<string, Map<number, number[]>>();
+
+function getSingleByteMap(label: string): Map<number, number[]> {
+  let map = singleByteMaps.get(label);
+  if (!map) {
+    map = buildSingleByteMap(label);
+    singleByteMaps.set(label, map);
+  }
+  return map;
+}
 
 
 /** Decode bytes and return the single code point, or -1 if invalid */
@@ -279,6 +416,82 @@ export function getIso2022JpMap(): Map<number, number[]> {
   return iso2022jpMap;
 }
 
+// --- Generic double-byte builder (Big5, GBK, EUC-KR) ---
+
+function buildDoubleByteMap(
+  decoderLabel: string,
+  b1Range: [number, number],
+  b2Range: [number, number],
+  skipB2?: (b2: number) => boolean,
+): Map<number, number[]> {
+  const map = new Map<number, number[]>();
+  const decoder = new TextDecoder(decoderLabel);
+
+  // ASCII range
+  for (let b = 0x20; b <= 0x7e; b++) map.set(b, [b]);
+  for (const b of [0x09, 0x0a, 0x0d]) map.set(b, [b]);
+
+  // Double-byte characters
+  for (let b1 = b1Range[0]; b1 <= b1Range[1]; b1++) {
+    for (let b2 = b2Range[0]; b2 <= b2Range[1]; b2++) {
+      if (skipB2?.(b2)) continue;
+      const cp = tryDecode(decoder, new Uint8Array([b1, b2]));
+      if (cp >= 0 && !map.has(cp)) map.set(cp, [b1, b2]);
+    }
+  }
+
+  return map;
+}
+
+function getBig5Map(): Map<number, number[]> {
+  if (!big5Map) big5Map = buildDoubleByteMap("big5", [0x81, 0xfe], [0x40, 0xfe], (b2) => b2 === 0x7f);
+  return big5Map;
+}
+
+function getGbkMap(): Map<number, number[]> {
+  if (!gbkMap) gbkMap = buildDoubleByteMap("gbk", [0x81, 0xfe], [0x40, 0xfe], (b2) => b2 === 0x7f);
+  return gbkMap;
+}
+
+function getGb18030Map(): Map<number, number[]> {
+  if (!gb18030Map) {
+    // Start with GBK double-byte mappings
+    gb18030Map = buildDoubleByteMap("gb18030", [0x81, 0xfe], [0x40, 0xfe], (b2) => b2 === 0x7f);
+    // Add 4-byte mappings (b1 0x81-0xFE, b2 0x30-0x39, b3 0x81-0xFE, b4 0x30-0x39)
+    const decoder = new TextDecoder("gb18030");
+    for (let b1 = 0x81; b1 <= 0xfe; b1++) {
+      for (let b2 = 0x30; b2 <= 0x39; b2++) {
+        for (let b3 = 0x81; b3 <= 0xfe; b3++) {
+          for (let b4 = 0x30; b4 <= 0x39; b4++) {
+            const cp = tryDecode(decoder, new Uint8Array([b1, b2, b3, b4]));
+            if (cp >= 0 && !gb18030Map.has(cp)) gb18030Map.set(cp, [b1, b2, b3, b4]);
+          }
+        }
+      }
+    }
+  }
+  return gb18030Map;
+}
+
+function getEucKrMap(): Map<number, number[]> {
+  if (!euckrMap) euckrMap = buildDoubleByteMap("euc-kr", [0x81, 0xfe], [0x41, 0xfe]);
+  return euckrMap;
+}
+
+// --- Single-byte builders (Windows-1252, KOI8-U, Windows-1251) ---
+
+function buildSingleByteMap(decoderLabel: string): Map<number, number[]> {
+  const map = new Map<number, number[]>();
+  const decoder = new TextDecoder(decoderLabel);
+
+  for (let b = 0x00; b <= 0xff; b++) {
+    const cp = tryDecode(decoder, new Uint8Array([b]));
+    if (cp >= 0) map.set(cp, [b]);
+  }
+
+  return map;
+}
+
 function lookupMap(
   map: Map<number, number[]>,
   cp: number
@@ -289,30 +502,24 @@ function lookupMap(
     : { encodable: false, bytes: null };
 }
 
-/** JIS-based encodings affected by the WHATWG/Unicode.org mapping variant */
-const JIS_BASED_ENCODINGS = new Set<LegacyEncoding>([
-  "shift_jis", "sjis2004", "euc-jp", "iso-2022-jp",
-]);
-
+/**
+ * Apply mapping variant to an encoding lookup.
+ * When variant is "unicode.org":
+ *  - WHATWG-side discrepancy chars → not encodable
+ *  - Unicode.org-side chars → use WHATWG counterpart's byte position
+ */
 function applyVariant(
   cp: number,
-  encoding: LegacyEncoding,
   variant: MappingVariant,
+  maps: { w2o: Map<number, number>; o2w: Map<number, number> },
   lookupFn: (cp: number) => EncodingResult
 ): EncodingResult {
-  if (variant === "whatwg" || !JIS_BASED_ENCODINGS.has(encoding)) {
-    return lookupFn(cp);
-  }
-  // unicode.org variant: swap the 7 discrepancy mappings
-  // If querying a WHATWG-side CP → not encodable
-  if (whatwgToOrg.has(cp)) {
-    return { encodable: false, bytes: null };
-  }
-  // If querying a Unicode.org-side CP → use the WHATWG counterpart's bytes
-  const whatwgCp = orgToWhatwg.get(cp);
-  if (whatwgCp !== undefined) {
-    return lookupFn(whatwgCp);
-  }
+  if (variant === "whatwg") return lookupFn(cp);
+  // unicode.org variant: WHATWG-side chars are not encodable
+  if (maps.w2o.has(cp)) return { encodable: false, bytes: null };
+  // unicode.org-side chars use the WHATWG counterpart's byte position
+  const whatwgCp = maps.o2w.get(cp);
+  if (whatwgCp !== undefined) return lookupFn(whatwgCp);
   return lookupFn(cp);
 }
 
@@ -327,15 +534,26 @@ export function getLegacyEncoding(
     case "latin1":
       return encodeLatin1(cp);
     case "shift_jis":
-      return applyVariant(cp, encoding, variant, (c) => lookupMap(getSjisMap(), c));
+      return applyVariant(cp, variant, jis, (c) => lookupMap(getSjisMap(), c));
     case "sjis2004":
-      return applyVariant(cp, encoding, variant, (c) => lookupMap(getSjis2004Map(), c));
+      return applyVariant(cp, variant, jis, (c) => lookupMap(getSjis2004Map(), c));
     case "cp932":
       return lookupMap(getCp932Map(), cp);
     case "euc-jp":
-      return applyVariant(cp, encoding, variant, (c) => lookupMap(getEucJpMap(), c));
+      return applyVariant(cp, variant, jis, (c) => lookupMap(getEucJpMap(), c));
     case "iso-2022-jp":
-      return applyVariant(cp, encoding, variant, (c) => lookupMap(getIso2022JpMap(), c));
+      return applyVariant(cp, variant, jis, (c) => lookupMap(getIso2022JpMap(), c));
+    case "big5":
+      return lookupMap(getBig5Map(), cp);
+    case "gbk":
+      return lookupMap(getGbkMap(), cp);
+    case "gb18030":
+      return lookupMap(getGb18030Map(), cp);
+    case "euc-kr":
+      return lookupMap(getEucKrMap(), cp);
+    // All single-byte encodings use the generic cache
+    default:
+      return lookupMap(getSingleByteMap(encoding), cp);
   }
 }
 
