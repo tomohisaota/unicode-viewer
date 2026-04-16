@@ -683,6 +683,52 @@ export function getAutoGroups(
   return filterCjkByScript(groups, codePoints);
 }
 
+/**
+ * Detect the Unicode script name for code points that are NOT covered by any
+ * encoding group. Returns null for scripts already handled (Latin, CJK, Greek,
+ * Cyrillic, Arabic, Hebrew, Thai, Turkish, Vietnamese) or for common/inherited.
+ */
+export function detectScript(codePoints: number[]): string | null {
+  const SCRIPT_RANGES: [number, number, string][] = [
+    // Armenian
+    [0x0530, 0x058f, "🇦🇲 Armenian"],
+    // Indic scripts
+    [0x0900, 0x097f, "🇮🇳 Devanagari"],
+    [0x0980, 0x09ff, "🇧🇩 Bengali"],
+    [0x0a00, 0x0a7f, "🇮🇳 Gurmukhi"],
+    [0x0a80, 0x0aff, "🇮🇳 Gujarati"],
+    [0x0b00, 0x0b7f, "🇮🇳 Odia"],
+    [0x0b80, 0x0bff, "🇮🇳 Tamil"],
+    [0x0c00, 0x0c7f, "🇮🇳 Telugu"],
+    [0x0c80, 0x0cff, "🇮🇳 Kannada"],
+    [0x0d00, 0x0d7f, "🇮🇳 Malayalam"],
+    [0x0d80, 0x0dff, "🇱🇰 Sinhala"],
+    // Southeast Asian
+    [0x0e80, 0x0eff, "🇱🇦 Lao"],
+    [0x0f00, 0x0fff, "🌏 Tibetan"],
+    [0x1000, 0x109f, "🇲🇲 Myanmar"],
+    [0x1780, 0x17ff, "🇰🇭 Khmer"],
+    // Other scripts
+    [0x10a0, 0x10ff, "🇬🇪 Georgian"],
+    [0x1200, 0x137f, "🇪🇹 Ethiopic"],
+    [0x13a0, 0x13ff, "🇺🇸 Cherokee"],
+    [0x1400, 0x167f, "🇨🇦 Canadian Aboriginal"],
+    [0x1800, 0x18af, "🇲🇳 Mongolian"],
+    [0x1b80, 0x1bbf, "🇮🇩 Sundanese"],
+    [0x1c00, 0x1c4f, "🇮🇳 Lepcha"],
+    [0xa800, 0xa82f, "🇧🇩 Syloti Nagri"],
+    [0xaa00, 0xaa5f, "🇻🇳 Cham"],
+  ];
+
+  for (const cp of codePoints) {
+    if (cp <= 0x7f) continue;
+    for (const [lo, hi, name] of SCRIPT_RANGES) {
+      if (cp >= lo && cp <= hi) return name;
+    }
+  }
+  return null;
+}
+
 /** Get total byte count for a string in a legacy encoding, or null if any char is unencodable */
 export function getLegacyByteCount(
   codePoints: number[],

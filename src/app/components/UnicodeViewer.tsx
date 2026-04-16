@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
-import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups } from "@/lib/encodings";
+import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups, detectScript } from "@/lib/encodings";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -1023,6 +1023,18 @@ function AllCodePointsTable({
             <span key={i} style={{ color: "var(--unencodable-text)" }}>—</span>
           );
         }),
+      });
+    }
+  }
+
+  // Script detection: show script label when no encoding groups matched
+  if (languageGroup === "auto" && activeGroups.every((g) => LANGUAGE_ENCODINGS[g].length === 0)) {
+    const script = detectScript(codePoints.map((cp) => cp.codePoint));
+    if (script) {
+      rows.push({
+        kind: "separator",
+        label: script,
+        colSpan: codePoints.length + 1,
       });
     }
   }
