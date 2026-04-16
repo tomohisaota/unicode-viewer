@@ -80,7 +80,6 @@ export default function UnicodeViewer() {
   const [rawInput, setRawInput] = useState("");
   const [convertCP, setConvertCP] = useState(true);
   const [convertEsc, setConvertEsc] = useState(true);
-  const [languageGroup, setLanguageGroup] = useState<LanguageGroup>("auto");
   const [mappingVariant, setMappingVariant] = useState<MappingVariant>("whatwg");
   const [selected, setSelected] = useState<{
     section: string;
@@ -174,71 +173,36 @@ export default function UnicodeViewer() {
             setSelected(null);
           }}
         />
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <select
-            value={languageGroup}
-            onChange={(e) => {
-              setLanguageGroup(e.target.value as LanguageGroup);
-              setSelected(null);
-            }}
-            className="rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors appearance-none"
-            style={{
-              boxShadow: "0px 0px 0px 1px var(--shadow-border)",
-              color: "var(--gray-600)",
-              backgroundColor: "transparent",
-              paddingRight: "1.5rem",
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "right 0.5rem center",
-            }}
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"
+          style={{
+            boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+            color: "var(--gray-600)",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--gray-50)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "transparent")
+          }
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <option value="auto">{t.langAuto}</option>
-            <option value="ja">{t.langJapanese}</option>
-            <option value="zh-Hant">{t.langChineseTraditional}</option>
-            <option value="zh-Hans">{t.langChineseSimplified}</option>
-            <option value="ko">{t.langKorean}</option>
-            <option value="Latn-WE">{t.langWestern}</option>
-            <option value="Latn-CE">{t.langCentralEuropean}</option>
-            <option value="Latn-Baltic">{t.langBaltic}</option>
-            <option value="Cyrl">{t.langCyrillic}</option>
-            <option value="el">{t.langGreek}</option>
-            <option value="tr">{t.langTurkish}</option>
-            <option value="he">{t.langHebrew}</option>
-            <option value="ar">{t.langArabic}</option>
-            <option value="vi">{t.langVietnamese}</option>
-            <option value="th">{t.langThai}</option>
-          </select>
-          <button
-            type="button"
-            onClick={() => setSettingsOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"
-            style={{
-              boxShadow: "0px 0px 0px 1px var(--shadow-border)",
-              color: "var(--gray-600)",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "var(--gray-50)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "transparent")
-            }
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-            <span className="hidden sm:inline">{t.settings}</span>
-          </button>
-        </div>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span className="hidden sm:inline">{t.settings}</span>
+        </button>
       </div>
       <textarea
         value={rawInput}
@@ -279,7 +243,6 @@ export default function UnicodeViewer() {
               desc={desc}
               data={data}
               identical={identical}
-              languageGroup={languageGroup}
               mappingVariant={mappingVariant}
               selectedIndex={
                 selected?.section === key ? selected.index : null
@@ -524,7 +487,6 @@ function StringSection({
   onSelect,
   onDeselect,
   onCopyToInput,
-  languageGroup,
   mappingVariant,
 }: {
   t: Messages;
@@ -533,7 +495,6 @@ function StringSection({
   desc: string;
   data: AnalyzedString;
   identical: boolean;
-  languageGroup: LanguageGroup;
   mappingVariant: MappingVariant;
   selectedIndex: number | null;
   onSelect: (i: number) => void;
@@ -643,7 +604,6 @@ function StringSection({
           t={t}
           cluster={selectedCluster}
           onClose={onDeselect}
-          languageGroup={languageGroup}
           mappingVariant={mappingVariant}
         />
       )}
@@ -728,13 +688,11 @@ function DetailPanel({
   t,
   cluster,
   onClose,
-  languageGroup,
   mappingVariant,
 }: {
   t: Messages;
   cluster: GraphemeCluster;
   onClose?: () => void;
-  languageGroup: LanguageGroup;
   mappingVariant: MappingVariant;
 }) {
   const utf8ByteCount = cluster.codePoints.reduce(
@@ -797,7 +755,7 @@ function DetailPanel({
 
       {/* Code point details */}
       <div className="overflow-x-auto">
-        <AllCodePointsTable t={t} codePoints={cluster.codePoints} languageGroup={languageGroup} mappingVariant={mappingVariant} />
+        <AllCodePointsTable t={t} codePoints={cluster.codePoints} mappingVariant={mappingVariant} />
       </div>
     </div>
   );
@@ -824,12 +782,10 @@ function BytePills({ bytes }: { bytes: number[] }) {
 function AllCodePointsTable({
   t,
   codePoints,
-  languageGroup,
   mappingVariant,
 }: {
   t: Messages;
   codePoints: CodePointInfo[];
-  languageGroup: LanguageGroup;
   mappingVariant: MappingVariant;
 }) {
   const langLabelMap: Record<LanguageGroup, string> = {
@@ -958,10 +914,8 @@ function AllCodePointsTable({
     },
   );
 
-  // Language-specific sections
-  const activeGroups: LanguageGroup[] = languageGroup === "auto"
-    ? getAutoGroups(codePoints.map((cp) => cp.codePoint), mappingVariant)
-    : [languageGroup];
+  // Language-specific sections (auto-detected)
+  const activeGroups = getAutoGroups(codePoints.map((cp) => cp.codePoint), mappingVariant);
 
   for (const group of activeGroups) {
     const groupEncodings = LANGUAGE_ENCODINGS[group];
@@ -1028,7 +982,7 @@ function AllCodePointsTable({
   }
 
   // Script detection: show script label when no encoding groups matched
-  if (languageGroup === "auto" && activeGroups.every((g) => LANGUAGE_ENCODINGS[g].length === 0)) {
+  if (activeGroups.every((g) => LANGUAGE_ENCODINGS[g].length === 0)) {
     const script = detectScript(codePoints.map((cp) => cp.codePoint));
     if (script) {
       rows.push({
