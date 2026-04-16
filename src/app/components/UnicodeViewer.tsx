@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
-import { getLegacyEncoding, LANGUAGE_ENCODINGS } from "@/lib/encodings";
+import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups } from "@/lib/encodings";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -80,7 +80,7 @@ export default function UnicodeViewer() {
   const [rawInput, setRawInput] = useState("");
   const [convertCP, setConvertCP] = useState(true);
   const [convertEsc, setConvertEsc] = useState(true);
-  const [languageGroup, setLanguageGroup] = useState<LanguageGroup>("none");
+  const [languageGroup, setLanguageGroup] = useState<LanguageGroup>("auto");
   const [mappingVariant, setMappingVariant] = useState<MappingVariant>("whatwg");
   const [selected, setSelected] = useState<{
     section: string;
@@ -192,7 +192,7 @@ export default function UnicodeViewer() {
               backgroundPosition: "right 0.5rem center",
             }}
           >
-            <option value="none">{t.langNone}</option>
+            <option value="auto">{t.langAuto}</option>
             <option value="japanese">{t.langJapanese}</option>
             <option value="chinese-traditional">{t.langChineseTraditional}</option>
             <option value="chinese-simplified">{t.langChineseSimplified}</option>
@@ -832,9 +832,8 @@ function AllCodePointsTable({
   languageGroup: LanguageGroup;
   mappingVariant: MappingVariant;
 }) {
-  const encodings = LANGUAGE_ENCODINGS[languageGroup];
   const langLabelMap: Record<LanguageGroup, string> = {
-    none: "",
+    auto: "",
     japanese: t.langJapanese,
     "chinese-traditional": t.langChineseTraditional,
     "chinese-simplified": t.langChineseSimplified,
@@ -850,7 +849,6 @@ function AllCodePointsTable({
     vietnamese: t.langVietnamese,
     thai: t.langThai,
   };
-  const langLabel = langLabelMap[languageGroup];
 
   type Row = { kind: "data"; label: string; cells: React.ReactNode[] }
     | { kind: "separator"; label: string; colSpan: number };
@@ -960,16 +958,24 @@ function AllCodePointsTable({
     },
   );
 
-  // Language-specific section
-  if (languageGroup !== "none") {
+  // Language-specific sections
+  const activeGroups: LanguageGroup[] = languageGroup === "auto"
+    ? getAutoGroups(codePoints.map((cp) => cp.codePoint), mappingVariant)
+    : [languageGroup];
+
+  for (const group of activeGroups) {
+    const groupEncodings = LANGUAGE_ENCODINGS[group];
+    if (!groupEncodings || groupEncodings.length === 0) continue;
+    const groupLabel = langLabelMap[group];
+
     rows.push({
       kind: "separator",
-      label: langLabel,
+      label: groupLabel,
       colSpan: codePoints.length + 1,
     });
 
     // JIS level row — only for Japanese
-    if (languageGroup === "japanese") {
+    if (group === "japanese") {
       rows.push({
         kind: "data",
         label: t.thJisLevel,
@@ -1005,7 +1011,7 @@ function AllCodePointsTable({
     }
 
     // Encoding byte rows
-    for (const enc of encodings) {
+    for (const enc of groupEncodings) {
       rows.push({
         kind: "data",
         label: enc.label,

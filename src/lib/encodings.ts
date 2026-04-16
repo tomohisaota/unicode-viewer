@@ -34,7 +34,7 @@ export type LegacyEncoding =
 export type EncodingMode = "unicode" | LegacyEncoding;
 
 export type LanguageGroup =
-  | "none"
+  | "auto"
   | "japanese"
   | "chinese-traditional"
   | "chinese-simplified"
@@ -127,7 +127,7 @@ export const ALL_LEGACY_ENCODINGS: { value: LegacyEncoding; label: string }[] = 
 ];
 
 export const LANGUAGE_ENCODINGS: Record<LanguageGroup, { value: LegacyEncoding; label: string }[]> = {
-  none: [],
+  auto: [],
   japanese: [
     { value: "shift_jis", label: "Shift_JIS" },
     { value: "sjis2004", label: "Shift_JIS-2004" },
@@ -555,6 +555,107 @@ export function getLegacyEncoding(
     default:
       return lookupMap(getSingleByteMap(encoding), cp);
   }
+}
+
+/**
+ * Representative encoding per language group used for auto-detection.
+ * The broadest encoding in each group (most characters supported).
+ * GBK is used instead of GB18030 since GB18030 covers all of Unicode.
+ */
+const AUTO_CHECK_ENCODING: Partial<Record<LanguageGroup, LegacyEncoding>> = {
+  japanese: "cp932",
+  "chinese-traditional": "big5",
+  "chinese-simplified": "gbk",
+  korean: "euc-kr",
+  western: "windows-1252",
+  "central-european": "windows-1250",
+  baltic: "windows-1257",
+  cyrillic: "windows-1251",
+  greek: "windows-1253",
+  turkish: "windows-1254",
+  hebrew: "windows-1255",
+  arabic: "windows-1256",
+  vietnamese: "windows-1258",
+  thai: "windows-874",
+};
+
+const CJK_GROUPS = new Set<LanguageGroup>(["japanese", "chinese-traditional", "chinese-simplified", "korean"]);
+
+/** Is this code point in a CJK-relevant Unicode block? */
+function isCjkRelevant(cp: number): boolean {
+  return (cp >= 0x2e80 && cp <= 0x9fff)   // CJK Radicals … CJK Unified Ideographs
+    || (cp >= 0xac00 && cp <= 0xd7af)     // Hangul Syllables
+    || (cp >= 0x1100 && cp <= 0x11ff)     // Hangul Jamo
+    || (cp >= 0x3000 && cp <= 0x33ff)     // CJK Symbols, Hiragana, Katakana, Bopomofo, CJK Compat
+    || (cp >= 0x3130 && cp <= 0x318f)     // Hangul Compatibility Jamo
+    || (cp >= 0xf900 && cp <= 0xfaff)     // CJK Compatibility Ideographs
+    || (cp >= 0xfe30 && cp <= 0xfe4f)     // CJK Compatibility Forms
+    || (cp >= 0xff00 && cp <= 0xffef)     // Halfwidth and Fullwidth Forms
+    || (cp >= 0x20000 && cp <= 0x3ffff);  // CJK Extensions B–I + supplements
+}
+
+function isJapaneseScript(cp: number): boolean {
+  return (cp >= 0x3040 && cp <= 0x30ff)   // Hiragana + Katakana
+    || (cp >= 0x31f0 && cp <= 0x31ff)     // Katakana Phonetic Extensions
+    || (cp >= 0xff65 && cp <= 0xff9f);    // Halfwidth Katakana
+}
+
+function isKoreanScript(cp: number): boolean {
+  return (cp >= 0xac00 && cp <= 0xd7af)   // Hangul Syllables
+    || (cp >= 0x1100 && cp <= 0x11ff)     // Hangul Jamo
+    || (cp >= 0x3130 && cp <= 0x318f);    // Hangul Compatibility Jamo
+}
+
+function isChineseScript(cp: number): boolean {
+  return (cp >= 0x3100 && cp <= 0x312f)   // Bopomofo
+    || (cp >= 0x31a0 && cp <= 0x31bf);    // Bopomofo Extended
+}
+
+/**
+ * Filter CJK groups by script affinity.
+ * Hiragana/Katakana → Japanese only, Hangul → Korean only, Bopomofo → Chinese only.
+ * CJK ideographs (shared) pass all CJK groups.
+ */
+function filterCjkByScript(groups: LanguageGroup[], codePoints: number[]): LanguageGroup[] {
+  let ja = false, ko = false, zh = false;
+  for (const cp of codePoints) {
+    if (cp <= 0x7f) continue;
+    if (isJapaneseScript(cp)) ja = true;
+    if (isKoreanScript(cp)) ko = true;
+    if (isChineseScript(cp)) zh = true;
+  }
+  // No script-specific characters → no filtering
+  if (!ja && !ko && !zh) return groups;
+
+  return groups.filter((g) => {
+    if (!CJK_GROUPS.has(g)) return true;
+    if (g === "japanese") return ja;
+    if (g === "korean") return ko;
+    return zh; // chinese-traditional, chinese-simplified
+  });
+}
+
+/** Determine which language groups are relevant for the given code points. */
+export function getAutoGroups(
+  codePoints: number[],
+  variant: MappingVariant
+): LanguageGroup[] {
+  const nonAscii = codePoints.filter((cp) => cp > 0x7f);
+  if (nonAscii.length === 0) return [];
+
+  const hasCjk = nonAscii.some(isCjkRelevant);
+
+  const groups: LanguageGroup[] = [];
+  for (const [group, checkEnc] of Object.entries(AUTO_CHECK_ENCODING)) {
+    if (!checkEnc) continue;
+    // CJK groups only when code points are in CJK Unicode blocks
+    if (CJK_GROUPS.has(group as LanguageGroup) && !hasCjk) continue;
+    const allEncodable = nonAscii.every(
+      (cp) => getLegacyEncoding(cp, checkEnc, variant).encodable
+    );
+    if (allEncodable) groups.push(group as LanguageGroup);
+  }
+  return filterCjkByScript(groups, codePoints);
 }
 
 /** Get total byte count for a string in a legacy encoding, or null if any char is unencodable */
