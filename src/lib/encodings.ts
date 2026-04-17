@@ -588,7 +588,7 @@ export function getLegacyEncoding(
  * GBK is used instead of GB18030 since GB18030 covers all of Unicode.
  */
 const AUTO_CHECK_ENCODING: Partial<Record<LanguageGroup, LegacyEncoding>> = {
-  ja: "cp932",
+  ja: "sjis2004",
   "zh-Hant": "big5",
   "zh-Hans": "gbk",
   ko: "euc-kr",
