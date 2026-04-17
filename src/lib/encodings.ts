@@ -587,8 +587,12 @@ export function getLegacyEncoding(
  * The broadest encoding in each group (most characters supported).
  * GBK is used instead of GB18030 since GB18030 covers all of Unicode.
  */
+/** Language groups that need multiple encodings for auto-detection */
+const AUTO_CHECK_MULTI: Partial<Record<LanguageGroup, LegacyEncoding[]>> = {
+  ja: ["sjis2004", "cp932"],
+};
+
 const AUTO_CHECK_ENCODING: Partial<Record<LanguageGroup, LegacyEncoding>> = {
-  ja: "sjis2004",
   "zh-Hant": "big5",
   "zh-Hans": "gbk",
   ko: "euc-kr",
@@ -671,9 +675,21 @@ export function getAutoGroups(
   const hasCjk = nonAscii.some(isCjkRelevant);
 
   const groups: LanguageGroup[] = [];
+
+  // Check groups with multiple representative encodings (e.g. ja: sjis2004 + cp932)
+  for (const [group, encodings] of Object.entries(AUTO_CHECK_MULTI)) {
+    if (!encodings) continue;
+    if (CJK_GROUPS.has(group as LanguageGroup) && !hasCjk) continue;
+    const match = nonAscii.every((cp) =>
+      encodings.some((enc) => getLegacyEncoding(cp, enc, variant).encodable)
+    );
+    if (match) groups.push(group as LanguageGroup);
+  }
+
+  // Check groups with a single representative encoding
   for (const [group, checkEnc] of Object.entries(AUTO_CHECK_ENCODING)) {
     if (!checkEnc) continue;
-    // CJK groups only when code points are in CJK Unicode blocks
+    if (groups.includes(group as LanguageGroup)) continue; // already matched above
     if (CJK_GROUPS.has(group as LanguageGroup) && !hasCjk) continue;
     const allEncodable = nonAscii.every(
       (cp) => getLegacyEncoding(cp, checkEnc, variant).encodable
