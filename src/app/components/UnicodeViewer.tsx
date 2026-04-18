@@ -5,6 +5,7 @@ import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups, detectScript } from "@/lib/encodings";
 import { getCjkIrgFlags } from "@/lib/cjk-irg-data";
+import { getIvsCount, getIvsVariants } from "@/lib/ivd-data";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -277,6 +278,10 @@ export default function UnicodeViewer() {
                     }
                   : undefined
               }
+              onSetInput={(text) => {
+                setRawInput(text);
+                setSelected(null);
+              }}
             />
           );
         })}
@@ -497,6 +502,7 @@ function StringSection({
   onSelect,
   onDeselect,
   onCopyToInput,
+  onSetInput,
   mappingVariant,
 }: {
   t: Messages;
@@ -510,6 +516,7 @@ function StringSection({
   onSelect: (i: number) => void;
   onDeselect?: () => void;
   onCopyToInput?: () => void;
+  onSetInput?: (text: string) => void;
 }) {
   const selectedCluster =
     selectedIndex !== null ? data.clusters[selectedIndex] : null;
@@ -615,6 +622,7 @@ function StringSection({
           cluster={selectedCluster}
           onClose={onDeselect}
           mappingVariant={mappingVariant}
+          onSetInput={onSetInput}
         />
       )}
     </div>
@@ -652,9 +660,23 @@ function CharCell({
       : cluster.grapheme;
 
   const cpCount = cluster.codePoints.length;
-  const cpLabel = cpCount === 1
+
+  // Detect IVS: base char + single variation selector
+  const isIvs = cpCount === 2 && (() => {
+    const vs = cluster.codePoints[1].codePoint;
+    return (vs >= 0xE0100 && vs <= 0xE01EF) || (vs >= 0xFE00 && vs <= 0xFE0F);
+  })();
+  const ivsIndex = isIvs
+    ? cluster.codePoints[1].codePoint >= 0xE0100
+      ? cluster.codePoints[1].codePoint - 0xE0100
+      : cluster.codePoints[1].codePoint - 0xFE00
+    : -1;
+
+  const cpLabel = isIvs
     ? cp0.codePoint.toString(16).toUpperCase()
-    : `${cpCount} CP`;
+    : cpCount === 1
+      ? cp0.codePoint.toString(16).toUpperCase()
+      : `${cpCount} CP`;
 
   let bgColor = "transparent";
   let shadowStyle = "0px 0px 0px 1px var(--shadow-border)";
@@ -674,7 +696,7 @@ function CharCell({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center rounded transition-all cursor-pointer"
+      className="flex flex-col items-center rounded transition-all cursor-pointer relative"
       style={{
         backgroundColor: bgColor,
         boxShadow: shadowStyle,
@@ -683,6 +705,23 @@ function CharCell({
         padding: "2px 0",
       }}
     >
+      {isIvs && (
+        <span
+          className="absolute font-mono font-semibold"
+          style={{
+            top: "1px",
+            right: "2px",
+            fontSize: "7px",
+            lineHeight: 1,
+            color: "var(--accent-blue-text)",
+            backgroundColor: "var(--accent-blue-bg)",
+            borderRadius: "3px",
+            padding: "1px 2px",
+          }}
+        >
+          VS{ivsIndex}
+        </span>
+      )}
       <span
         className={`flex-1 flex items-center leading-none ${
           isControl || isWhitespace ? "font-mono" : ""
@@ -715,11 +754,13 @@ function DetailPanel({
   cluster,
   onClose,
   mappingVariant,
+  onSetInput,
 }: {
   t: Messages;
   cluster: GraphemeCluster;
   onClose?: () => void;
   mappingVariant: MappingVariant;
+  onSetInput?: (text: string) => void;
 }) {
   const utf8ByteCount = cluster.codePoints.reduce(
     (sum, cp) => sum + cp.utf8Bytes.length,
@@ -781,7 +822,7 @@ function DetailPanel({
 
       {/* Code point details */}
       <div className="overflow-x-auto">
-        <AllCodePointsTable t={t} codePoints={cluster.codePoints} mappingVariant={mappingVariant} />
+        <AllCodePointsTable t={t} codePoints={cluster.codePoints} mappingVariant={mappingVariant} onSetInput={onSetInput} />
       </div>
     </div>
   );
@@ -809,10 +850,12 @@ function AllCodePointsTable({
   t,
   codePoints,
   mappingVariant,
+  onSetInput,
 }: {
   t: Messages;
   codePoints: CodePointInfo[];
   mappingVariant: MappingVariant;
+  onSetInput?: (text: string) => void;
 }) {
   const langLabelMap: Record<LanguageGroup, string> = {
     auto: "",
@@ -924,6 +967,44 @@ function AllCodePointsTable({
         return (
           <span key={i} className="inline-flex gap-1" style={{ fontFamily: "var(--font-sans)", fontSize: "13px" }}>
             {labels.join(" ")}
+          </span>
+        );
+      }),
+    });
+  }
+
+  // IVS row — only if any code point has 2+ IVS variants
+  // (1 IVS = default glyph registration only, no visual difference)
+  const ivsCounts = codePoints.map((cp) => getIvsCount(cp.codePoint));
+  if (ivsCounts.some((n) => n >= 2)) {
+    rows.push({
+      kind: "data",
+      label: t.thIvs,
+      cells: codePoints.map((cp, i) => {
+        const count = ivsCounts[i];
+        if (count < 2) return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
+        return (
+          <span key={i} className="inline-flex items-center gap-1.5" style={{ fontFamily: "var(--font-sans)" }}>
+            <span className="text-xs" style={{ color: "var(--gray-600)" }}>{t.ivsVariants(count)}</span>
+            {onSetInput && (
+              <button
+                type="button"
+                onClick={() => {
+                  const base = String.fromCodePoint(cp.codePoint);
+                  const variants = getIvsVariants(cp.codePoint);
+                  const text = base + variants.map((vs) => base + String.fromCodePoint(vs)).join("");
+                  onSetInput(text);
+                }}
+                className="text-xs rounded-full px-2 py-0.5 cursor-pointer transition-colors"
+                style={{
+                  color: "var(--accent-blue-text)",
+                  backgroundColor: "var(--accent-blue-bg)",
+                  boxShadow: "0px 0px 0px 1px var(--accent-blue)",
+                }}
+              >
+                {t.ivsShowAll}
+              </button>
+            )}
           </span>
         );
       }),
