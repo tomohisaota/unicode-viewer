@@ -650,31 +650,40 @@ function CharCell({
       ? "␣"
       : cluster.grapheme;
 
+  const cpCount = cluster.codePoints.length;
+  const cpLabel = cpCount === 1
+    ? cp0.codePoint.toString(16).toUpperCase()
+    : `${cpCount} CP`;
+
   let bgColor = "transparent";
   let shadowStyle = "0px 0px 0px 1px var(--shadow-border)";
+  let labelColor = "var(--gray-400)";
 
   if (isSelected) {
     bgColor = "var(--accent-blue-bg)";
     shadowStyle = "0px 0px 0px 1.5px var(--accent-blue)";
+    labelColor = "var(--accent-blue)";
   } else if (isDiff) {
     bgColor = "var(--diff-bg)";
     shadowStyle = "0px 0px 0px 1.5px var(--diff-border)";
+    labelColor = "var(--diff-text)";
   }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-center rounded transition-all cursor-pointer"
+      className="flex flex-col items-center rounded transition-all cursor-pointer"
       style={{
         backgroundColor: bgColor,
         boxShadow: shadowStyle,
-        width: "2.5rem",
-        height: "2.5rem",
+        width: "3rem",
+        height: "2.75rem",
+        padding: "2px 0",
       }}
     >
       <span
-        className={`leading-none ${
+        className={`flex-1 flex items-center leading-none ${
           isControl || isWhitespace ? "font-mono" : ""
         }`}
         style={{
@@ -686,6 +695,12 @@ function CharCell({
         }}
       >
         {displayChar}
+      </span>
+      <span
+        className="font-mono tabular-nums"
+        style={{ fontSize: "8px", color: labelColor, lineHeight: 1 }}
+      >
+        {cpLabel}
       </span>
     </button>
   );
