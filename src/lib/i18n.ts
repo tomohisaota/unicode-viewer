@@ -202,6 +202,27 @@ const translations = {
           },
         ],
       },
+      {
+        label: "CJK",
+        sections: [
+          {
+            title: "CJK Unified Ideographs",
+            body: "CJK Unified Ideographs are Chinese characters (漢字/汉字/한자) shared across Chinese, Japanese, Korean, and Vietnamese. Unicode merges characters that are considered the same across these languages into a single code point — a process called Han Unification. The main block (U+4E00–U+9FFF) contains about 21,000 characters, with Extensions A–I adding over 70,000 more.",
+          },
+          {
+            title: "IRG Source (Ideographic Rapporteur Group)",
+            body: "Each CJK character in Unicode was submitted by one or more national/regional standards bodies. The IRG Source property records which standards include each character: 🇯🇵 J (Japan/JIS), 🇨🇳 G (China/GB), 🇹🇼 T (Taiwan/CNS), 🇰🇷 K (Korea/KS). This tool shows these flags in the detail panel — for example, 繋 (U+7E4B) has J/G/K but not T, meaning it is in Japanese, Chinese, and Korean standards but not Taiwanese.",
+          },
+          {
+            title: "CJK Compatibility Ideographs",
+            body: "CJK Compatibility Ideographs (U+F900–U+FAFF) are duplicate encodings of characters that already exist elsewhere in Unicode. They were added for round-trip compatibility with legacy encodings (e.g., KS X 1001, JIS X 0213, Big5). Under Unicode normalization (NFC/NFD/NFKC/NFKD), these always map to the canonical CJK Unified Ideograph — for example, U+F91D (欄) normalizes to U+6B04 (欄).",
+          },
+          {
+            title: "Auto Detection",
+            body: "This tool automatically detects which language groups are relevant for each character. For CJK ideographs, it uses the Unihan IRG Source database (88,000+ characters) rather than simple encoding checks, providing accurate country-level identification. For script-specific characters (Hiragana → Japanese, Hangul → Korean, Bopomofo → Chinese), the script block is used directly.",
+          },
+        ],
+      },
     ] as HelpTab[],
     convertCodePoints: "Convert U+XXXX notation",
     convertEscape: "Convert \\uXXXX notation",
@@ -364,6 +385,27 @@ const translations = {
           {
             title: "JIS ↔ Unicode マッピングの相違",
             body: "一部の JIS 文字（代表例: 波ダッシュ〜／全角チルダ～、マイナス記号、全角ハイフン等）は、採用するマッピング表によって異なる Unicode コードポイントに対応します。Microsoft / WHATWG のマッピングと、Unicode.org / JIS 標準のマッピングでは結果が変わります。設定から切り替えると、同じバイト列が異なる Unicode 文字にマップされる様子を確認できます。",
+          },
+        ],
+      },
+      {
+        label: "CJK",
+        sections: [
+          {
+            title: "CJK 統合漢字",
+            body: "CJK 統合漢字は、中国語・日本語・韓国語・ベトナム語で共有される漢字です。Unicode は各言語で「同じ」とみなされる漢字を1つのコードポイントに統合しています（Han Unification）。基本ブロック（U+4E00〜U+9FFF）には約 21,000 字、拡張 A〜I を含めると合計 88,000 字以上が収録されています。",
+          },
+          {
+            title: "IRG ソース（Ideographic Rapporteur Group）",
+            body: "Unicode の各 CJK 漢字には、どの国・地域の規格から提出されたかを示す IRG ソース情報があります。🇯🇵 J（日本/JIS）、🇨🇳 G（中国/GB）、🇹🇼 T（台湾/CNS）、🇰🇷 K（韓国/KS）の4ヶ国のフラグを詳細パネルに表示します。例えば「繋」（U+7E4B）は J/G/K のみで T がなく、日本・中国・韓国の規格には含まれるが台湾の規格には含まれないことを示します。",
+          },
+          {
+            title: "CJK 互換漢字",
+            body: "CJK 互換漢字（U+F900〜U+FAFF）は、レガシーエンコーディング（KS X 1001、JIS X 0213、Big5 等）との往復変換互換性のために追加された重複エントリです。Unicode 正規化（NFC/NFD/NFKC/NFKD）では常に正規の CJK 統合漢字にマップされます。例えば U+F91D（欄）は U+6B04（欄）に正規化されます。",
+          },
+          {
+            title: "自動検出",
+            body: "このツールは文字ごとに関連する言語グループを自動検出します。CJK 漢字については単純なエンコーディング可否ではなく、Unihan IRG ソースデータベース（88,000 字以上）を使い、各国規格への収録状況に基づいて正確に判定します。文字種固有の文字（ひらがな → 日本語、ハングル → 韓国語、注音符号 → 中国語）は Unicode ブロックから直接判定します。",
           },
         ],
       },
