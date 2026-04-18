@@ -45,7 +45,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "～〜 — WHATWG vs Unicode.org mapping (wave dash)", value: "～〜" },
     { label: "欄欄 — CJK Compatibility Ideograph (U+F91D → U+6B04)", value: "U+F91D欄" },
     { label: "葛󠄀葛 — IVS (Ideographic Variation Sequence)", value: "葛󠄀葛" },
-    { label: "邉󠄀邉󠄁邉󠄂邉󠄃 — 邉(nabe) has 47 IVS variants — most in Unicode", value: "邉󠄀邉󠄁邉󠄂邉󠄃" },
+    { label: "邉 × 47 — Most IVS variants in Unicode (渡邉のナベ)", value: "邉󠄀邉󠄁邉󠄂邉󠄃邉󠄄邉󠄅邉󠄆邉󠄇邉󠄈邉󠄉邉󠄊邉󠄋邉󠄌邉󠄍邉󠄎邉󠄏邉󠄏邉󠄐邉󠄐邉󠄑邉󠄑邉󠄒邉󠄒邉󠄓邉󠄓邉󠄔邉󠄔邉󠄕邉󠄕邉󠄖邉󠄖邉󠄗邉󠄗邉󠄘邉󠄘邉󠄙邉󠄙邉󠄚邉󠄚邉󠄛邉󠄛邉󠄜邉󠄜邉󠄝邉󠄝邉󠄞邉󠄟" },
     // --- Special ---
     { label: "\\u0000 — NULL character", value: "\\u0000" },
   ],
@@ -76,7 +76,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "～〜 — WHATWG vs Unicode.org マッピング（波ダッシュ問題）", value: "～〜" },
     { label: "欄欄 — CJK互換漢字と正規化（U+F91D → U+6B04）", value: "U+F91D欄" },
     { label: "葛󠄀葛 — IVS（異体字セレクタ）", value: "葛󠄀葛" },
-    { label: "邉󠄀邉󠄁邉󠄂邉󠄃 — 「邉」は47異体字 — Unicode最多", value: "邉󠄀邉󠄁邉󠄂邉󠄃" },
+    { label: "邉 × 47 — Unicode最多の異体字（渡邉のナベ）", value: "邉󠄀邉󠄁邉󠄂邉󠄃邉󠄄邉󠄅邉󠄆邉󠄇邉󠄈邉󠄉邉󠄊邉󠄋邉󠄌邉󠄍邉󠄎邉󠄏邉󠄏邉󠄐邉󠄐邉󠄑邉󠄑邉󠄒邉󠄒邉󠄓邉󠄓邉󠄔邉󠄔邉󠄕邉󠄕邉󠄖邉󠄖邉󠄗邉󠄗邉󠄘邉󠄘邉󠄙邉󠄙邉󠄚邉󠄚邉󠄛邉󠄛邉󠄜邉󠄜邉󠄝邉󠄝邉󠄞邉󠄟" },
     // --- 特殊 ---
     { label: "\\u0000 — NULL 文字", value: "\\u0000" },
   ],
