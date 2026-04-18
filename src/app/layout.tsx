@@ -14,11 +14,68 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://unicode-viewer.appbatake.com";
+const DESCRIPTION =
+  "Analyze Unicode strings — grapheme clusters, code points, UTF-8/UTF-16 bytes, legacy encodings (Shift_JIS, Big5, GBK, EUC-KR, and 20+ more), CJK IRG sources, and normalization comparison.";
+
 export const metadata: Metadata = {
-  title: "Unicode Viewer",
-  description:
-    "Unicode code point viewer — view encodings, categories, and details for each character",
+  title: "Unicode Viewer — Character Encoding Inspector",
+  description: DESCRIPTION,
   manifest: "/manifest.json",
+  metadataBase: new URL(SITE_URL),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Unicode Viewer",
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Unicode Viewer",
+    type: "website",
+    locale: "en",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Unicode Viewer — Character Encoding Inspector",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Unicode Viewer",
+    description: DESCRIPTION,
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/icon-512.png",
+  },
+  keywords: [
+    "Unicode",
+    "code point",
+    "UTF-8",
+    "UTF-16",
+    "character encoding",
+    "Shift_JIS",
+    "CP932",
+    "Big5",
+    "GBK",
+    "GB18030",
+    "EUC-KR",
+    "EUC-JP",
+    "ISO-2022-JP",
+    "CJK",
+    "Unihan",
+    "IRG source",
+    "grapheme cluster",
+    "normalization",
+    "NFC",
+    "NFD",
+    "NFKC",
+    "NFKD",
+  ],
 };
 
 export const viewport: Viewport = {
@@ -41,6 +98,23 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <HtmlLangSetter />
         <ServiceWorkerRegistrar />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Unicode Viewer",
+              url: SITE_URL,
+              description: DESCRIPTION,
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "Any",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+              browserRequirements: "Requires a modern web browser",
+              inLanguage: ["en", "ja"],
+            }),
+          }}
+        />
         {children}
       </body>
     </html>
