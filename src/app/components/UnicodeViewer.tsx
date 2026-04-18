@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups, detectScript } from "@/lib/encodings";
+import { getCjkIrgFlags } from "@/lib/cjk-irg-data";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -877,6 +878,34 @@ function AllCodePointsTable({
         <span key={i} style={{ color: "var(--gray-500)", fontFamily: "var(--font-sans)" }}>{cp.blockName}</span>
       )),
     },
+  );
+
+  // IRG Source row — only if any code point has IRG data
+  const irgFlags = codePoints.map((cp) => getCjkIrgFlags(cp.codePoint));
+  if (irgFlags.some((f) => f > 0)) {
+    const IRG_LABELS: [number, string][] = [
+      [1, "🇯🇵"],
+      [2, "🇨🇳"],
+      [4, "🇹🇼"],
+      [8, "🇰🇷"],
+    ];
+    rows.push({
+      kind: "data",
+      label: t.thIrgSource,
+      cells: codePoints.map((cp, i) => {
+        const f = irgFlags[i];
+        if (f === 0) return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
+        const labels = IRG_LABELS.filter(([bit]) => f & bit).map(([, label]) => label);
+        return (
+          <span key={i} className="inline-flex gap-1" style={{ fontFamily: "var(--font-sans)", fontSize: "13px" }}>
+            {labels.join(" ")}
+          </span>
+        );
+      }),
+    });
+  }
+
+  rows.push(
     {
       kind: "data",
       label: t.thUtf8,

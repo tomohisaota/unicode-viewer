@@ -206,6 +206,7 @@ function encodeLatin1(cp: number): EncodingResult {
 // --- TextDecoder reverse-mapping ---
 
 import { parseSjis2004Additions } from "./sjis2004-data";
+import { getCjkIrgFlags } from "./cjk-irg-data";
 
 let cp932Map: Map<number, number[]> | null = null;
 let sjisMap: Map<number, number[]> | null = null;
@@ -605,15 +606,7 @@ export function getLegacyEncoding(
  * The broadest encoding in each group (most characters supported).
  * GBK is used instead of GB18030 since GB18030 covers all of Unicode.
  */
-/** Language groups that need multiple encodings for auto-detection */
-const AUTO_CHECK_MULTI: Partial<Record<LanguageGroup, LegacyEncoding[]>> = {
-  ja: ["sjis2004", "cp932"],
-};
-
 const AUTO_CHECK_ENCODING: Partial<Record<LanguageGroup, LegacyEncoding>> = {
-  "zh-Hant": "big5",
-  "zh-Hans": "gbk",
-  ko: "euc-kr",
   "Latn-WE": "windows-1252",
   "Latn-CE": "windows-1250",
   "Latn-Baltic": "windows-1257",
@@ -658,28 +651,54 @@ function isChineseScript(cp: number): boolean {
     || (cp >= 0x31a0 && cp <= 0x31bf);    // Bopomofo Extended
 }
 
+/** IRG flag bits → CJK language groups */
+const IRG_FLAG_TO_GROUP: [number, LanguageGroup][] = [
+  [1, "ja"],       // J
+  [2, "zh-Hans"],  // G (China)
+  [4, "zh-Hant"],  // T (Taiwan)
+  [8, "ko"],       // K
+];
+
 /**
- * Filter CJK groups by script affinity.
- * Hiragana/Katakana → Japanese only, Hangul → Korean only, Bopomofo → Chinese only.
- * CJK ideographs (shared) pass all CJK groups.
+ * Determine CJK language groups from Unihan IRG source data.
+ * For script-specific characters (hiragana, hangul, bopomofo), uses script detection.
+ * For CJK ideographs, uses the IRG source flags from the Unihan database.
  */
-function filterCjkByScript(groups: LanguageGroup[], codePoints: number[]): LanguageGroup[] {
+function getCjkGroups(codePoints: number[]): LanguageGroup[] {
+  // Accumulate IRG flags across all code points (intersection)
+  // Also detect script-specific characters
+  let irgMask = 0x0f; // start with all flags, intersect
+  let hasIrg = false;
   let ja = false, ko = false, zh = false;
+
   for (const cp of codePoints) {
     if (cp <= 0x7f) continue;
-    if (isJapaneseScript(cp)) ja = true;
-    if (isKoreanScript(cp)) ko = true;
-    if (isChineseScript(cp)) zh = true;
-  }
-  // No script-specific characters → no filtering
-  if (!ja && !ko && !zh) return groups;
+    if (isJapaneseScript(cp)) { ja = true; continue; }
+    if (isKoreanScript(cp)) { ko = true; continue; }
+    if (isChineseScript(cp)) { zh = true; continue; }
 
-  return groups.filter((g) => {
-    if (!CJK_GROUPS.has(g)) return true;
-    if (g === "ja") return ja;
-    if (g === "ko") return ko;
-    return zh; // chinese-traditional, chinese-simplified
-  });
+    const flags = getCjkIrgFlags(cp);
+    if (flags > 0) {
+      irgMask &= flags;
+      hasIrg = true;
+    }
+  }
+
+  // Script-specific characters override IRG data
+  if (ja || ko || zh) {
+    const groups: LanguageGroup[] = [];
+    if (ja) groups.push("ja");
+    if (zh) { groups.push("zh-Hant"); groups.push("zh-Hans"); }
+    if (ko) groups.push("ko");
+    return groups;
+  }
+
+  if (!hasIrg) return [];
+
+  // Map IRG flags to language groups
+  return IRG_FLAG_TO_GROUP
+    .filter(([bit]) => (irgMask & bit) !== 0)
+    .map(([, group]) => group);
 }
 
 /** Determine which language groups are relevant for the given code points. */
@@ -690,31 +709,24 @@ export function getAutoGroups(
   const nonAscii = codePoints.filter((cp) => cp > 0x7f);
   if (nonAscii.length === 0) return ["Latn-WE"];
 
-  const hasCjk = nonAscii.some(isCjkRelevant);
-
   const groups: LanguageGroup[] = [];
 
-  // Check groups with multiple representative encodings (e.g. ja: sjis2004 + cp932)
-  for (const [group, encodings] of Object.entries(AUTO_CHECK_MULTI)) {
-    if (!encodings) continue;
-    if (CJK_GROUPS.has(group as LanguageGroup) && !hasCjk) continue;
-    const match = nonAscii.every((cp) =>
-      encodings.some((enc) => getLegacyEncoding(cp, enc, variant).encodable)
-    );
-    if (match) groups.push(group as LanguageGroup);
+  // CJK groups via Unihan IRG source data
+  const hasCjk = nonAscii.some(isCjkRelevant);
+  if (hasCjk) {
+    groups.push(...getCjkGroups(nonAscii));
   }
 
-  // Check groups with a single representative encoding
+  // Non-CJK groups via encodability check
   for (const [group, checkEnc] of Object.entries(AUTO_CHECK_ENCODING)) {
     if (!checkEnc) continue;
-    if (groups.includes(group as LanguageGroup)) continue; // already matched above
-    if (CJK_GROUPS.has(group as LanguageGroup) && !hasCjk) continue;
+    if (CJK_GROUPS.has(group as LanguageGroup)) continue; // handled above
     const allEncodable = nonAscii.every(
       (cp) => getLegacyEncoding(cp, checkEnc, variant).encodable
     );
     if (allEncodable) groups.push(group as LanguageGroup);
   }
-  return filterCjkByScript(groups, codePoints);
+  return groups;
 }
 
 /**
