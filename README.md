@@ -45,4 +45,10 @@ http://localhost:3000 で開発サーバーが起動します。
 
 ## License
 
-[MIT](./LICENSE)
+This project is licensed under the [MIT License](./LICENSE).
+
+### Third-party Font
+
+The CJK IVS font files in `public/fonts/` are derived from **IPAmj明朝** (IPAmj Mincho) by IPA (Information-technology Promotion Agency, Japan), licensed under the [IPA Font License Agreement v1.0](https://opensource.org/licenses/IPA). See [public/fonts/LICENSE.txt](./public/fonts/LICENSE.txt) for details.
+
+The original IPAmj明朝 can be downloaded from: https://moji.or.jp/mojikiban/font/

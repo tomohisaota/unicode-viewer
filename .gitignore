@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .idea/
+
+# IPAmj明朝 source (downloaded separately, fonts are generated from this)
+/ipamjm00601/

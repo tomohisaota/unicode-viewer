@@ -1,0 +1,18 @@
+CJK IVS Font (CjkIvsMincho)
+============================
+
+This font is a Derived Program created from IPAmj明朝 (IPAmj Mincho)
+version 006.01, distributed under the IPA Font License Agreement v1.0.
+
+The original IPAmj明朝 can be downloaded from:
+https://moji.or.jp/mojikiban/font/
+
+Modifications made:
+- Subset into 110 WOFF2 chunks by Unicode range for on-demand web loading
+- Renamed font-family and file names per license Article 3, Paragraph 1(4)
+
+This Derived Program is licensed under the IPA Font License Agreement v1.0.
+The full license text is available at:
+https://opensource.org/licenses/IPA
+
+Copyright (c) Information-technology Promotion Agency, Japan (IPA)

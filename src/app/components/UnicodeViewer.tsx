@@ -692,6 +692,7 @@ function CharCell({
               ? "var(--accent-blue-text)"
               : "var(--gray-900)",
           fontSize: isControl || isWhitespace ? "7px" : "14px",
+          fontFamily: !(isControl || isWhitespace) ? "var(--font-cjk)" : undefined,
         }}
       >
         {displayChar}
@@ -744,7 +745,7 @@ function DetailPanel({
         }}
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
-          <span className="text-xl sm:text-2xl">{cluster.grapheme}</span>
+          <span className="text-xl sm:text-2xl" style={{ fontFamily: "var(--font-cjk)" }}>{cluster.grapheme}</span>
           <span
             className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium gap-2"
             style={{
@@ -847,7 +848,7 @@ function AllCodePointsTable({
         return (
           <span key={cp.hex} className="inline-flex items-center gap-2">
             {isVisible && (
-              <span style={{ fontSize: "16px" }}>{cp.char}</span>
+              <span style={{ fontSize: "16px", fontFamily: "var(--font-cjk)" }}>{cp.char}</span>
             )}
             <span className="font-mono font-medium" style={{ color: "var(--accent-blue)" }}>
               {cp.hex}
