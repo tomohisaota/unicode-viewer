@@ -23,7 +23,7 @@
   --unencodable-bg: #fef2f2;
   --unencodable-border: #ef4444;
   --unencodable-text: #dc2626;
-  --font-cjk: 'CjkIvsMincho';
+  --font-cjk: 'CjkAj1Mincho', 'CjkIvsMincho';
 }
 
 @theme inline {
