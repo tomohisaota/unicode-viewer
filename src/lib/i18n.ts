@@ -32,6 +32,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "\\u0000 — NULL character", value: "\\u0000" },
     { label: "高髙 — JIS level 1 vs CP932 IBM extension", value: "高髙" },
     { label: "～〜 — WHATWG vs Unicode.org mapping (wave dash)", value: "～〜" },
+    { label: "欄欄 — CJK Compatibility Ideograph (U+F91D → U+6B04)", value: "U+F91D欄" },
   ],
   ja: [
     { label: "👨‍👩‍👧‍👦 家族絵文字（ZWJ結合）", value: "👨‍👩‍👧‍👦" },
@@ -47,6 +48,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "\\u0000 — NULL 文字", value: "\\u0000" },
     { label: "高髙 — JIS第一水準 vs CP932 IBM拡張", value: "高髙" },
     { label: "～〜 — WHATWG vs Unicode.org マッピング（波ダッシュ問題）", value: "～〜" },
+    { label: "欄欄 — CJK互換漢字と正規化（U+F91D → U+6B04）", value: "U+F91D欄" },
   ],
 };
 
