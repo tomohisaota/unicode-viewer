@@ -19,36 +19,64 @@ export interface Sample {
 
 const samples: { en: Sample[]; ja: Sample[] } = {
   en: [
-    { label: "👨‍👩‍👧‍👦 Family emoji (ZWJ sequence)", value: "👨‍👩‍👧‍👦" },
+    // --- Emoji & Modifiers ---
+    { label: "👨‍👩‍👧‍👦 Family emoji — 1 grapheme, 7 CPs, .length=11", value: "👨‍👩‍👧‍👦" },
     { label: "🏳️‍🌈 Rainbow flag (ZWJ + VS)", value: "🏳️‍🌈" },
     { label: "👍🏽 Skin tone modifier", value: "👍🏽" },
-    { label: "café — NFC vs NFD", value: "café" },
-    { label: "㍻㌔㍑ — NFKC decomposition", value: "㍻㌔㍑" },
-    { label: "ﬁﬄ — Ligature characters", value: "ﬁﬄ" },
-    { label: "Å Å Å — Same glyph, 3 different code points", value: "U+00C5 U+212B U+0041U+030A" },
-    { label: "‮RLO‬ — Bidi override", value: "‮abc‬" },
-    { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — Combining marks stacking", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
-    { label: "2⁰ H₂O — Super/subscripts", value: "2⁰ H₂O" },
-    { label: "\\u0000 — NULL character", value: "\\u0000" },
+    { label: "🇯🇵🇺🇸🇬🇧 Flag emoji (Regional Indicator pairs)", value: "🇯🇵🇺🇸🇬🇧" },
+    { label: "☺︎☺️ — Text vs Emoji presentation (VS15/VS16)", value: "☺︎☺️" },
+    // --- Normalization ---
+    { label: "café — NFC vs NFD (1 CP vs 2 CPs for é)", value: "café" },
+    { label: "㍻㌔㍑ — NFKC decomposition (㍻ → 平成)", value: "㍻㌔㍑" },
+    { label: "ﬁﬄ — Ligature characters (NFKC → fi, ffl)", value: "ﬁﬄ" },
+    { label: "Å Å Å — Same glyph, 3 code points", value: "U+00C5 U+212B U+0041U+030A" },
+    { label: "2⁰ H₂O — Super/subscripts (NFKC → 20 H2O)", value: "2⁰ H₂O" },
+    // --- Visual Deception ---
+    { label: "AАΑ aа oоο — Homoglyphs (Latin/Cyrillic/Greek)", value: "AАΑ aа oоο" },
+    { label: "ab​cd — Zero-width space (invisible character)", value: "ab​cd" },
+    { label: "‮RLO‬ — Bidi override (right-to-left)", value: "‮abc‬" },
+    { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — Combining marks stacking", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
+    // --- Width & Spaces ---
+    { label: "ABCＡＢＣｱｲｳアイウ — Fullwidth / Halfwidth variants", value: "ABCＡＢＣｱｲｳアイウ" },
+    { label: "A B C D　E — 5 kinds of space", value: "A B C D　E" },
+    // --- CJK & Encoding ---
     { label: "高髙 — JIS level 1 vs CP932 IBM extension", value: "高髙" },
+    { label: "繋繫 — JIS X 0208 vs JIS X 0213:2004", value: "繋繫" },
     { label: "～〜 — WHATWG vs Unicode.org mapping (wave dash)", value: "～〜" },
     { label: "欄欄 — CJK Compatibility Ideograph (U+F91D → U+6B04)", value: "U+F91D欄" },
+    { label: "葛󠄀葛 — IVS (Ideographic Variation Sequence)", value: "葛󠄀葛" },
+    // --- Special ---
+    { label: "\\u0000 — NULL character", value: "\\u0000" },
   ],
   ja: [
-    { label: "👨‍👩‍👧‍👦 家族絵文字（ZWJ結合）", value: "👨‍👩‍👧‍👦" },
+    // --- 絵文字 ---
+    { label: "👨‍👩‍👧‍👦 家族絵文字 — 1書記素 / 7CP / .length=11", value: "👨‍👩‍👧‍👦" },
     { label: "🏳️‍🌈 レインボーフラグ（ZWJ + 異体字セレクタ）", value: "🏳️‍🌈" },
     { label: "👍🏽 肌色修飾子", value: "👍🏽" },
-    { label: "café — NFC と NFD の違い", value: "café" },
-    { label: "㍻㌔㍑ — NFKC で分解される文字", value: "㍻㌔㍑" },
-    { label: "ﬁﬄ — 合字（リガチャ）", value: "ﬁﬄ" },
-    { label: "Å Å Å — 見た目は同じ、コードポイントは3種類", value: "U+00C5 U+212B U+0041U+030A" },
-    { label: "‮RLO‬ — 双方向制御文字", value: "‮abc‬" },
-    { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — 結合マークの重ね", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
-    { label: "2⁰ H₂O — 上付き・下付き文字", value: "2⁰ H₂O" },
-    { label: "\\u0000 — NULL 文字", value: "\\u0000" },
+    { label: "🇯🇵🇺🇸🇬🇧 国旗絵文字（地域インジケータの組）", value: "🇯🇵🇺🇸🇬🇧" },
+    { label: "☺︎☺️ — テキスト表示 vs 絵文字表示（VS15/VS16）", value: "☺︎☺️" },
+    // --- 正規化 ---
+    { label: "café — NFC と NFD の違い（é が 1CP vs 2CP）", value: "café" },
+    { label: "㍻㌔㍑ — NFKC で分解される文字（㍻ → 平成）", value: "㍻㌔㍑" },
+    { label: "ﬁﬄ — 合字（NFKC → fi, ffl）", value: "ﬁﬄ" },
+    { label: "Å Å Å — 見た目は同じ、コードポイントは3種類", value: "U+00C5 U+212B U+0041U+030A" },
+    { label: "2⁰ H₂O — 上付き・下付き文字（NFKC → 20 H2O）", value: "2⁰ H₂O" },
+    // --- 視覚的な罠 ---
+    { label: "AАΑ aа oоο — ホモグリフ（ラテン/キリル/ギリシャ）", value: "AАΑ aа oоο" },
+    { label: "ab​cd — ゼロ幅スペース（不可視文字）", value: "ab​cd" },
+    { label: "‮RLO‬ — 双方向制御文字（右から左）", value: "‮abc‬" },
+    { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — 結合マークの重ね", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
+    // --- 全角・半角・空白 ---
+    { label: "ABCＡＢＣｱｲｳアイウ — 全角・半角のバリエーション", value: "ABCＡＢＣｱｲｳアイウ" },
+    { label: "A B C D　E — 5種類のスペース", value: "A B C D　E" },
+    // --- CJK・エンコーディング ---
     { label: "高髙 — JIS第一水準 vs CP932 IBM拡張", value: "高髙" },
+    { label: "繋繫 — JIS X 0208 vs JIS X 0213:2004", value: "繋繫" },
     { label: "～〜 — WHATWG vs Unicode.org マッピング（波ダッシュ問題）", value: "～〜" },
     { label: "欄欄 — CJK互換漢字と正規化（U+F91D → U+6B04）", value: "U+F91D欄" },
+    { label: "葛󠄀葛 — IVS（異体字セレクタ）", value: "葛󠄀葛" },
+    // --- 特殊 ---
+    { label: "\\u0000 — NULL 文字", value: "\\u0000" },
   ],
 };
 
