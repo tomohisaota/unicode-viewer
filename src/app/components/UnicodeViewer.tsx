@@ -89,23 +89,31 @@ export default function UnicodeViewer() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showNormalization, setShowNormalization] = useState(false);
 
-  // Read URL param on mount (client only)
+  // Read URL params on mount (client only)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const text = params.get("text");
     if (text !== null) setRawInput(text);
+    if (params.get("cp") === "0") setConvertCP(false);
+    if (params.get("esc") === "0") setConvertEsc(false);
+    if (params.get("map") === "unicode.org") setMappingVariant("unicode.org");
+    if (params.get("norm") === "1") setShowNormalization(true);
   }, []);
 
-  // Sync rawInput to URL query parameter
+  // Sync state to URL query parameters
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (rawInput) {
-      url.searchParams.set("text", rawInput);
-    } else {
-      url.searchParams.delete("text");
-    }
+    const set = (key: string, value: string | null) => {
+      if (value) url.searchParams.set(key, value);
+      else url.searchParams.delete(key);
+    };
+    set("text", rawInput || null);
+    set("cp", convertCP ? null : "0");
+    set("esc", convertEsc ? null : "0");
+    set("map", mappingVariant === "unicode.org" ? "unicode.org" : null);
+    set("norm", showNormalization ? "1" : null);
     window.history.replaceState(null, "", url.toString());
-  }, [rawInput]);
+  }, [rawInput, convertCP, convertEsc, mappingVariant, showNormalization]);
 
   const input = useMemo(() => {
     let text = rawInput;
