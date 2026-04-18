@@ -789,7 +789,7 @@ function DetailPanel({
         }}
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
-          <span className="text-xl sm:text-2xl" style={{ fontFamily: "var(--font-cjk)" }}>{cluster.grapheme}</span>
+          <span className="text-4xl sm:text-5xl" style={{ fontFamily: "var(--font-cjk)" }}>{cluster.grapheme}</span>
           <span
             className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium gap-2"
             style={{
