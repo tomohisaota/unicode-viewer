@@ -5,7 +5,7 @@ import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups, detectScript } from "@/lib/encodings";
 import { getCjkIrgFlags } from "@/lib/cjk-irg-data";
-import { getIvsCount, getIvsVariants } from "@/lib/ivd-data";
+import { getIvsCount, getSvsCount, getIvsVariants, getSvsVariants } from "@/lib/ivd-data";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -661,18 +661,20 @@ function CharCell({
 
   const cpCount = cluster.codePoints.length;
 
-  // Detect IVS: base char + single variation selector
-  const isIvs = cpCount === 2 && (() => {
+  // Detect variation selector: base char + single VS
+  const hasVS = cpCount === 2 && (() => {
     const vs = cluster.codePoints[1].codePoint;
     return (vs >= 0xE0100 && vs <= 0xE01EF) || (vs >= 0xFE00 && vs <= 0xFE0F);
   })();
-  const ivsIndex = isIvs
-    ? cluster.codePoints[1].codePoint >= 0xE0100
-      ? cluster.codePoints[1].codePoint - 0xE0100
-      : cluster.codePoints[1].codePoint - 0xFE00
-    : -1;
+  const vsCodePoint = hasVS ? cluster.codePoints[1].codePoint : 0;
+  const isSvs = hasVS && vsCodePoint >= 0xFE00 && vsCodePoint <= 0xFE0F;
+  const vsLabel = hasVS
+    ? isSvs
+      ? `VS${vsCodePoint - 0xFE00 + 1}`    // VS1-VS16
+      : `VS${vsCodePoint - 0xE0100 + 17}`   // VS17-VS256
+    : "";
 
-  const cpLabel = isIvs
+  const cpLabel = hasVS
     ? cp0.codePoint.toString(16).toUpperCase()
     : cpCount === 1
       ? cp0.codePoint.toString(16).toUpperCase()
@@ -705,7 +707,7 @@ function CharCell({
         padding: "2px 0",
       }}
     >
-      {isIvs && (
+      {hasVS && (
         <span
           className="absolute font-mono font-semibold"
           style={{
@@ -713,13 +715,13 @@ function CharCell({
             right: "2px",
             fontSize: "7px",
             lineHeight: 1,
-            color: "var(--accent-blue-text)",
-            backgroundColor: "var(--accent-blue-bg)",
+            color: isSvs ? "var(--diff-text)" : "var(--accent-blue-text)",
+            backgroundColor: isSvs ? "var(--diff-bg)" : "var(--accent-blue-bg)",
             borderRadius: "3px",
             padding: "1px 2px",
           }}
         >
-          VS{ivsIndex}
+          {vsLabel}
         </span>
       )}
       <span
@@ -1002,7 +1004,44 @@ function AllCodePointsTable({
                   boxShadow: "0px 0px 0px 1px var(--accent-blue)",
                 }}
               >
-                {t.ivsShowAll}
+                {t.vsShowAll}
+              </button>
+            )}
+          </span>
+        );
+      }),
+    });
+  }
+
+  // SVS row — only if any code point has SVS variants
+  const svsCounts = codePoints.map((cp) => getSvsCount(cp.codePoint));
+  if (svsCounts.some((n) => n > 0)) {
+    rows.push({
+      kind: "data",
+      label: t.thSvs,
+      cells: codePoints.map((cp, i) => {
+        const count = svsCounts[i];
+        if (count === 0) return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
+        return (
+          <span key={i} className="inline-flex items-center gap-1.5" style={{ fontFamily: "var(--font-sans)" }}>
+            <span className="text-xs" style={{ color: "var(--gray-600)" }}>{t.svsVariants(count)}</span>
+            {onSetInput && (
+              <button
+                type="button"
+                onClick={() => {
+                  const base = String.fromCodePoint(cp.codePoint);
+                  const variants = getSvsVariants(cp.codePoint);
+                  const text = base + variants.map((vs) => base + String.fromCodePoint(vs)).join("");
+                  onSetInput(text);
+                }}
+                className="text-xs rounded-full px-2 py-0.5 cursor-pointer transition-colors"
+                style={{
+                  color: "var(--diff-text)",
+                  backgroundColor: "var(--diff-bg)",
+                  boxShadow: "0px 0px 0px 1px var(--diff-border)",
+                }}
+              >
+                {t.vsShowAll}
               </button>
             )}
           </span>
