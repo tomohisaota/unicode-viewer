@@ -1,6 +1,67 @@
 /* CJK IVS font — merged from IPAmj明朝 (Moji_Joho) + Source Han Serif (Adobe-Japan1) */
+/* Covers IVS (E0100-E01EF) and SVS (FE00-FE0F) variation sequences */
 /* On-demand loading via CSS unicode-range. See /fonts/LICENSE.txt */
 
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-0000.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-2200.woff2') format('woff2');
+  unicode-range: U+2200-22FF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-2300.woff2') format('woff2');
+  unicode-range: U+2300-23FF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-2900.woff2') format('woff2');
+  unicode-range: U+2900-29FF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-2A00.woff2') format('woff2');
+  unicode-range: U+2A00-2AFF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-2B00.woff2') format('woff2');
+  unicode-range: U+2B00-2BFF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-3000.woff2') format('woff2');
+  unicode-range: U+3000-30FF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-3100.woff2') format('woff2');
+  unicode-range: U+3100-31FF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-3200.woff2') format('woff2');
+  unicode-range: U+3200-32FF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-3300.woff2') format('woff2');
+  unicode-range: U+3300-33FF, U+E0100-E01EF, U+FE00-FE0F;
+}
 @font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
@@ -660,4 +721,10 @@
   font-display: swap;
   src: url('/fonts/cjk-ivs-FA00.woff2') format('woff2');
   unicode-range: U+FA00-FAFF, U+E0100-E01EF, U+FE00-FE0F;
+}
+@font-face {
+  font-family: 'CjkIvsMincho';
+  font-display: swap;
+  src: url('/fonts/cjk-ivs-FF00.woff2') format('woff2');
+  unicode-range: U+FF00-FFEF, U+E0100-E01EF, U+FE00-FE0F;
 }
