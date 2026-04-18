@@ -792,7 +792,29 @@ function DetailPanel({
         }}
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
-          <span className="text-4xl sm:text-5xl" style={{ fontFamily: "var(--font-cjk)" }}>{cluster.grapheme}</span>
+          {(() => {
+            // Detect if this is a variation sequence (base + VS)
+            const cps = cluster.codePoints;
+            const isVarSeq = cps.length === 2 && (
+              (cps[1].codePoint >= 0xE0100 && cps[1].codePoint <= 0xE01EF) ||
+              (cps[1].codePoint >= 0xFE00 && cps[1].codePoint <= 0xFE0F)
+            );
+            const baseChar = isVarSeq ? String.fromCodePoint(cps[0].codePoint) : null;
+            return (
+              <span className="relative inline-block" style={{ fontFamily: "var(--font-cjk)", fontSize: "clamp(72px, 12vw, 96px)" }}>
+                {isVarSeq && baseChar && (
+                  <span
+                    className="absolute inset-0"
+                    style={{ color: "var(--unencodable-border)", opacity: 0.2 }}
+                    aria-hidden="true"
+                  >
+                    {baseChar}
+                  </span>
+                )}
+                <span className="relative">{cluster.grapheme}</span>
+              </span>
+            );
+          })()}
           <span
             className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium gap-2"
             style={{
