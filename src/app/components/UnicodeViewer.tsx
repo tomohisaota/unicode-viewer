@@ -5,7 +5,7 @@ import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups, detectScript } from "@/lib/encodings";
 import { getCjkIrgFlags } from "@/lib/cjk-irg-data";
-import { getIvsCount, getSvsCount, getIvsVariants, getSvsVariants } from "@/lib/ivd-data";
+import { getIvsCount, getSvsCount, getIvsVariants, getSvsVariants, hasFontGlyph } from "@/lib/ivd-data";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -668,6 +668,7 @@ function CharCell({
   })();
   const vsCodePoint = hasVS ? cluster.codePoints[1].codePoint : 0;
   const isSvs = hasVS && vsCodePoint >= 0xFE00 && vsCodePoint <= 0xFE0F;
+  const vsHasFont = hasVS && hasFontGlyph(cp0.codePoint, vsCodePoint);
   const vsLabel = hasVS
     ? isSvs
       ? `VS${vsCodePoint - 0xFE00 + 1}`    // VS1-VS16
@@ -715,8 +716,10 @@ function CharCell({
             right: "2px",
             fontSize: "7px",
             lineHeight: 1,
-            color: isSvs ? "var(--diff-text)" : "var(--accent-blue-text)",
-            backgroundColor: isSvs ? "var(--diff-bg)" : "var(--accent-blue-bg)",
+            color: !vsHasFont ? "var(--gray-400)"
+              : isSvs ? "var(--diff-text)" : "var(--accent-blue-text)",
+            backgroundColor: !vsHasFont ? "var(--gray-50)"
+              : isSvs ? "var(--diff-bg)" : "var(--accent-blue-bg)",
             borderRadius: "3px",
             padding: "1px 2px",
           }}
@@ -978,16 +981,25 @@ function AllCodePointsTable({
   // IVS row — only if any code point has 2+ IVS variants
   // (1 IVS = default glyph registration only, no visual difference)
   const ivsCounts = codePoints.map((cp) => getIvsCount(cp.codePoint));
+  const ivsFontCounts = codePoints.map((cp) => {
+    const variants = getIvsVariants(cp.codePoint);
+    let count = 0;
+    for (const vs of variants) {
+      if (hasFontGlyph(cp.codePoint, vs)) count++;
+    }
+    return count;
+  });
   if (ivsCounts.some((n) => n >= 2)) {
     rows.push({
       kind: "data",
       label: t.thIvs,
       cells: codePoints.map((cp, i) => {
         const count = ivsCounts[i];
+        const fontCount = ivsFontCounts[i];
         if (count < 2) return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
         return (
-          <span key={i} className="inline-flex items-center gap-1.5" style={{ fontFamily: "var(--font-sans)" }}>
-            <span className="text-xs" style={{ color: "var(--gray-600)" }}>{t.ivsVariants(count)}</span>
+          <span key={i} className="inline-flex items-center gap-1.5 flex-wrap" style={{ fontFamily: "var(--font-sans)" }}>
+            <span className="text-xs" style={{ color: fontCount > 0 ? "var(--gray-600)" : "var(--gray-400)" }}>{t.ivsVariants(count, fontCount)}</span>
             {onSetInput && (
               <button
                 type="button"
@@ -1022,9 +1034,15 @@ function AllCodePointsTable({
       cells: codePoints.map((cp, i) => {
         const count = svsCounts[i];
         if (count === 0) return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
+        // Count SVS variants that have actual font glyphs
+        const variants = getSvsVariants(cp.codePoint);
+        let fontCount = 0;
+        for (const vs of variants) {
+          if (hasFontGlyph(cp.codePoint, vs)) fontCount++;
+        }
         return (
-          <span key={i} className="inline-flex items-center gap-1.5" style={{ fontFamily: "var(--font-sans)" }}>
-            <span className="text-xs" style={{ color: "var(--gray-600)" }}>{t.svsVariants(count)}</span>
+          <span key={i} className="inline-flex items-center gap-1.5 flex-wrap" style={{ fontFamily: "var(--font-sans)" }}>
+            <span className="text-xs" style={{ color: fontCount > 0 ? "var(--gray-600)" : "var(--gray-400)" }}>{t.svsVariants(count, fontCount)}</span>
             {onSetInput && (
               <button
                 type="button"
