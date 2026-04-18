@@ -1,19 +1,10 @@
-/* CJK IVS fonts — on-demand loading via unicode-range */
-/* Two font families covering different IVS collections: */
-/* 1. CjkIvsMincho: derived from IPAmj明朝 (Moji_Joho collection) — IPA Font License v1.0 */
-/* 2. CjkAj1Mincho: derived from Source Han Serif JP (Adobe-Japan1 collection) — SIL OFL 1.1 */
-/* See /fonts/LICENSE.txt for attribution and license details */
+/* CJK IVS font — merged from IPAmj明朝 (Moji_Joho) + Source Han Serif (Adobe-Japan1) */
+/* On-demand loading via CSS unicode-range. See /fonts/LICENSE.txt */
 
 @font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-3400.woff2') format('woff2');
-  unicode-range: U+3400-34FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3400.woff2') format('woff2');
   unicode-range: U+3400-34FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -23,21 +14,9 @@
   unicode-range: U+3500-35FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3500.woff2') format('woff2');
-  unicode-range: U+3500-35FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-3600.woff2') format('woff2');
-  unicode-range: U+3600-36FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3600.woff2') format('woff2');
   unicode-range: U+3600-36FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -47,21 +26,9 @@
   unicode-range: U+3700-37FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3700.woff2') format('woff2');
-  unicode-range: U+3700-37FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-3800.woff2') format('woff2');
-  unicode-range: U+3800-38FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3800.woff2') format('woff2');
   unicode-range: U+3800-38FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -71,21 +38,9 @@
   unicode-range: U+3900-39FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3900.woff2') format('woff2');
-  unicode-range: U+3900-39FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-3A00.woff2') format('woff2');
-  unicode-range: U+3A00-3AFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3A00.woff2') format('woff2');
   unicode-range: U+3A00-3AFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -95,21 +50,9 @@
   unicode-range: U+3B00-3BFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3B00.woff2') format('woff2');
-  unicode-range: U+3B00-3BFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-3C00.woff2') format('woff2');
-  unicode-range: U+3C00-3CFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3C00.woff2') format('woff2');
   unicode-range: U+3C00-3CFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -119,21 +62,9 @@
   unicode-range: U+3D00-3DFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3D00.woff2') format('woff2');
-  unicode-range: U+3D00-3DFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-3E00.woff2') format('woff2');
-  unicode-range: U+3E00-3EFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3E00.woff2') format('woff2');
   unicode-range: U+3E00-3EFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -143,21 +74,9 @@
   unicode-range: U+3F00-3FFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-3F00.woff2') format('woff2');
-  unicode-range: U+3F00-3FFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-4000.woff2') format('woff2');
-  unicode-range: U+4000-40FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4000.woff2') format('woff2');
   unicode-range: U+4000-40FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -167,21 +86,9 @@
   unicode-range: U+4100-41FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4100.woff2') format('woff2');
-  unicode-range: U+4100-41FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-4200.woff2') format('woff2');
-  unicode-range: U+4200-42FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4200.woff2') format('woff2');
   unicode-range: U+4200-42FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -191,21 +98,9 @@
   unicode-range: U+4300-43FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4300.woff2') format('woff2');
-  unicode-range: U+4300-43FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-4400.woff2') format('woff2');
-  unicode-range: U+4400-44FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4400.woff2') format('woff2');
   unicode-range: U+4400-44FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -215,21 +110,9 @@
   unicode-range: U+4500-45FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4500.woff2') format('woff2');
-  unicode-range: U+4500-45FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-4600.woff2') format('woff2');
-  unicode-range: U+4600-46FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4600.woff2') format('woff2');
   unicode-range: U+4600-46FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -239,21 +122,9 @@
   unicode-range: U+4700-47FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4700.woff2') format('woff2');
-  unicode-range: U+4700-47FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-4800.woff2') format('woff2');
-  unicode-range: U+4800-48FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4800.woff2') format('woff2');
   unicode-range: U+4800-48FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -263,21 +134,9 @@
   unicode-range: U+4900-49FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4900.woff2') format('woff2');
-  unicode-range: U+4900-49FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-4A00.woff2') format('woff2');
-  unicode-range: U+4A00-4AFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4A00.woff2') format('woff2');
   unicode-range: U+4A00-4AFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -287,21 +146,9 @@
   unicode-range: U+4B00-4BFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4B00.woff2') format('woff2');
-  unicode-range: U+4B00-4BFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-4C00.woff2') format('woff2');
-  unicode-range: U+4C00-4CFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4C00.woff2') format('woff2');
   unicode-range: U+4C00-4CFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -311,21 +158,9 @@
   unicode-range: U+4D00-4DBF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4D00.woff2') format('woff2');
-  unicode-range: U+4D00-4DBF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-4E00.woff2') format('woff2');
-  unicode-range: U+4E00-4EFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4E00.woff2') format('woff2');
   unicode-range: U+4E00-4EFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -335,21 +170,9 @@
   unicode-range: U+4F00-4FFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-4F00.woff2') format('woff2');
-  unicode-range: U+4F00-4FFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-5000.woff2') format('woff2');
-  unicode-range: U+5000-50FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5000.woff2') format('woff2');
   unicode-range: U+5000-50FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -359,21 +182,9 @@
   unicode-range: U+5100-51FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5100.woff2') format('woff2');
-  unicode-range: U+5100-51FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-5200.woff2') format('woff2');
-  unicode-range: U+5200-52FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5200.woff2') format('woff2');
   unicode-range: U+5200-52FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -383,21 +194,9 @@
   unicode-range: U+5300-53FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5300.woff2') format('woff2');
-  unicode-range: U+5300-53FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-5400.woff2') format('woff2');
-  unicode-range: U+5400-54FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5400.woff2') format('woff2');
   unicode-range: U+5400-54FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -407,21 +206,9 @@
   unicode-range: U+5500-55FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5500.woff2') format('woff2');
-  unicode-range: U+5500-55FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-5600.woff2') format('woff2');
-  unicode-range: U+5600-56FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5600.woff2') format('woff2');
   unicode-range: U+5600-56FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -431,21 +218,9 @@
   unicode-range: U+5700-57FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5700.woff2') format('woff2');
-  unicode-range: U+5700-57FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-5800.woff2') format('woff2');
-  unicode-range: U+5800-58FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5800.woff2') format('woff2');
   unicode-range: U+5800-58FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -455,21 +230,9 @@
   unicode-range: U+5900-59FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5900.woff2') format('woff2');
-  unicode-range: U+5900-59FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-5A00.woff2') format('woff2');
-  unicode-range: U+5A00-5AFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5A00.woff2') format('woff2');
   unicode-range: U+5A00-5AFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -479,21 +242,9 @@
   unicode-range: U+5B00-5BFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5B00.woff2') format('woff2');
-  unicode-range: U+5B00-5BFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-5C00.woff2') format('woff2');
-  unicode-range: U+5C00-5CFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5C00.woff2') format('woff2');
   unicode-range: U+5C00-5CFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -503,21 +254,9 @@
   unicode-range: U+5D00-5DFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5D00.woff2') format('woff2');
-  unicode-range: U+5D00-5DFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-5E00.woff2') format('woff2');
-  unicode-range: U+5E00-5EFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5E00.woff2') format('woff2');
   unicode-range: U+5E00-5EFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -527,21 +266,9 @@
   unicode-range: U+5F00-5FFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-5F00.woff2') format('woff2');
-  unicode-range: U+5F00-5FFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-6000.woff2') format('woff2');
-  unicode-range: U+6000-60FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6000.woff2') format('woff2');
   unicode-range: U+6000-60FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -551,21 +278,9 @@
   unicode-range: U+6100-61FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6100.woff2') format('woff2');
-  unicode-range: U+6100-61FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-6200.woff2') format('woff2');
-  unicode-range: U+6200-62FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6200.woff2') format('woff2');
   unicode-range: U+6200-62FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -575,21 +290,9 @@
   unicode-range: U+6300-63FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6300.woff2') format('woff2');
-  unicode-range: U+6300-63FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-6400.woff2') format('woff2');
-  unicode-range: U+6400-64FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6400.woff2') format('woff2');
   unicode-range: U+6400-64FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -599,21 +302,9 @@
   unicode-range: U+6500-65FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6500.woff2') format('woff2');
-  unicode-range: U+6500-65FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-6600.woff2') format('woff2');
-  unicode-range: U+6600-66FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6600.woff2') format('woff2');
   unicode-range: U+6600-66FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -623,21 +314,9 @@
   unicode-range: U+6700-67FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6700.woff2') format('woff2');
-  unicode-range: U+6700-67FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-6800.woff2') format('woff2');
-  unicode-range: U+6800-68FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6800.woff2') format('woff2');
   unicode-range: U+6800-68FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -647,21 +326,9 @@
   unicode-range: U+6900-69FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6900.woff2') format('woff2');
-  unicode-range: U+6900-69FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-6A00.woff2') format('woff2');
-  unicode-range: U+6A00-6AFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6A00.woff2') format('woff2');
   unicode-range: U+6A00-6AFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -671,21 +338,9 @@
   unicode-range: U+6B00-6BFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6B00.woff2') format('woff2');
-  unicode-range: U+6B00-6BFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-6C00.woff2') format('woff2');
-  unicode-range: U+6C00-6CFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6C00.woff2') format('woff2');
   unicode-range: U+6C00-6CFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -695,21 +350,9 @@
   unicode-range: U+6D00-6DFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6D00.woff2') format('woff2');
-  unicode-range: U+6D00-6DFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-6E00.woff2') format('woff2');
-  unicode-range: U+6E00-6EFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6E00.woff2') format('woff2');
   unicode-range: U+6E00-6EFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -719,21 +362,9 @@
   unicode-range: U+6F00-6FFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-6F00.woff2') format('woff2');
-  unicode-range: U+6F00-6FFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-7000.woff2') format('woff2');
-  unicode-range: U+7000-70FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7000.woff2') format('woff2');
   unicode-range: U+7000-70FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -743,21 +374,9 @@
   unicode-range: U+7100-71FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7100.woff2') format('woff2');
-  unicode-range: U+7100-71FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-7200.woff2') format('woff2');
-  unicode-range: U+7200-72FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7200.woff2') format('woff2');
   unicode-range: U+7200-72FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -767,21 +386,9 @@
   unicode-range: U+7300-73FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7300.woff2') format('woff2');
-  unicode-range: U+7300-73FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-7400.woff2') format('woff2');
-  unicode-range: U+7400-74FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7400.woff2') format('woff2');
   unicode-range: U+7400-74FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -791,21 +398,9 @@
   unicode-range: U+7500-75FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7500.woff2') format('woff2');
-  unicode-range: U+7500-75FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-7600.woff2') format('woff2');
-  unicode-range: U+7600-76FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7600.woff2') format('woff2');
   unicode-range: U+7600-76FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -815,21 +410,9 @@
   unicode-range: U+7700-77FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7700.woff2') format('woff2');
-  unicode-range: U+7700-77FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-7800.woff2') format('woff2');
-  unicode-range: U+7800-78FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7800.woff2') format('woff2');
   unicode-range: U+7800-78FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -839,21 +422,9 @@
   unicode-range: U+7900-79FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7900.woff2') format('woff2');
-  unicode-range: U+7900-79FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-7A00.woff2') format('woff2');
-  unicode-range: U+7A00-7AFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7A00.woff2') format('woff2');
   unicode-range: U+7A00-7AFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -863,21 +434,9 @@
   unicode-range: U+7B00-7BFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7B00.woff2') format('woff2');
-  unicode-range: U+7B00-7BFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-7C00.woff2') format('woff2');
-  unicode-range: U+7C00-7CFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7C00.woff2') format('woff2');
   unicode-range: U+7C00-7CFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -887,21 +446,9 @@
   unicode-range: U+7D00-7DFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7D00.woff2') format('woff2');
-  unicode-range: U+7D00-7DFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-7E00.woff2') format('woff2');
-  unicode-range: U+7E00-7EFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7E00.woff2') format('woff2');
   unicode-range: U+7E00-7EFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -911,21 +458,9 @@
   unicode-range: U+7F00-7FFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-7F00.woff2') format('woff2');
-  unicode-range: U+7F00-7FFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-8000.woff2') format('woff2');
-  unicode-range: U+8000-80FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8000.woff2') format('woff2');
   unicode-range: U+8000-80FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -935,21 +470,9 @@
   unicode-range: U+8100-81FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8100.woff2') format('woff2');
-  unicode-range: U+8100-81FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-8200.woff2') format('woff2');
-  unicode-range: U+8200-82FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8200.woff2') format('woff2');
   unicode-range: U+8200-82FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -959,21 +482,9 @@
   unicode-range: U+8300-83FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8300.woff2') format('woff2');
-  unicode-range: U+8300-83FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-8400.woff2') format('woff2');
-  unicode-range: U+8400-84FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8400.woff2') format('woff2');
   unicode-range: U+8400-84FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -983,21 +494,9 @@
   unicode-range: U+8500-85FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8500.woff2') format('woff2');
-  unicode-range: U+8500-85FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-8600.woff2') format('woff2');
-  unicode-range: U+8600-86FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8600.woff2') format('woff2');
   unicode-range: U+8600-86FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1007,21 +506,9 @@
   unicode-range: U+8700-87FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8700.woff2') format('woff2');
-  unicode-range: U+8700-87FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-8800.woff2') format('woff2');
-  unicode-range: U+8800-88FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8800.woff2') format('woff2');
   unicode-range: U+8800-88FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1031,21 +518,9 @@
   unicode-range: U+8900-89FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8900.woff2') format('woff2');
-  unicode-range: U+8900-89FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-8A00.woff2') format('woff2');
-  unicode-range: U+8A00-8AFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8A00.woff2') format('woff2');
   unicode-range: U+8A00-8AFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1055,21 +530,9 @@
   unicode-range: U+8B00-8BFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8B00.woff2') format('woff2');
-  unicode-range: U+8B00-8BFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-8C00.woff2') format('woff2');
-  unicode-range: U+8C00-8CFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8C00.woff2') format('woff2');
   unicode-range: U+8C00-8CFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1079,21 +542,9 @@
   unicode-range: U+8D00-8DFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8D00.woff2') format('woff2');
-  unicode-range: U+8D00-8DFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-8E00.woff2') format('woff2');
-  unicode-range: U+8E00-8EFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8E00.woff2') format('woff2');
   unicode-range: U+8E00-8EFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1103,21 +554,9 @@
   unicode-range: U+8F00-8FFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-8F00.woff2') format('woff2');
-  unicode-range: U+8F00-8FFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-9000.woff2') format('woff2');
-  unicode-range: U+9000-90FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9000.woff2') format('woff2');
   unicode-range: U+9000-90FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1127,21 +566,9 @@
   unicode-range: U+9100-91FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9100.woff2') format('woff2');
-  unicode-range: U+9100-91FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-9200.woff2') format('woff2');
-  unicode-range: U+9200-92FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9200.woff2') format('woff2');
   unicode-range: U+9200-92FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1151,21 +578,9 @@
   unicode-range: U+9300-93FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9300.woff2') format('woff2');
-  unicode-range: U+9300-93FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-9400.woff2') format('woff2');
-  unicode-range: U+9400-94FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9400.woff2') format('woff2');
   unicode-range: U+9400-94FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1175,21 +590,9 @@
   unicode-range: U+9500-95FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9500.woff2') format('woff2');
-  unicode-range: U+9500-95FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-9600.woff2') format('woff2');
-  unicode-range: U+9600-96FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9600.woff2') format('woff2');
   unicode-range: U+9600-96FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1199,21 +602,9 @@
   unicode-range: U+9700-97FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9700.woff2') format('woff2');
-  unicode-range: U+9700-97FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-9800.woff2') format('woff2');
-  unicode-range: U+9800-98FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9800.woff2') format('woff2');
   unicode-range: U+9800-98FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1223,21 +614,9 @@
   unicode-range: U+9900-99FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9900.woff2') format('woff2');
-  unicode-range: U+9900-99FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-9A00.woff2') format('woff2');
-  unicode-range: U+9A00-9AFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9A00.woff2') format('woff2');
   unicode-range: U+9A00-9AFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1247,21 +626,9 @@
   unicode-range: U+9B00-9BFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9B00.woff2') format('woff2');
-  unicode-range: U+9B00-9BFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-9C00.woff2') format('woff2');
-  unicode-range: U+9C00-9CFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9C00.woff2') format('woff2');
   unicode-range: U+9C00-9CFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1271,21 +638,9 @@
   unicode-range: U+9D00-9DFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9D00.woff2') format('woff2');
-  unicode-range: U+9D00-9DFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-9E00.woff2') format('woff2');
-  unicode-range: U+9E00-9EFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9E00.woff2') format('woff2');
   unicode-range: U+9E00-9EFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
@@ -1295,32 +650,14 @@
   unicode-range: U+9F00-9FFF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-9F00.woff2') format('woff2');
-  unicode-range: U+9F00-9FFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-F900.woff2') format('woff2');
   unicode-range: U+F900-F9FF, U+E0100-E01EF, U+FE00-FE0F;
 }
 @font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-F900.woff2') format('woff2');
-  unicode-range: U+F900-F9FF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
   font-family: 'CjkIvsMincho';
   font-display: swap;
   src: url('/fonts/cjk-ivs-FA00.woff2') format('woff2');
-  unicode-range: U+FA00-FAFF, U+E0100-E01EF, U+FE00-FE0F;
-}
-@font-face {
-  font-family: 'CjkAj1Mincho';
-  font-display: swap;
-  src: url('/fonts/cjk-aj1-FA00.woff2') format('woff2');
   unicode-range: U+FA00-FAFF, U+E0100-E01EF, U+FE00-FE0F;
 }
