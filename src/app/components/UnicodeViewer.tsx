@@ -220,11 +220,12 @@ export default function UnicodeViewer() {
           setSelected(null);
         }}
         placeholder={t.inputPlaceholder}
-        className="w-full rounded-lg px-2.5 py-2 sm:px-4 sm:py-3 text-base sm:text-base font-mono leading-relaxed resize-y focus:outline-none transition-shadow"
+        className="w-full rounded-lg px-2.5 py-2 sm:px-4 sm:py-3 text-base sm:text-base leading-relaxed resize-y focus:outline-none transition-shadow"
         style={{
           backgroundColor: "var(--input-bg)",
           color: "var(--gray-900)",
           border: "1.5px solid var(--input-border)",
+          fontFamily: "var(--font-cjk), var(--font-geist-mono), ui-monospace, monospace",
         }}
         onFocus={(e) => {
           e.currentTarget.style.border = "1.5px solid var(--accent-blue)";
