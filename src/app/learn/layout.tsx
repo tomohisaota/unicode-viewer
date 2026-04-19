@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import LocaleSwitch from "./components/LocaleSwitch";
 
 const SITE_URL = "https://unicode-viewer.appbatake.com";
 
@@ -39,7 +40,7 @@ export default function LearnLayout({
               className="text-sm font-semibold no-underline"
               style={{ color: "var(--gray-900)" }}
             >
-              Learn
+              <LocaleSwitch en="Learn" ja="学ぶ" />
             </a>
           </div>
           <a
@@ -50,7 +51,7 @@ export default function LearnLayout({
               color: "var(--gray-600)",
             }}
           >
-            Open Tool
+            <LocaleSwitch en="Open Tool" ja="ツールを開く" />
           </a>
         </div>
       </header>

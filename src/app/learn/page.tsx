@@ -1,5 +1,6 @@
 import { ARTICLES, CATEGORIES, type Article } from "@/lib/learn/articles";
 import type { Metadata } from "next";
+import LocaleSwitch from "./components/LocaleSwitch";
 
 export const metadata: Metadata = {
   title: "Learn Unicode",
@@ -29,13 +30,13 @@ function ArticleCard({ article }: { article: Article }) {
             className="text-sm sm:text-base font-semibold"
             style={{ color: "var(--gray-900)", letterSpacing: "-0.3px" }}
           >
-            {article.title.en}
+            <LocaleSwitch en={article.title.en} ja={article.title.ja} />
           </h3>
           <p
             className="text-xs sm:text-sm mt-1"
             style={{ color: "var(--gray-500)", lineHeight: 1.6 }}
           >
-            {article.description.en}
+            <LocaleSwitch en={article.description.en} ja={article.description.ja} />
           </p>
         </div>
       </div>
@@ -56,14 +57,16 @@ export default function LearnIndex() {
           className="text-2xl sm:text-3xl font-semibold"
           style={{ color: "var(--gray-900)", letterSpacing: "-1px" }}
         >
-          Learn Unicode
+          <LocaleSwitch en="Learn Unicode" ja="Unicode を学ぶ" />
         </h1>
         <p
           className="text-sm sm:text-base mt-2"
           style={{ color: "var(--gray-500)", lineHeight: 1.7 }}
         >
-          Interactive guides with live examples. Each article links to the
-          Unicode Viewer tool so you can explore the concepts hands-on.
+          <LocaleSwitch
+            en="Interactive guides with live examples. Each article links to the Unicode Viewer tool so you can explore the concepts hands-on."
+            ja="インタラクティブなガイド。各記事から Unicode Viewer ツールに連携して、実際に手を動かしながら学べます。"
+          />
         </p>
       </div>
 
@@ -79,7 +82,7 @@ export default function LearnIndex() {
                 letterSpacing: "0.04em",
               }}
             >
-              {label.en}
+              <LocaleSwitch en={label.en} ja={label.ja} />
             </h2>
             <div className="flex flex-col gap-3">
               {articles.map((article) => (
