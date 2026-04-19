@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useMessages } from "@/lib/i18n";
-import type { HelpTab } from "@/lib/i18n";
+import type { HelpSection } from "@/lib/i18n";
 
 export default function PageHeader() {
   const t = useMessages();
@@ -140,8 +140,9 @@ export default function PageHeader() {
       {helpOpen && (
         <HelpDialog
           title={t.helpTitle}
-          tabs={t.helpTabs}
+          sections={t.helpSections}
           closeLabel={t.close}
+          learnMoreLabel={t.helpLearnMore}
           onClose={() => setHelpOpen(false)}
         />
       )}
@@ -151,17 +152,18 @@ export default function PageHeader() {
 
 function HelpDialog({
   title,
-  tabs,
+  sections,
   closeLabel,
+  learnMoreLabel,
   onClose,
 }: {
   title: string;
-  tabs: readonly HelpTab[];
+  sections: readonly HelpSection[];
   closeLabel: string;
+  learnMoreLabel: string;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -170,12 +172,10 @@ function HelpDialog({
     return () => dialog.close();
   }, []);
 
-  const sections = tabs[activeTab]?.sections ?? [];
-
   return (
     <dialog
       ref={dialogRef}
-      className="w-[calc(100vw-1rem)] max-w-2xl rounded-xl overflow-hidden p-0 backdrop:bg-black/40"
+      className="w-[calc(100vw-1rem)] max-w-md rounded-xl overflow-hidden p-0 backdrop:bg-black/40"
       style={{
         backgroundColor: "var(--background)",
         color: "var(--foreground)",
@@ -219,67 +219,45 @@ function HelpDialog({
         </button>
       </div>
 
-      {/* Tabs */}
-      {tabs.length > 1 && (
-        <div
-          className="flex items-center gap-1 px-4 sm:px-6 pt-2"
-          style={{ borderBottom: "1px solid var(--gray-100)" }}
-          role="tablist"
-        >
-          {tabs.map((tab, i) => {
-            const active = i === activeTab;
-            return (
-              <button
-                key={tab.label}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setActiveTab(i)}
-                className="relative px-3 py-2 text-sm font-medium cursor-pointer transition-colors"
-                style={{
-                  color: active ? "var(--gray-900)" : "var(--gray-500)",
-                  borderBottom: active
-                    ? "2px solid var(--accent-blue)"
-                    : "2px solid transparent",
-                  marginBottom: "-1px",
-                }}
-                onMouseEnter={(e) => {
-                  if (!active)
-                    e.currentTarget.style.color = "var(--gray-700)";
-                }}
-                onMouseLeave={(e) => {
-                  if (!active)
-                    e.currentTarget.style.color = "var(--gray-500)";
-                }}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {/* Body */}
-      <div className="overflow-y-auto max-h-[70vh] px-4 sm:px-6 py-4 sm:py-6 flex flex-col gap-6 sm:gap-8">
+      <div className="overflow-y-auto max-h-[70vh] px-4 sm:px-6 py-4 sm:py-6 flex flex-col gap-5">
         {sections.map((section, i) => (
           <div key={i}>
             <h3
-              className="text-sm font-semibold mb-2"
+              className="text-sm font-semibold mb-1"
               style={{ color: "var(--gray-900)" }}
             >
               {section.title}
             </h3>
             <p
-              className="text-sm"
+              className="text-xs sm:text-sm"
               style={{
                 color: "var(--gray-600)",
-                lineHeight: 1.85,
+                lineHeight: 1.75,
               }}
             >
               {section.body}
             </p>
           </div>
         ))}
+
+        {/* Learn more link */}
+        <div
+          className="pt-4"
+          style={{ borderTop: "1px solid var(--gray-100)" }}
+        >
+          <a
+            href="/learn"
+            className="inline-flex items-center gap-1.5 text-sm font-medium no-underline"
+            style={{ color: "var(--accent-blue-text)" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+            {learnMoreLabel}
+          </a>
+        </div>
       </div>
     </dialog>
   );
