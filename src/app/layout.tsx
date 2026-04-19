@@ -97,6 +97,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.dataset.locale=navigator.language.startsWith("ja")?"ja":"en"`,
+          }}
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&display=swap"
           rel="stylesheet"

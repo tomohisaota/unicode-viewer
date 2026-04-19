@@ -1,10 +1,7 @@
-"use client";
-
-import { useLocale } from "@/lib/i18n";
-
 /**
- * Renders both en and ja content server-side (SEO-friendly),
- * then hides the non-matching locale on the client.
+ * Renders both en and ja content server-side (SEO-friendly).
+ * CSS hides the non-matching locale based on html[data-locale]
+ * set by a blocking <script> in <head> — no flash.
  */
 export default function LocaleSwitch({
   en,
@@ -13,11 +10,10 @@ export default function LocaleSwitch({
   en: React.ReactNode;
   ja: React.ReactNode;
 }) {
-  const locale = useLocale();
   return (
     <>
-      <div style={locale === "ja" ? { display: "none" } : undefined}>{en}</div>
-      <div style={locale === "en" ? { display: "none" } : undefined}>{ja}</div>
+      <span data-locale-en="">{en}</span>
+      <span data-locale-ja="">{ja}</span>
     </>
   );
 }
