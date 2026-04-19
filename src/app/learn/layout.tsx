@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LocaleSwitch from "./components/LocaleSwitch";
+import ShareButton from "./components/ShareButton";
 
 const SITE_URL = "https://unicode-viewer.appbatake.com";
 
@@ -43,16 +44,19 @@ export default function LearnLayout({
               <LocaleSwitch en="Learn" ja="学ぶ" />
             </a>
           </div>
-          <a
-            href="/"
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium no-underline transition-colors"
-            style={{
-              boxShadow: "0px 0px 0px 1px var(--shadow-border)",
-              color: "var(--gray-600)",
-            }}
-          >
-            <LocaleSwitch en="Open Tool" ja="ツールを開く" />
-          </a>
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <ShareButton />
+            <a
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium no-underline transition-colors"
+              style={{
+                boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+                color: "var(--gray-600)",
+              }}
+            >
+              <LocaleSwitch en="Open Tool" ja="ツールを開く" />
+            </a>
+          </div>
         </div>
       </header>
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">

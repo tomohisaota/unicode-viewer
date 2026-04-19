@@ -757,6 +757,7 @@ function CharCell({
               : "var(--gray-900)",
           fontSize: isControl || isWhitespace ? "9px" : "18px",
           fontFamily: !(isControl || isWhitespace) ? "var(--font-cjk)" : undefined,
+          paddingTop: "6px",
         }}
       >
         {displayChar}
