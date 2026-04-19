@@ -1,6 +1,8 @@
-import { ARTICLES, getArticle } from "@/lib/learn/articles";
+import { getArticle } from "@/lib/learn/articles";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import ArticleHeader from "../components/ArticleHeader";
+import LocaleSwitch from "../components/LocaleSwitch";
 
 // Static content components
 import GraphemeClustersContent from "@/lib/learn/content/grapheme-clusters";
@@ -10,7 +12,6 @@ const CONTENT_MAP: Record<string, React.ComponentType> = {
 };
 
 export function generateStaticParams() {
-  // Only generate pages for articles that have content
   return Object.keys(CONTENT_MAP).map((slug) => ({ slug }));
 }
 
@@ -46,24 +47,10 @@ export default async function LearnArticlePage({ params }: Props) {
 
   return (
     <article>
-      <header className="mb-8 sm:mb-10">
-        <span className="text-4xl">{article.emoji}</span>
-        <h1
-          className="text-2xl sm:text-3xl font-semibold mt-3"
-          style={{ color: "var(--gray-900)", letterSpacing: "-1px" }}
-        >
-          {article.title.en}
-        </h1>
-        <p
-          className="text-sm sm:text-base mt-2"
-          style={{ color: "var(--gray-500)", lineHeight: 1.7 }}
-        >
-          {article.description.en}
-        </p>
-      </header>
+      <ArticleHeader article={article} />
 
       <div
-        className="prose-custom flex flex-col gap-8 sm:gap-10"
+        className="flex flex-col gap-8 sm:gap-10"
         style={{ color: "var(--gray-700)" }}
       >
         <Content />
@@ -78,7 +65,7 @@ export default async function LearnArticlePage({ params }: Props) {
           className="text-sm font-medium no-underline"
           style={{ color: "var(--accent-blue-text)" }}
         >
-          &larr; All articles
+          <LocaleSwitch en="← All articles" ja="← 記事一覧" />
         </a>
       </footer>
     </article>
