@@ -84,7 +84,7 @@ export default function LearnIndex() {
             >
               <LocaleSwitch en={label.en} ja={label.ja} />
             </h2>
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {articles.map((article) => (
                 <ArticleCard key={article.slug} article={article} />
               ))}

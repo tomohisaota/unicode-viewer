@@ -240,6 +240,24 @@ export default function UnicodeViewer() {
         rows={2}
       />
 
+      {/* Empty state tagline (shown only when no input) */}
+      {input.length === 0 && (
+        <div
+          className="mt-6 sm:mt-8 rounded-xl px-4 sm:px-6 py-5 sm:py-6"
+          style={{
+            backgroundColor: "var(--gray-50)",
+            boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+          }}
+        >
+          <p
+            className="text-sm sm:text-base"
+            style={{ color: "var(--gray-600)", lineHeight: 1.75 }}
+          >
+            {t.tagline}
+          </p>
+        </div>
+      )}
+
       {/* All sections */}
       <div className="mt-6 sm:mt-8 flex flex-col gap-6 sm:gap-8">
         {sections.map(({ key, label, desc, data }) => {
@@ -703,25 +721,26 @@ function CharCell({
       style={{
         backgroundColor: bgColor,
         boxShadow: shadowStyle,
-        width: "3rem",
-        height: "2.75rem",
-        padding: "2px 0",
+        width: "3.25rem",
+        height: "3.125rem",
+        padding: "3px 0 4px",
+        gap: "3px",
       }}
     >
       {hasVS && (
         <span
           className="absolute font-mono font-semibold"
           style={{
-            top: "1px",
+            top: "2px",
             right: "2px",
-            fontSize: "7px",
+            fontSize: "9px",
             lineHeight: 1,
             color: !vsHasFont ? "var(--gray-400)"
               : isSvs ? "var(--diff-text)" : "var(--accent-blue-text)",
             backgroundColor: !vsHasFont ? "var(--gray-50)"
               : isSvs ? "var(--diff-bg)" : "var(--accent-blue-bg)",
             borderRadius: "3px",
-            padding: "1px 2px",
+            padding: "1px 3px",
           }}
         >
           {vsLabel}
@@ -736,7 +755,7 @@ function CharCell({
             isControl || isWhitespace
               ? "var(--accent-blue-text)"
               : "var(--gray-900)",
-          fontSize: isControl || isWhitespace ? "7px" : "14px",
+          fontSize: isControl || isWhitespace ? "9px" : "18px",
           fontFamily: !(isControl || isWhitespace) ? "var(--font-cjk)" : undefined,
         }}
       >
@@ -744,7 +763,7 @@ function CharCell({
       </span>
       <span
         className="font-mono tabular-nums"
-        style={{ fontSize: "8px", color: labelColor, lineHeight: 1 }}
+        style={{ fontSize: "10px", color: labelColor, lineHeight: 1 }}
       >
         {cpLabel}
       </span>
@@ -1275,7 +1294,7 @@ function StatSegment({ label, value }: { label: string; value: number }) {
   return (
     <span className="inline-flex items-baseline gap-1">
       <span className="font-mono font-semibold tabular-nums">{value}</span>
-      <span className="opacity-70" style={{ fontSize: "10px" }}>
+      <span className="opacity-70" style={{ fontSize: "11px" }}>
         {label}
       </span>
     </span>

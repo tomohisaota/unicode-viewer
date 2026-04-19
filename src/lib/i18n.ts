@@ -88,6 +88,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
 const translations = {
   en: {
     siteTitle: "Unicode Viewer",
+    tagline: "Inspect any string — grapheme clusters, code points, UTF-8/16 bytes, and legacy encodings. Click a cell to drill in, or start from a sample.",
     inputLabel: "INPUT",
     inputPlaceholder: "Enter a string…",
     samples: "Samples",
@@ -179,6 +180,7 @@ const translations = {
     shareOnX: "Share",
     shareTextWithInput: "のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
     shareTextEmpty: "Unicode Viewer — 文字列のUnicode構造を確認できるツール 🔍 #Unicode #UnicodeViewer",
+    learn: "Learn",
     help: "Help",
     helpTitle: "How to use",
     helpSections: [
@@ -225,6 +227,7 @@ const translations = {
   },
   ja: {
     siteTitle: "Unicode Viewer",
+    tagline: "任意の文字列を解析します。書記素クラスタ・コードポイント・UTF-8/16 バイト・レガシーエンコーディングを確認できます。セルをクリックで詳細、まずはサンプルから試せます。",
     inputLabel: "入力",
     inputPlaceholder: "文字列を入力してください…",
     samples: "サンプルから入力",
@@ -316,6 +319,7 @@ const translations = {
     shareOnX: "共有",
     shareTextWithInput: "のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
     shareTextEmpty: "Unicode Viewer — 文字列のUnicode構造を確認できるツール 🔍 #Unicode #UnicodeViewer",
+    learn: "学ぶ",
     help: "ヘルプ",
     helpTitle: "使い方",
     helpSections: [
