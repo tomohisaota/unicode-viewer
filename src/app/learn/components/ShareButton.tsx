@@ -1,17 +1,41 @@
 "use client";
 
-import { useMessages } from "@/lib/i18n";
+import { useLocale, useMessages } from "@/lib/i18n";
+import { ARTICLES } from "@/lib/learn/articles";
+
+function buildShareText(locale: "en" | "ja"): string {
+  const pathname = window.location.pathname;
+  const url = window.location.href;
+  const hashtags = "#Unicode #UnicodeViewer";
+
+  // Match /learn/{slug} or /learn/{slug}/
+  const match = pathname.match(/\/learn\/([^/]+)\/?$/);
+  if (match) {
+    const article = ARTICLES.find((a) => a.slug === match[1]);
+    if (article) {
+      const title = article.title[locale];
+      const desc = article.description[locale];
+      return `${article.emoji} ${title}\n\n${desc}\n\n${hashtags}\n${url}`;
+    }
+  }
+
+  // Fallback: /learn index or unknown
+  const intro =
+    locale === "ja"
+      ? "📚 Unicode を学ぼう — 書記素クラスタ、正規化、CJK、絵文字、エンコーディングまで、インタラクティブなガイドで解説。"
+      : "📚 Learn Unicode — interactive guides on grapheme clusters, normalization, CJK, emoji, encodings, and more.";
+  return `${intro}\n\n${hashtags}\n${url}`;
+}
 
 export default function ShareButton() {
   const t = useMessages();
+  const locale = useLocale();
 
   return (
     <button
       type="button"
       onClick={() => {
-        const url = window.location.href;
-        const title = document.title;
-        const tweet = `${title} 🔍 #Unicode #UnicodeViewer\n${url}`;
+        const tweet = buildShareText(locale);
         window.open(
           `https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}`,
           "_blank",
