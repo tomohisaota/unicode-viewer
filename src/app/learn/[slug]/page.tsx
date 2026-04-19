@@ -6,9 +6,35 @@ import LocaleSwitch from "../components/LocaleSwitch";
 
 // Static content components
 import GraphemeClustersContent from "@/lib/learn/content/grapheme-clusters";
+import EmojiAnatomyContent from "@/lib/learn/content/emoji-anatomy";
+import NormalizationContent from "@/lib/learn/content/normalization";
+import Utf8EncodingContent from "@/lib/learn/content/utf8-encoding";
+import SurrogatePairsContent from "@/lib/learn/content/surrogate-pairs";
+import ShiftJisVsCp932Content from "@/lib/learn/content/shift-jis-vs-cp932";
+import WaveDashContent from "@/lib/learn/content/wave-dash";
+import HanUnificationContent from "@/lib/learn/content/han-unification";
+import IvsContent from "@/lib/learn/content/ivs";
+import HomoglyphsContent from "@/lib/learn/content/homoglyphs";
+import InvisibleCharactersContent from "@/lib/learn/content/invisible-characters";
+import LegacyEncodingsContent from "@/lib/learn/content/legacy-encodings";
+import JisLevelsContent from "@/lib/learn/content/jis-levels";
+import WhatwgVsUnicodeOrgContent from "@/lib/learn/content/whatwg-vs-unicode-org";
 
 const CONTENT_MAP: Record<string, React.ComponentType> = {
   "grapheme-clusters": GraphemeClustersContent,
+  "emoji-anatomy": EmojiAnatomyContent,
+  "normalization": NormalizationContent,
+  "utf8-encoding": Utf8EncodingContent,
+  "surrogate-pairs": SurrogatePairsContent,
+  "shift-jis-vs-cp932": ShiftJisVsCp932Content,
+  "wave-dash": WaveDashContent,
+  "han-unification": HanUnificationContent,
+  "ivs": IvsContent,
+  "homoglyphs": HomoglyphsContent,
+  "invisible-characters": InvisibleCharactersContent,
+  "legacy-encodings": LegacyEncodingsContent,
+  "jis-levels": JisLevelsContent,
+  "whatwg-vs-unicode-org": WhatwgVsUnicodeOrgContent,
 };
 
 export function generateStaticParams() {
