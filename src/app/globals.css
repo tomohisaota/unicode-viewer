@@ -67,6 +67,17 @@ body {
   font-feature-settings: "liga";
 }
 
+/* Learn article section separators */
+.learn-sections > section + section {
+  padding-top: 2rem;
+  border-top: 1px solid var(--gray-100);
+}
+@media (min-width: 640px) {
+  .learn-sections > section + section {
+    padding-top: 2.5rem;
+  }
+}
+
 /* Locale-aware content switching (no flash) */
 html[data-locale="ja"] [data-locale-en] { display: none !important }
 html[data-locale="en"] [data-locale-ja] { display: none !important }

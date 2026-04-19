@@ -76,7 +76,7 @@ export default async function LearnArticlePage({ params }: Props) {
       <ArticleHeader article={article} />
 
       <div
-        className="flex flex-col gap-8 sm:gap-10"
+        className="flex flex-col gap-8 sm:gap-10 learn-sections"
         style={{ color: "var(--gray-700)" }}
       >
         <Content />
