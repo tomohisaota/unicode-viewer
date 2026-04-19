@@ -98,7 +98,7 @@ export default function RootLayout({
     >
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&family=Noto+Sans+Math&family=Noto+Sans+Mongolian&family=Noto+Sans+Myanmar&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&display=swap"
           rel="stylesheet"
         />
       </head>
