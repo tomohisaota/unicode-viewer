@@ -820,18 +820,31 @@ function DetailPanel({
               (cps[1].codePoint >= 0xFE00 && cps[1].codePoint <= 0xFE0F)
             );
             const baseChar = isVarSeq ? String.fromCodePoint(cps[0].codePoint) : null;
+            const glyphFontStyle = {
+              fontFamily: "var(--font-cjk)",
+              fontSize: "clamp(72px, 12vw, 96px)",
+              lineHeight: 1,
+            } as const;
             return (
-              <span className="relative inline-block" style={{ fontFamily: "var(--font-cjk)", fontSize: "clamp(72px, 12vw, 96px)" }}>
+              <span className="inline-flex items-center gap-3 sm:gap-4">
+                <span className="inline-block" style={glyphFontStyle}>
+                  {cluster.grapheme}
+                </span>
                 {isVarSeq && baseChar && (
                   <span
-                    className="absolute inset-0"
-                    style={{ color: "var(--unencodable-border)", opacity: 0.2 }}
+                    className="relative inline-block"
+                    style={glyphFontStyle}
                     aria-hidden="true"
                   >
-                    {baseChar}
+                    <span className="absolute inset-0">{baseChar}</span>
+                    <span
+                      className="relative"
+                      style={{ color: "var(--unencodable-border)", opacity: 0.8 }}
+                    >
+                      {cluster.grapheme}
+                    </span>
                   </span>
                 )}
-                <span className="relative">{cluster.grapheme}</span>
               </span>
             );
           })()}
