@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useMessages } from "@/lib/i18n";
+import { useLocale, useMessages } from "@/lib/i18n";
 import type { HelpSection } from "@/lib/i18n";
 
 export default function PageHeader() {
   const t = useMessages();
+  const locale = useLocale();
+  const learnHref = locale === "ja" ? "/ja/learn" : "/learn";
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (
@@ -27,7 +29,7 @@ export default function PageHeader() {
           </h1>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <a
-              href="/learn"
+              href={learnHref}
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"
               style={{
                 boxShadow: "0px 0px 0px 1px var(--shadow-border)",
@@ -143,6 +145,7 @@ export default function PageHeader() {
           sections={t.helpSections}
           closeLabel={t.close}
           learnMoreLabel={t.helpLearnMore}
+          learnHref={learnHref}
           onClose={() => setHelpOpen(false)}
         />
       )}
@@ -155,12 +158,14 @@ function HelpDialog({
   sections,
   closeLabel,
   learnMoreLabel,
+  learnHref,
   onClose,
 }: {
   title: string;
   sections: readonly HelpSection[];
   closeLabel: string;
   learnMoreLabel: string;
+  learnHref: string;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -247,7 +252,7 @@ function HelpDialog({
           style={{ borderTop: "1px solid var(--gray-100)" }}
         >
           <a
-            href="/learn"
+            href={learnHref}
             className="inline-flex items-center gap-1.5 text-sm font-medium no-underline"
             style={{ color: "var(--accent-blue-text)" }}
           >

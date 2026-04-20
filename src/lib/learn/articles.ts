@@ -6,6 +6,13 @@ export interface Article {
   emoji: string;
 }
 
+// All learn articles were authored in the 2026-04-19 ~ 2026-04-20 window.
+// datePublished and dateModified are shared across articles; update
+// DATE_MODIFIED when you meaningfully revise the library.
+export const DATE_PUBLISHED = "2026-04-19";
+export const DATE_MODIFIED = "2026-04-20";
+export const AUTHOR_NAME = "Tomohisa Ota";
+
 export const CATEGORIES = {
   fundamentals: { en: "Fundamentals", ja: "基礎" },
   encoding: { en: "Encoding & Legacy", ja: "エンコーディング" },

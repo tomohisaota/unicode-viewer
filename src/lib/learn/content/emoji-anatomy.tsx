@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -229,6 +228,6 @@ count("👍🏽");    // 1`}</CodeBlock>
   );
 }
 
-export default function EmojiAnatomyContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function EmojiAnatomyContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

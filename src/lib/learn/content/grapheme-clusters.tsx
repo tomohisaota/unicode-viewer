@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -217,6 +216,6 @@ console.log([...text].length); // 12（コードポイント）`}</CodeBlock>
   );
 }
 
-export default function GraphemeClustersContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function GraphemeClustersContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

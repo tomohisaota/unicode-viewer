@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -331,6 +330,6 @@ stripInvisible(text) // "helloworld"`}</CodeBlock>
   );
 }
 
-export default function InvisibleCharactersContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function InvisibleCharactersContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

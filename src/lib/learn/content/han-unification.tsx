@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -245,6 +244,6 @@ const isCompat = cp >= 0xF900 && cp <= 0xFAFF;`}</CodeBlock>
   );
 }
 
-export default function HanUnificationContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function HanUnificationContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

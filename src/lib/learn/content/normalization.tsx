@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -269,6 +268,6 @@ normalizeForSearch("㍻");   // "平成"`}</CodeBlock>
   );
 }
 
-export default function NormalizationContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function NormalizationContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

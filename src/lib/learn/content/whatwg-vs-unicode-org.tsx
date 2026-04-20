@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (<section><h2 className="text-lg sm:text-xl font-semibold mb-3" style={{ color: "var(--gray-900)", letterSpacing: "-0.5px" }}>{title}</h2><div className="text-sm sm:text-base" style={{ lineHeight: 1.85 }}>{children}</div></section>);
@@ -111,6 +110,6 @@ function Ja() {
   </>);
 }
 
-export default function WhatwgVsUnicodeOrgContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function WhatwgVsUnicodeOrgContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

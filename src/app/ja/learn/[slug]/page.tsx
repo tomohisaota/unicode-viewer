@@ -1,7 +1,7 @@
 import { getArticle, AUTHOR_NAME, DATE_MODIFIED, DATE_PUBLISHED } from "@/lib/learn/articles";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import LearnArticle, { CONTENT_MAP } from "../components/LearnArticle";
+import LearnArticle, { CONTENT_MAP } from "../../../learn/components/LearnArticle";
 
 const SITE_URL = "https://unicode-viewer.appbatake.com";
 
@@ -15,10 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = getArticle(slug);
   if (!article) return {};
-  const canonical = `/learn/${slug}`;
+  const canonical = `/ja/learn/${slug}`;
   return {
-    title: article.title.en,
-    description: article.description.en,
+    title: article.title.ja,
+    description: article.description.ja,
     alternates: {
       canonical,
       languages: {
@@ -28,39 +28,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: article.title.en,
-      description: article.description.en,
+      title: article.title.ja,
+      description: article.description.ja,
       type: "article",
       url: `${SITE_URL}${canonical}`,
-      locale: "en",
-      alternateLocale: "ja",
+      locale: "ja",
+      alternateLocale: "en",
       publishedTime: DATE_PUBLISHED,
       modifiedTime: DATE_MODIFIED,
       authors: [AUTHOR_NAME],
     },
     twitter: {
       card: "summary_large_image",
-      title: article.title.en,
-      description: article.description.en,
+      title: article.title.ja,
+      description: article.description.ja,
     },
   };
 }
 
-export default async function LearnArticlePage({ params }: Props) {
+export default async function JaLearnArticlePage({ params }: Props) {
   const { slug } = await params;
   const article = getArticle(slug);
   if (!article) notFound();
   if (!CONTENT_MAP[slug]) notFound();
 
-  const url = `${SITE_URL}/learn/${slug}`;
+  const url = `${SITE_URL}/ja/learn/${slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    headline: article.title.en,
-    description: article.description.en,
+    headline: article.title.ja,
+    description: article.description.ja,
     datePublished: DATE_PUBLISHED,
     dateModified: DATE_MODIFIED,
-    inLanguage: "en",
+    inLanguage: "ja",
     author: { "@type": "Person", name: AUTHOR_NAME },
     publisher: {
       "@type": "Organization",
@@ -78,7 +78,7 @@ export default async function LearnArticlePage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <LearnArticle article={article} locale="en" />
+      <LearnArticle article={article} locale="ja" />
     </>
   );
 }

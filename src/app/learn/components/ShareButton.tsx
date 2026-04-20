@@ -8,8 +8,8 @@ function buildShareText(locale: "en" | "ja"): string {
   const url = window.location.href;
   const hashtags = "#Unicode #UnicodeViewer";
 
-  // Match /learn/{slug} or /learn/{slug}/
-  const match = pathname.match(/\/learn\/([^/]+)\/?$/);
+  // Match /learn/{slug}, /ja/learn/{slug}, optional trailing slash
+  const match = pathname.match(/\/(?:ja\/)?learn\/([^/]+)\/?$/);
   if (match) {
     const article = ARTICLES.find((a) => a.slug === match[1]);
     if (article) {
@@ -19,7 +19,6 @@ function buildShareText(locale: "en" | "ja"): string {
     }
   }
 
-  // Fallback: /learn index or unknown
   const intro =
     locale === "ja"
       ? "📚 Unicode を学ぼう — 書記素クラスタ、正規化、CJK、絵文字、エンコーディングまで、インタラクティブなガイドで解説。"
@@ -27,9 +26,10 @@ function buildShareText(locale: "en" | "ja"): string {
   return `${intro}\n\n${hashtags}\n${url}`;
 }
 
-export default function ShareButton() {
+export default function ShareButton({ locale: forcedLocale }: { locale?: "en" | "ja" } = {}) {
   const t = useMessages();
-  const locale = useLocale();
+  const detectedLocale = useLocale();
+  const locale = forcedLocale ?? detectedLocale;
 
   return (
     <button
@@ -57,7 +57,9 @@ export default function ShareButton() {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
       </svg>
-      <span className="hidden sm:inline">{t.shareOnX}</span>
+      <span className="hidden sm:inline">
+        {locale === "ja" ? "共有" : "Share"}
+      </span>
     </button>
   );
 }

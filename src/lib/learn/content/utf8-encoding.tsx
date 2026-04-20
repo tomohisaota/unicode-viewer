@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -241,6 +240,6 @@ console.log(Buffer.byteLength(code, "utf16le")); // 62 バイト
   );
 }
 
-export default function Utf8EncodingContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function Utf8EncodingContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

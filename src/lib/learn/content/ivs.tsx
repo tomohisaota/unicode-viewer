@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -261,6 +260,6 @@ const seg = new Intl.Segmenter();
   );
 }
 
-export default function IvsContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function IvsContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

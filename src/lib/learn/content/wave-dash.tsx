@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -231,6 +230,6 @@ function Ja() {
   );
 }
 
-export default function WaveDashContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function WaveDashContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

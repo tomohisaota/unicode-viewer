@@ -100,7 +100,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `document.documentElement.dataset.locale=navigator.language.startsWith("ja")?"ja":"en"`,
+            __html: `document.documentElement.lang=/^\\/ja(\\/|$)/.test(location.pathname)?"ja":"en"`,
           }}
         />
         <link

@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -315,6 +314,6 @@ function hasLoneSurrogates(str) {
   );
 }
 
-export default function SurrogatePairsContent() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function SurrogatePairsContent({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

@@ -1,5 +1,4 @@
 import TryItButton from "@/app/learn/components/TryItButton";
-import LocaleSwitch from "@/app/learn/components/LocaleSwitch";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -289,6 +288,6 @@ text.encode('shift_jis')      # UnicodeEncodeError
   );
 }
 
-export default function ShiftJisVsCp932Content() {
-  return <LocaleSwitch en={<En />} ja={<Ja />} />;
+export default function ShiftJisVsCp932Content({ locale }: { locale: "en" | "ja" }) {
+  return locale === "ja" ? <Ja /> : <En />;
 }

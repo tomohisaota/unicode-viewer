@@ -77,9 +77,3 @@ body {
     padding-top: 2.5rem;
   }
 }
-
-/* Locale-aware content switching (no flash) */
-html[data-locale="ja"] [data-locale-en] { display: none !important }
-html[data-locale="en"] [data-locale-ja] { display: none !important }
-html:not([data-locale]) [data-locale-en],
-html:not([data-locale]) [data-locale-ja] { visibility: hidden }
