@@ -713,14 +713,21 @@ export function getAutoGroups(
 
   // CJK groups via Unihan IRG source data
   const hasCjk = nonAscii.some(isCjkRelevant);
-  if (hasCjk) {
-    groups.push(...getCjkGroups(nonAscii));
-  }
+  const cjkGroups = hasCjk ? getCjkGroups(nonAscii) : [];
+  groups.push(...cjkGroups);
 
-  // Non-CJK groups via encodability check
+  // If the string is CJK-relevant (e.g. CJK symbols/fullwidth forms) but no
+  // language could be inferred from IRG data or script-specific ranges —
+  // think '〜' (U+301C), '～' (U+FF5E), '　' (U+3000), '、' — fall through to
+  // an encodability check for the CJK groups too, so the user still sees the
+  // Shift_JIS / GBK / EUC-KR bytes instead of an empty result.
+  const checkCjkToo = hasCjk && cjkGroups.length === 0;
+
+  // Encodability check for remaining groups
   for (const [group, checkEnc] of Object.entries(AUTO_CHECK_ENCODING)) {
     if (!checkEnc) continue;
-    if (CJK_GROUPS.has(group as LanguageGroup)) continue; // handled above
+    if (!checkCjkToo && CJK_GROUPS.has(group as LanguageGroup)) continue;
+    if (groups.includes(group as LanguageGroup)) continue;
     const allEncodable = nonAscii.every(
       (cp) => getLegacyEncoding(cp, checkEnc, variant).encodable
     );
