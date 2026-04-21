@@ -716,17 +716,23 @@ export function getAutoGroups(
   const cjkGroups = hasCjk ? getCjkGroups(nonAscii) : [];
   groups.push(...cjkGroups);
 
-  // If the string is CJK-relevant (e.g. CJK symbols/fullwidth forms) but no
-  // language could be inferred from IRG data or script-specific ranges —
-  // think '〜' (U+301C), '～' (U+FF5E), '　' (U+3000), '、' — fall through to
-  // an encodability check for the CJK groups too, so the user still sees the
-  // Shift_JIS / GBK / EUC-KR bytes instead of an empty result.
-  const checkCjkToo = hasCjk && cjkGroups.length === 0;
+  // If the string is CJK-relevant (CJK symbols/punctuation/fullwidth forms)
+  // but no language could be inferred — think '〜' (U+301C), '～' (U+FF5E),
+  // '　' (U+3000), '、。' — include all CJK groups so the user sees which
+  // encodings cover the character. Encodability varies by mapping variant
+  // (e.g. '〜' is in Shift_JIS under Unicode.org but not under WHATWG), so
+  // filtering by encodability here would hide the whole panel; instead, each
+  // row will show bytes where encodable and '—' otherwise.
+  if (hasCjk && cjkGroups.length === 0) {
+    for (const group of CJK_GROUPS) {
+      if (!groups.includes(group)) groups.push(group);
+    }
+  }
 
-  // Encodability check for remaining groups
+  // Encodability check for non-CJK groups
   for (const [group, checkEnc] of Object.entries(AUTO_CHECK_ENCODING)) {
     if (!checkEnc) continue;
-    if (!checkCjkToo && CJK_GROUPS.has(group as LanguageGroup)) continue;
+    if (CJK_GROUPS.has(group as LanguageGroup)) continue;
     if (groups.includes(group as LanguageGroup)) continue;
     const allEncodable = nonAscii.every(
       (cp) => getLegacyEncoding(cp, checkEnc, variant).encodable
