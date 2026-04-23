@@ -146,6 +146,8 @@ export default function PageHeader() {
           closeLabel={t.close}
           learnMoreLabel={t.helpLearnMore}
           learnHref={learnHref}
+          creditsHref={locale === "ja" ? "/ja/credits" : "/credits"}
+          creditsLabel={locale === "ja" ? "クレジットとライセンス" : "Credits & licenses"}
           onClose={() => setHelpOpen(false)}
         />
       )}
@@ -159,6 +161,8 @@ function HelpDialog({
   closeLabel,
   learnMoreLabel,
   learnHref,
+  creditsHref,
+  creditsLabel,
   onClose,
 }: {
   title: string;
@@ -166,6 +170,8 @@ function HelpDialog({
   closeLabel: string;
   learnMoreLabel: string;
   learnHref: string;
+  creditsHref: string;
+  creditsLabel: string;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -246,9 +252,9 @@ function HelpDialog({
           </div>
         ))}
 
-        {/* Learn more link */}
+        {/* Learn more / Credits links */}
         <div
-          className="pt-4"
+          className="pt-4 flex flex-col gap-2"
           style={{ borderTop: "1px solid var(--gray-100)" }}
         >
           <a
@@ -261,6 +267,13 @@ function HelpDialog({
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
             {learnMoreLabel}
+          </a>
+          <a
+            href={creditsHref}
+            className="inline-flex items-center gap-1.5 text-xs no-underline"
+            style={{ color: "var(--gray-500)" }}
+          >
+            {creditsLabel}
           </a>
         </div>
       </div>

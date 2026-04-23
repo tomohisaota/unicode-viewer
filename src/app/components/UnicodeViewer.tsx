@@ -5,7 +5,7 @@ import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
 import { useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups, detectScript } from "@/lib/encodings";
 import { getCjkIrgFlags } from "@/lib/cjk-irg-data";
-import { getIvsCount, getSvsCount, getIvsVariants, getSvsVariants, hasFontGlyph } from "@/lib/ivd-data";
+import { getIvsCount, getSvsCount, getIvsVariants, getSvsVariants, hasFontGlyph, isAliasedToDefault } from "@/lib/ivd-data";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -687,6 +687,7 @@ function CharCell({
   const vsCodePoint = hasVS ? cluster.codePoints[1].codePoint : 0;
   const isSvs = hasVS && vsCodePoint >= 0xFE00 && vsCodePoint <= 0xFE0F;
   const vsHasFont = hasVS && hasFontGlyph(cp0.codePoint, vsCodePoint);
+  const vsAliased = hasVS && !vsHasFont && isAliasedToDefault(cp0.codePoint, vsCodePoint);
   const vsLabel = hasVS
     ? isSvs
       ? `VS${vsCodePoint - 0xFE00 + 1}`    // VS1-VS16
@@ -735,10 +736,12 @@ function CharCell({
             right: "2px",
             fontSize: "9px",
             lineHeight: 1,
-            color: !vsHasFont ? "var(--gray-400)"
-              : isSvs ? "var(--diff-text)" : "var(--accent-blue-text)",
-            backgroundColor: !vsHasFont ? "var(--gray-50)"
-              : isSvs ? "var(--diff-bg)" : "var(--accent-blue-bg)",
+            color: vsHasFont
+              ? isSvs ? "var(--diff-text)" : "var(--accent-blue-text)"
+              : vsAliased ? "var(--aliased-text)" : "var(--gray-400)",
+            backgroundColor: vsHasFont
+              ? isSvs ? "var(--diff-bg)" : "var(--accent-blue-bg)"
+              : vsAliased ? "var(--aliased-bg)" : "var(--gray-50)",
             borderRadius: "3px",
             padding: "1px 3px",
           }}
@@ -819,7 +822,12 @@ function DetailPanel({
               (cps[1].codePoint >= 0xE0100 && cps[1].codePoint <= 0xE01EF) ||
               (cps[1].codePoint >= 0xFE00 && cps[1].codePoint <= 0xFE0F)
             );
+            // Since the bundled font is now a single typeface (Jigmo for
+            // base + IVS, IPAmj only for SVS), the bare base character is
+            // safe to use as the overlay reference — no typographic-style
+            // drift between the two layers.
             const baseChar = isVarSeq ? String.fromCodePoint(cps[0].codePoint) : null;
+            const referenceSeq = baseChar;
             const glyphFontStyle = {
               fontFamily: "var(--font-cjk)",
               fontSize: "clamp(72px, 12vw, 96px)",
@@ -830,13 +838,13 @@ function DetailPanel({
                 <span className="inline-block" style={glyphFontStyle}>
                   {cluster.grapheme}
                 </span>
-                {isVarSeq && baseChar && (
+                {isVarSeq && referenceSeq && (
                   <span
                     className="relative inline-block"
                     style={glyphFontStyle}
                     aria-hidden="true"
                   >
-                    <span className="absolute inset-0">{baseChar}</span>
+                    <span className="absolute inset-0">{referenceSeq}</span>
                     <span
                       className="relative"
                       style={{ color: "var(--unencodable-border)", opacity: 0.8 }}
@@ -1036,13 +1044,15 @@ function AllCodePointsTable({
   // IVS row — only if any code point has 2+ IVS variants
   // (1 IVS = default glyph registration only, no visual difference)
   const ivsCounts = codePoints.map((cp) => getIvsCount(cp.codePoint));
-  const ivsFontCounts = codePoints.map((cp) => {
+  const ivsBreakdown = codePoints.map((cp) => {
     const variants = getIvsVariants(cp.codePoint);
-    let count = 0;
+    let distinct = 0;
+    let aliased = 0;
     for (const vs of variants) {
-      if (hasFontGlyph(cp.codePoint, vs)) count++;
+      if (hasFontGlyph(cp.codePoint, vs)) distinct++;
+      else if (isAliasedToDefault(cp.codePoint, vs)) aliased++;
     }
-    return count;
+    return { distinct, aliased };
   });
   if (ivsCounts.some((n) => n >= 2)) {
     rows.push({
@@ -1050,11 +1060,11 @@ function AllCodePointsTable({
       label: t.thIvs,
       cells: codePoints.map((cp, i) => {
         const count = ivsCounts[i];
-        const fontCount = ivsFontCounts[i];
+        const { distinct, aliased } = ivsBreakdown[i];
         if (count < 2) return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
         return (
           <span key={i} className="inline-flex items-center gap-1.5 flex-wrap" style={{ fontFamily: "var(--font-sans)" }}>
-            <span className="text-xs" style={{ color: fontCount > 0 ? "var(--gray-600)" : "var(--gray-400)" }}>{t.ivsVariants(count, fontCount)}</span>
+            <span className="text-xs" style={{ color: distinct > 0 ? "var(--gray-600)" : "var(--gray-400)" }}>{t.ivsVariants(count, distinct, aliased)}</span>
             {onSetInput && (
               <button
                 type="button"
@@ -1089,15 +1099,17 @@ function AllCodePointsTable({
       cells: codePoints.map((cp, i) => {
         const count = svsCounts[i];
         if (count === 0) return <span key={i} style={{ color: "var(--gray-300)" }}>—</span>;
-        // Count SVS variants that have actual font glyphs
+        // Categorise SVS variants: distinct-glyph vs aliased-to-default
         const variants = getSvsVariants(cp.codePoint);
-        let fontCount = 0;
+        let distinct = 0;
+        let aliased = 0;
         for (const vs of variants) {
-          if (hasFontGlyph(cp.codePoint, vs)) fontCount++;
+          if (hasFontGlyph(cp.codePoint, vs)) distinct++;
+          else if (isAliasedToDefault(cp.codePoint, vs)) aliased++;
         }
         return (
           <span key={i} className="inline-flex items-center gap-1.5 flex-wrap" style={{ fontFamily: "var(--font-sans)" }}>
-            <span className="text-xs" style={{ color: fontCount > 0 ? "var(--gray-600)" : "var(--gray-400)" }}>{t.svsVariants(count, fontCount)}</span>
+            <span className="text-xs" style={{ color: distinct > 0 ? "var(--gray-600)" : "var(--gray-400)" }}>{t.svsVariants(count, distinct, aliased)}</span>
             {onSetInput && (
               <button
                 type="button"

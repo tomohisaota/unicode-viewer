@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LearnHeader from "./components/LearnHeader";
+import LearnFooter from "./components/LearnFooter";
 
 const SITE_URL = "https://unicode-viewer.appbatake.com";
 
@@ -17,11 +18,12 @@ export default function LearnLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <LearnHeader locale="en" />
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
         {children}
       </main>
+      <LearnFooter locale="en" />
     </div>
   );
 }

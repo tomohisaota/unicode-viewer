@@ -42,6 +42,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
       },
     },
+    {
+      url: `${SITE_URL}/credits`,
+      lastModified: modified,
+      changeFrequency: "monthly",
+      priority: 0.3,
+      alternates: {
+        languages: {
+          en: `${SITE_URL}/credits`,
+          ja: `${SITE_URL}/ja/credits`,
+          "x-default": `${SITE_URL}/credits`,
+        },
+      },
+    },
+    {
+      url: `${SITE_URL}/ja/credits`,
+      lastModified: modified,
+      changeFrequency: "monthly",
+      priority: 0.3,
+      alternates: {
+        languages: {
+          en: `${SITE_URL}/credits`,
+          ja: `${SITE_URL}/ja/credits`,
+          "x-default": `${SITE_URL}/credits`,
+        },
+      },
+    },
   ];
 
   for (const article of ARTICLES) {

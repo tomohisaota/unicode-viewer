@@ -1,32 +1,73 @@
 CJK IVS Fonts
 =============
 
-This directory contains two derived font families for displaying CJK
-Ideographic Variation Sequences (IVS) from different collections.
+The `cjk-ivs-*.woff2` files in this directory form a single derived web
+font used by the Unicode Viewer site to render CJK Ideographic Variation
+Sequences (IVS) and Standardized Variation Sequences (SVS). The font is
+assembled from two upstream sources and subset into WOFF2 chunks by
+Unicode range (256 code points each) for on-demand loading via CSS
+`unicode-range`.
+
+The merged font is distributed under the most restrictive of its inputs
+(IPA Font License v1.0, for the SVS glyphs carried over from IPAmj).
 
 
-1. CjkIvsMincho (Moji_Joho collection)
----------------------------------------
-Derived from IPAmj明朝 (IPAmj Mincho) version 006.01.
-Copyright (c) Information-technology Promotion Agency, Japan (IPA)
+1. Jigmo — base glyphs and all IVS
+------------------------------------
+Version 2025-09-12 (implements IVD 2025-07-14).
+Copyright (c) Koichi Kamichi and GlyphWiki contributors.
+Licensed under CC0 1.0 Universal (Public Domain Dedication).
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Provides the base cmap and every Ideographic Variation Sequence
+(U+E0100-U+E01EF) registered in the Unicode IVD as of 2025-07-14.
+Glyphs are generated from GlyphWiki via the KAGE system.
+
+Original: https://kamichikoichi.github.io/jigmo/
+GlyphWiki: https://glyphwiki.org/
+
+
+2. IPAmj明朝 (IPAmj Mincho) — SVS overlay
+--------------------------------------------
+Version 006.01.
+Copyright (c) Information-technology Promotion Agency, Japan (IPA).
 Licensed under the IPA Font License Agreement v1.0.
 https://opensource.org/licenses/IPA
+
+Only the SVS (U+FE00-U+FE0F) entries are pulled out of IPAmj and copied
+on top of Jigmo. Used for CJK punctuation SVS (e.g. 、︀ 、︁ 。︀) and
+other Standardized Variation Sequences that Jigmo does not cover.
 
 Original: https://moji.or.jp/mojikiban/font/
 
 
-2. CjkAj1Mincho (Adobe-Japan1 collection)
-------------------------------------------
-Derived from Source Han Serif JP (源ノ明朝) version 2.003.
-Copyright 2017-2024 Adobe (http://www.adobe.com/)
-Licensed under the SIL Open Font License, Version 1.1.
-https://openfontlicense.org
-
-Original: https://github.com/adobe-fonts/source-han-serif
+Merge priority
+--------------
+Base cmap and all IVS (U+E0100-U+E01EF) are taken from Jigmo so that
+every glyph in the final font is drawn by the same typeface — making
+base-vs-variant overlays in the Unicode Viewer UI show structural
+differences without typographic style drift. IPAmj's SVS entries are
+layered on top only because Jigmo ships no SVS table.
 
 
 Modifications
 -------------
-Both fonts are subset into WOFF2 chunks by Unicode range (256 code
-points each) for on-demand web loading via CSS unicode-range.
-Font family names are changed per IPA Font License Article 3(4).
+* UPM is normalised to Jigmo's 1024 during IPAmj SVS glyph copy using
+  TransformPen; glyph metrics (hmtx, vmtx) are scaled accordingly.
+* The merged font is subset in-memory to the Unicode ranges this site
+  ships (Basic Latin, math operators, misc symbols, CJK blocks, CJK
+  compat, halfwidth/fullwidth forms, plus VS ranges).
+* WOFF2 chunks are produced with `fonttools subset --layout-features='*'`.
+* Family name is changed from the originals per IPA Font License
+  Article 3(4).
+
+
+Acknowledgements
+----------------
+Enormous thanks to Koichi Kamichi and the hundreds of volunteer
+contributors at GlyphWiki whose ongoing work on the Jigmo / KAGE project
+makes free-licensed complete IVD coverage possible; to the Information-
+technology Promotion Agency of Japan for IPAmj明朝 and for stewarding
+the Moji Jōhō Kiban project; and to the Unicode Consortium's Ideographic
+Research Group for decades of careful standardisation work. This tool
+is a thin layer on top of their labour.

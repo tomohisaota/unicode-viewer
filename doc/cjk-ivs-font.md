@@ -2,32 +2,29 @@
 
 ## 概要
 
-CJK 漢字の異体字セレクタ (IVS: Ideographic Variation Sequence) を正しく表示するため、2つのフォントを統合した Web フォントを組み込んでいます。
+CJK 漢字の異体字セレクタ (IVS / SVS) を表示するため、**Jigmo をベース**に IPAmj明朝 の SVS エントリだけを上乗せした統合 Web フォントを組み込んでいます。
 
-| ソースフォント | IVS コレクション | ライセンス | UVS エントリ |
+| ソースフォント | 役割 | ライセンス | UVS エントリ |
 |---|---|---|---|
-| IPAmj明朝 006.01 | Moji_Joho | IPA Font License v1.0 | 11,474 |
-| 源ノ明朝 (Source Han Serif JP) 2.003 | Adobe-Japan1 | SIL OFL 1.1 | 14,787 |
-| **統合後** | **両方** | | **12,853** (重複除外) |
+| Jigmo 2025-09-12 (IVD 2025-07-14) | ベース cmap + 全 IVS | CC0 1.0 | 26,958 (IVS) |
+| IPAmj明朝 006.01 | SVS 補完のみ (U+FE00-FE0F) | IPA Font License v1.0 | 88 (SVS) |
+| **統合後** | | | **27,046** |
+
+以前は IPAmj (Moji_Joho) + 源ノ明朝 (Adobe-Japan1) + Jigmo の 3-way マージでしたが、Jigmo が IVD 2025-07-14 を完全実装しているため、IVS 表示用には Jigmo だけで十分であることが分かりました。また、**異体字重ね表示**で 2 つのグリフが別のフォントデザイナー由来だと「字形差」と「書体差」が混ざって見辛くなる問題があり、これを回避するために Jigmo 単一書体に統一しています。
 
 ## なぜ2つのフォントが必要か
 
 IVS の異体字セレクタ番号はコレクションごとに異なります。同じ漢字でも、Adobe-Japan1 コレクションと Moji_Joho コレクションで別の VS 番号が割り当てられています。
 
-例: 辻 (U+8FBB)
+例: 邉 (U+9089) — 32 IVS バリアント (Adobe-Japan1 / Hanyo-Denshi / Moji_Joho 混在)
 
-| VS | Adobe-Japan1 (源ノ明朝) | Moji_Joho (IPAmj明朝) |
+| VS 範囲 | コレクション別の代表 | 補足 |
 |---|---|---|
-| U+E0100 | 一点しんにょう | — |
-| U+E0102 | — | 異体字あり |
-| U+E0103 | — | デフォルト |
+| U+E0100 | Adobe-Japan1 CID+6930 | デフォルト字形 |
+| U+E0101–E010E | Adobe-Japan1 | 14 変種 |
+| U+E010F–E011F | Hanyo-Denshi / Moji_Joho | 17 変種 (E010F は default と同一字形として登録されている) |
 
-例: 邉 (U+9089) — Unicode 最多の 30 IVS バリアント
-
-| VS 範囲 | コレクション | バリアント数 |
-|---|---|---|
-| U+E0101–E010E | Adobe-Japan1 | 14 |
-| U+E010F–E011F | Moji_Joho | 16 |
+Jigmo はこれら全ての IVS を単一書体でカバーし、default と同一字形の扱いまで IVD データに忠実に再現しています。
 
 ## CSS font-family とフォントフォールバックの制限
 
@@ -54,120 +51,103 @@ pip3 install fonttools brotli cu2qu
 
 ### 1. ソースフォントの取得
 
-**IPAmj明朝:**
+**Jigmo (ベース):**
+- https://kamichikoichi.github.io/jigmo/ からダウンロード
+- `Jigmo-YYYYMMDD.zip` を展開 → `Jigmo.ttf` (30MB, TrueType)
+
+**IPAmj明朝 (SVS 補完のみ):**
 - https://moji.or.jp/mojikiban/font/ からダウンロード
 - `ipamjm00601.zip` を展開 → `ipamjm.ttf` (44MB, TrueType)
 
-**源ノ明朝:**
-- https://github.com/adobe-fonts/source-han-serif/releases からダウンロード
-- `12_SourceHanSerifJP.zip` → `SubsetOTF/JP/SourceHanSerifJP-Regular.otf` (6MB, CFF/OpenType)
+### 2. フォント形式
 
-### 2. フォント形式の違い
-
-| | IPAmj明朝 | 源ノ明朝 |
+| | Jigmo | IPAmj明朝 |
 |---|---|---|
-| アウトライン形式 | TrueType (glyf テーブル) | CFF (PostScript) |
-| 曲線タイプ | 二次ベジェ (Quadratic) | 三次ベジェ (Cubic) |
-| UPM | 2048 | 1000 |
+| アウトライン形式 | TrueType (glyf テーブル) | TrueType (glyf テーブル) |
+| UPM | 1024 | 2048 |
 
-統合先は IPAmj明朝 (TrueType) とし、源ノ明朝の CFF グリフを TrueType に変換して追加します。
+両方とも TrueType なので CFF→TT 変換は不要。IPAmj の SVS グリフを Jigmo の UPM=1024 に合わせてスケール変換するだけで取り込めます。
 
 ### 3. 統合スクリプト
 
 ```python
 from fontTools.ttLib import TTFont
-from fontTools.pens.recordingPen import RecordingPen
-from fontTools.pens.cu2quPen import Cu2QuPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.pens.transformPen import TransformPen
+from fontTools import subset
 
-# フォント読み込み
-ivs_font = TTFont("ipamjm.ttf")
-aj1_font = TTFont("SourceHanSerifJP-Regular.otf")
+base = TTFont("Jigmo.ttf")
+ipa  = TTFont("ipamjm.ttf")
 
-# UVS テーブル取得
-ivs_uvs = aj1_uvs = None
-for t in ivs_font['cmap'].tables:
-    if t.format == 14: ivs_uvs = t
-for t in aj1_font['cmap'].tables:
-    if t.format == 14: aj1_uvs = t
+def uvs_table(f):
+    for t in f['cmap'].tables:
+        if t.format == 14: return t
 
-# 既存の IVS エントリを収集
-ivs_existing = set()
-for vs, mappings in ivs_uvs.uvsDict.items():
-    for cp, _ in mappings:
-        ivs_existing.add((cp, vs))
+base_uvs = uvs_table(base)
+ipa_uvs  = uvs_table(ipa)
 
-ivs_cmap = ivs_font.getBestCmap()
+# Jigmo の UPM (1024) に合わせて IPAmj (UPM=2048) のグリフをスケール変換
+upm_scale = base['head'].unitsPerEm / ipa['head'].unitsPerEm
+ipa_glyf, ipa_hmtx = ipa['glyf'], ipa['hmtx']
+base_glyf, base_hmtx = base['glyf'], base['hmtx']
+base_order = list(base.getGlyphOrder())
+copied = {}
 
-# AJ1 にしかない IVS エントリを特定
-to_add = {}         # vs -> [(cp, aj1_glyph_name)]
-glyphs_to_copy = set()
-for vs, mappings in aj1_uvs.uvsDict.items():
-    for cp, glyph in mappings:
-        if (cp, vs) not in ivs_existing and glyph is not None and cp in ivs_cmap:
-            glyphs_to_copy.add(glyph)
-            if vs not in to_add: to_add[vs] = []
-            to_add[vs].append((cp, glyph))
-
-# CFF グリフを TrueType に変換
-cff = aj1_font['CFF '].cff
-charstrings = cff.topDictIndex[0].CharStrings
-glyf = ivs_font['glyf']
-hmtx = ivs_font['hmtx']
-aj1_hmtx = aj1_font['hmtx']
-glyph_order = list(ivs_font.getGlyphOrder())
-
-# UPM スケーリング (1000 → 2048)
-upm_scale = ivs_font['head'].unitsPerEm / aj1_font['head'].unitsPerEm
-
-name_map = {}
-for aj1_name in glyphs_to_copy:
-    new_name = f"a_{aj1_name}"
-    name_map[aj1_name] = new_name
-
-    # Cu2QuPen: 三次ベジェ → 二次ベジェ変換
+def copy_glyph(name):
+    if name in copied: return copied[name]
+    new_name = "ipa_" + name
     tt_pen = TTGlyphPen(None)
-    cu2qu_pen = Cu2QuPen(tt_pen, max_err=1.0, reverse_direction=False)
-    transform_pen = TransformPen(cu2qu_pen, (upm_scale, 0, 0, upm_scale, 0, 0))
+    pen_in = TransformPen(tt_pen, (upm_scale, 0, 0, upm_scale, 0, 0))
+    ipa_glyf[name].draw(pen_in, ipa_glyf)
+    base_glyf[new_name] = tt_pen.glyph()
+    base_order.append(new_name)
+    if name in ipa_hmtx.metrics:
+        w, lsb = ipa_hmtx.metrics[name]
+        base_hmtx.metrics[new_name] = (round(w * upm_scale), round(lsb * upm_scale))
+    if 'vmtx' in base:
+        base['vmtx'].metrics[new_name] = (base['head'].unitsPerEm, 0)
+    copied[name] = new_name
+    return new_name
 
-    charstrings[aj1_name].draw(transform_pen)
+# IPAmj の SVS (U+FE00-FE0F) のみを Jigmo に重ねる
+base_cmap = base.getBestCmap()
+for vs, mappings in ipa_uvs.uvsDict.items():
+    if not (0xFE00 <= vs <= 0xFE0F): continue
+    for cp, glyph in mappings:
+        if glyph is None or cp not in base_cmap: continue
+        new_name = copy_glyph(glyph)
+        base_uvs.uvsDict.setdefault(vs, [])
+        base_uvs.uvsDict[vs] = [(c, g) for (c, g) in base_uvs.uvsDict[vs] if c != cp]
+        base_uvs.uvsDict[vs].append((cp, new_name))
 
-    glyf[new_name] = tt_pen.glyph()
-    glyph_order.append(new_name)
+for vs in base_uvs.uvsDict:
+    base_uvs.uvsDict[vs].sort(key=lambda x: x[0])
 
-    # メトリクス
-    if aj1_name in aj1_hmtx.metrics:
-        w, lsb = aj1_hmtx.metrics[aj1_name]
-        hmtx.metrics[new_name] = (round(w * upm_scale), round(lsb * upm_scale))
+base.setGlyphOrder(base_order)
+if 'vhea' in base:
+    base['vhea'].numOfLongVerMetrics = len(base_order)
 
-    # vmtx
-    if 'vmtx' in ivs_font:
-        ivs_font['vmtx'].metrics[new_name] = (ivs_font['head'].unitsPerEm, 0)
-
-ivs_font.setGlyphOrder(glyph_order)
-
-# UVS エントリを追加
-for vs, entries in to_add.items():
-    if vs not in ivs_uvs.uvsDict:
-        ivs_uvs.uvsDict[vs] = []
-    for cp, aj1_name in entries:
-        ivs_uvs.uvsDict[vs].append((cp, name_map[aj1_name]))
-    ivs_uvs.uvsDict[vs].sort(key=lambda x: x[0])
-
-# vhea 修正
-if 'vhea' in ivs_font:
-    ivs_font['vhea'].numOfLongVerMetrics = len(glyph_order)
-
-# 保存
-ivs_font.save("merged-cjk-ivs.ttf")
+# 配信レンジだけに in-memory でサブセット (65535 グリフ上限の回避にもなる)
+opts = subset.Options()
+opts.layout_features = ['*']
+opts.ignore_missing_glyphs = True
+opts.ignore_missing_unicodes = True
+target_cps = []
+for lo, hi in [(0x0000,0x00FF),(0x2200,0x22FF),(0x2300,0x23FF),(0x2900,0x29FF),
+               (0x2A00,0x2AFF),(0x2B00,0x2BFF),(0x3000,0x33FF),(0x3400,0x4DBF),
+               (0x4E00,0x9FFF),(0xF900,0xFAFF),(0xFE00,0xFE0F),(0xFF00,0xFFEF),
+               (0xE0100,0xE01EF)]:
+    target_cps.extend(range(lo, hi+1))
+subset.Subsetter(options=opts).populate(unicodes=target_cps)
+# subsetter.subset(base); base.save("merged-cjk-ivs.ttf")
 ```
 
 **重要なポイント:**
-- `Cu2QuPen` で正確な三次→二次ベジェ変換（`max_err=1.0`）
-- `TransformPen` で UPM スケーリング（1000 → 2048）
+- Jigmo の UPM は 1024、IPAmj は 2048 → IPAmj 側のグリフを 0.5 倍にスケール
+- ベース cmap + 全 IVS は Jigmo から取る ので CFF→TT 変換は不要
 - `vmtx` テーブルに新規グリフのエントリを追加しないと pyftsubset が失敗する
 - `vhea.numOfLongVerMetrics` を更新しないとフォントが壊れる
+- サブセット前のグリフ数が 65,535 を超える可能性があるので in-memory サブセットを先に実行してから保存
 
 ### 4. WOFF2 チャンク分割
 

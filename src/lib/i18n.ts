@@ -117,8 +117,22 @@ const translations = {
     thIrgSource: "IRG Source",
     thIvs: "IVS",
     thSvs: "SVS",
-    ivsVariants: (n: number, fontN: number) => fontN > 0 ? `${n} registered (${fontN} renderable)` : `${n} registered (no font)`,
-    svsVariants: (n: number, fontN: number) => fontN > 0 ? `${n} registered (${fontN} renderable)` : `${n} registered (no font)`,
+    ivsVariants: (total: number, distinct: number, aliased: number) => {
+      const missing = total - distinct - aliased;
+      const parts: string[] = [];
+      if (distinct > 0) parts.push(`${distinct} distinct`);
+      if (aliased > 0) parts.push(`${aliased} = default`);
+      if (missing > 0) parts.push(`${missing} no font`);
+      return `${total} registered (${parts.join(", ")})`;
+    },
+    svsVariants: (total: number, distinct: number, aliased: number) => {
+      const missing = total - distinct - aliased;
+      const parts: string[] = [];
+      if (distinct > 0) parts.push(`${distinct} distinct`);
+      if (aliased > 0) parts.push(`${aliased} = default`);
+      if (missing > 0) parts.push(`${missing} no font`);
+      return `${total} registered (${parts.join(", ")})`;
+    },
     vsShowAll: "Show all",
     thEncBytes: "Bytes",
     thJisLevel: "JIS Level",
@@ -256,8 +270,22 @@ const translations = {
     thIrgSource: "IRG ソース",
     thIvs: "IVS",
     thSvs: "SVS",
-    ivsVariants: (n: number, fontN: number) => fontN > 0 ? `${n} 登録 (${fontN} 表示可)` : `${n} 登録 (フォントなし)`,
-    svsVariants: (n: number, fontN: number) => fontN > 0 ? `${n} 登録 (${fontN} 表示可)` : `${n} 登録 (フォントなし)`,
+    ivsVariants: (total: number, distinct: number, aliased: number) => {
+      const missing = total - distinct - aliased;
+      const parts: string[] = [];
+      if (distinct > 0) parts.push(`異形 ${distinct}`);
+      if (aliased > 0) parts.push(`同字形 ${aliased}`);
+      if (missing > 0) parts.push(`未実装 ${missing}`);
+      return `${total} 登録 (${parts.join(" / ")})`;
+    },
+    svsVariants: (total: number, distinct: number, aliased: number) => {
+      const missing = total - distinct - aliased;
+      const parts: string[] = [];
+      if (distinct > 0) parts.push(`異形 ${distinct}`);
+      if (aliased > 0) parts.push(`同字形 ${aliased}`);
+      if (missing > 0) parts.push(`未実装 ${missing}`);
+      return `${total} 登録 (${parts.join(" / ")})`;
+    },
     vsShowAll: "全て表示",
     thEncBytes: "バイト列",
     thJisLevel: "JIS水準",
