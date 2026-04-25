@@ -775,6 +775,107 @@ function CharCell({
   );
 }
 
+/* ─── DetailGlyphPreview ─── */
+
+function DetailGlyphPreview({
+  cluster,
+}: {
+  cluster: GraphemeCluster;
+}) {
+  const cps = cluster.codePoints;
+  const isVarSeq =
+    cps.length === 2 &&
+    ((cps[1].codePoint >= 0xe0100 && cps[1].codePoint <= 0xe01ef) ||
+      (cps[1].codePoint >= 0xfe00 && cps[1].codePoint <= 0xfe0f));
+  const baseChar = isVarSeq ? String.fromCodePoint(cps[0].codePoint) : null;
+
+  const glyphFontStyle = {
+    fontFamily: "var(--font-cjk)",
+    fontSize: "clamp(72px, 12vw, 96px)",
+    lineHeight: 1,
+  } as const;
+
+  if (!isVarSeq || !baseChar) {
+    return (
+      <span className="inline-block" style={glyphFontStyle}>
+        {cluster.grapheme}
+      </span>
+    );
+  }
+
+  const baseCp = cps[0].codePoint;
+  const vsCp = cps[1].codePoint;
+  const isSvs = vsCp >= 0xfe00 && vsCp <= 0xfe0f;
+  const vsLabel = isSvs
+    ? `VS${vsCp - 0xfe00 + 1}`
+    : `VS${vsCp - 0xe0100 + 17}`;
+  const vsHasFont = hasFontGlyph(baseCp, vsCp);
+  const vsAliased = !vsHasFont && isAliasedToDefault(baseCp, vsCp);
+  const badgeColor = vsHasFont
+    ? isSvs
+      ? "var(--diff-text)"
+      : "var(--accent-blue-text)"
+    : vsAliased
+    ? "var(--aliased-text)"
+    : "var(--gray-400)";
+  const badgeBg = vsHasFont
+    ? isSvs
+      ? "var(--diff-bg)"
+      : "var(--accent-blue-bg)"
+    : vsAliased
+    ? "var(--aliased-bg)"
+    : "var(--gray-50)";
+
+  const fadeDuration = "5.2s"; // ~1.3× the original 4s loop
+  const fadeIn = `variant-fade-in ${fadeDuration} linear infinite`;
+  const fadeOut = `variant-fade-out ${fadeDuration} linear infinite`;
+
+  const badgeStyle = {
+    fontSize: "10px",
+    lineHeight: 1,
+    color: badgeColor,
+    backgroundColor: badgeBg,
+    borderRadius: "4px",
+    padding: "2px 5px",
+  } as const;
+  const renderBadge = (animation?: string) => (
+    <span
+      className="font-mono font-semibold"
+      style={{ ...badgeStyle, animation }}
+    >
+      {vsLabel}
+    </span>
+  );
+
+  return (
+    <span className="inline-flex items-end gap-3 sm:gap-4">
+      {/* Left: the variant as actually rendered (static reference). */}
+      <span className="inline-flex flex-col items-end gap-1">
+        {renderBadge()}
+        <span className="inline-block" style={glyphFontStyle}>
+          {cluster.grapheme}
+        </span>
+      </span>
+      {/* Right: alternates between base and variant on a slow fade so
+          the eye picks up structural differences as motion. */}
+      <span
+        className="inline-flex flex-col items-end gap-1"
+        aria-hidden="true"
+      >
+        {renderBadge(fadeIn)}
+        <span className="relative inline-block" style={glyphFontStyle}>
+          <span className="absolute inset-0" style={{ animation: fadeOut }}>
+            {baseChar}
+          </span>
+          <span className="relative" style={{ animation: fadeIn }}>
+            {cluster.grapheme}
+          </span>
+        </span>
+      </span>
+    </span>
+  );
+}
+
 /* ─── DetailPanel ─── */
 
 function DetailPanel({
@@ -815,47 +916,8 @@ function DetailPanel({
         }}
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
-          {(() => {
-            // Detect if this is a variation sequence (base + VS)
-            const cps = cluster.codePoints;
-            const isVarSeq = cps.length === 2 && (
-              (cps[1].codePoint >= 0xE0100 && cps[1].codePoint <= 0xE01EF) ||
-              (cps[1].codePoint >= 0xFE00 && cps[1].codePoint <= 0xFE0F)
-            );
-            // Since the bundled font is now a single typeface (Jigmo for
-            // base + IVS, IPAmj only for SVS), the bare base character is
-            // safe to use as the overlay reference — no typographic-style
-            // drift between the two layers.
-            const baseChar = isVarSeq ? String.fromCodePoint(cps[0].codePoint) : null;
-            const referenceSeq = baseChar;
-            const glyphFontStyle = {
-              fontFamily: "var(--font-cjk)",
-              fontSize: "clamp(72px, 12vw, 96px)",
-              lineHeight: 1,
-            } as const;
-            return (
-              <span className="inline-flex items-center gap-3 sm:gap-4">
-                <span className="inline-block" style={glyphFontStyle}>
-                  {cluster.grapheme}
-                </span>
-                {isVarSeq && referenceSeq && (
-                  <span
-                    className="relative inline-block"
-                    style={glyphFontStyle}
-                    aria-hidden="true"
-                  >
-                    <span className="absolute inset-0">{referenceSeq}</span>
-                    <span
-                      className="relative"
-                      style={{ color: "var(--unencodable-border)", opacity: 0.8 }}
-                    >
-                      {cluster.grapheme}
-                    </span>
-                  </span>
-                )}
-              </span>
-            );
-          })()}
+          <DetailGlyphPreview cluster={cluster} />
+
           <span
             className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium gap-2"
             style={{
