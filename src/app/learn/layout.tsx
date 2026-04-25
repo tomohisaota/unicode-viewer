@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import LearnHeader from "./components/LearnHeader";
+import SiteHeader from "../components/SiteHeader";
 import LearnFooter from "./components/LearnFooter";
 
 const SITE_URL = "https://unicode-viewer.appbatake.com";
@@ -19,7 +19,7 @@ export default function LearnLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col">
-      <LearnHeader locale="en" />
+      <SiteHeader currentPage="learn" locale="en" />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
         {children}
       </main>

@@ -2,10 +2,11 @@
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { analyzeString, formatByte, formatUtf16 } from "@/lib/unicode";
-import { useMessages } from "@/lib/i18n";
+import { useLocale, useMessages } from "@/lib/i18n";
 import { getLegacyEncoding, LANGUAGE_ENCODINGS, getAutoGroups, detectScript } from "@/lib/encodings";
 import { getCjkIrgFlags } from "@/lib/cjk-irg-data";
 import { getIvsCount, getSvsCount, getIvsVariants, getSvsVariants, hasFontGlyph, isAliasedToDefault } from "@/lib/ivd-data";
+import HelpDialog from "./HelpDialog";
 import { getJisLevel, getJisKuten, formatJisKuten } from "@/lib/jis-level";
 import { getAnnotationKey } from "@/lib/annotations";
 import type { GraphemeCluster, CodePointInfo } from "@/lib/unicode";
@@ -88,7 +89,12 @@ export default function UnicodeViewer() {
     index: number;
   } | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [showNormalization, setShowNormalization] = useState(false);
+  const locale = useLocale();
+  const learnHref = locale === "ja" ? "/ja/learn" : "/learn";
+  const creditsHref = locale === "ja" ? "/ja/credits" : "/credits";
+  const creditsLabel = locale === "ja" ? "クレジットとライセンス" : "Credits & licenses";
 
   // Read URL params on mount (client only)
   useEffect(() => {
@@ -185,8 +191,39 @@ export default function UnicodeViewer() {
         />
         <button
           type="button"
-          onClick={() => setSettingsOpen(true)}
+          onClick={() => setHelpOpen(true)}
           className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"
+          style={{
+            boxShadow: "0px 0px 0px 1px var(--shadow-border)",
+            color: "var(--gray-600)",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--gray-50)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "transparent")
+          }
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <span className="hidden sm:inline">{t.help}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"
           style={{
             boxShadow: "0px 0px 0px 1px var(--shadow-border)",
             color: "var(--gray-600)",
@@ -329,6 +366,19 @@ export default function UnicodeViewer() {
             setSelected(null);
           }}
           onClose={() => setSettingsOpen(false)}
+        />
+      )}
+
+      {helpOpen && (
+        <HelpDialog
+          title={t.helpTitle}
+          sections={t.helpSections}
+          closeLabel={t.close}
+          learnMoreLabel={t.helpLearnMore}
+          learnHref={learnHref}
+          creditsHref={creditsHref}
+          creditsLabel={creditsLabel}
+          onClose={() => setHelpOpen(false)}
         />
       )}
     </div>

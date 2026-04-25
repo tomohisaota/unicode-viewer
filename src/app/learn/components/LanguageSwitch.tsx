@@ -16,17 +16,24 @@ export default function LanguageSwitch({ locale }: { locale: "en" | "ja" }) {
     }
   }, [locale]);
 
+  // The flag and text describe the *target* language: where the button
+  // takes you, not where you currently are.
+  const targetIsJa = locale !== "ja";
+  const flag = targetIsJa ? "🇯🇵" : "🇬🇧";
+  const label = targetIsJa ? "日本語" : "English";
+
   return (
     <a
       href={href}
-      hrefLang={locale === "ja" ? "en" : "ja"}
-      className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium no-underline transition-colors"
+      hrefLang={targetIsJa ? "ja" : "en"}
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium no-underline transition-colors"
       style={{
         boxShadow: "0px 0px 0px 1px var(--shadow-border)",
         color: "var(--gray-600)",
       }}
     >
-      {locale === "ja" ? "English" : "日本語"}
+      <span aria-hidden="true">{flag}</span>
+      <span className="hidden sm:inline">{label}</span>
     </a>
   );
 }

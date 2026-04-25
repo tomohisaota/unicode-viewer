@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PageHeader from "./components/PageHeader";
+import SiteHeader from "./components/SiteHeader";
 import UnicodeViewer from "./components/UnicodeViewer";
 
 function checkBrowserSupport(): string | null {
@@ -49,7 +49,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <PageHeader />
+      <SiteHeader currentPage="tool" />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <UnicodeViewer />
       </main>

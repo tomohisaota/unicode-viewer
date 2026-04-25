@@ -2,31 +2,46 @@
 
 import { useLocale, useMessages } from "@/lib/i18n";
 import { ARTICLES } from "@/lib/learn/articles";
+import type { Messages } from "@/lib/i18n";
 
-function buildShareText(locale: "en" | "ja"): string {
+function buildShareText(locale: "en" | "ja", t: Messages): string {
   const pathname = window.location.pathname;
   const url = window.location.href;
   const hashtags = "#Unicode #UnicodeViewer";
 
-  // Match /learn/{slug}, /ja/learn/{slug}, optional trailing slash
-  const match = pathname.match(/\/(?:ja\/)?learn\/([^/]+)\/?$/);
-  if (match) {
-    const article = ARTICLES.find((a) => a.slug === match[1]);
+  // Article page: /learn/{slug} or /ja/learn/{slug}
+  const articleMatch = pathname.match(/\/(?:ja\/)?learn\/([^/]+)\/?$/);
+  if (articleMatch) {
+    const article = ARTICLES.find((a) => a.slug === articleMatch[1]);
     if (article) {
-      const title = article.title[locale];
-      const desc = article.description[locale];
-      return `${article.emoji} ${title}\n\n${desc}\n\n${hashtags}\n${url}`;
+      return `${article.emoji} ${article.title[locale]}\n\n${article.description[locale]}\n\n${hashtags}\n${url}`;
     }
   }
 
-  const intro =
-    locale === "ja"
-      ? "📚 Unicode を学ぼう — 書記素クラスタ、正規化、CJK、絵文字、エンコーディングまで、インタラクティブなガイドで解説。"
-      : "📚 Learn Unicode — interactive guides on grapheme clusters, normalization, CJK, emoji, encodings, and more.";
-  return `${intro}\n\n${hashtags}\n${url}`;
+  // Learn index or credits → generic Learn intro
+  if (
+    /^\/(?:ja\/)?learn\/?$/.test(pathname) ||
+    /^\/(?:ja\/)?credits\/?$/.test(pathname)
+  ) {
+    const intro =
+      locale === "ja"
+        ? "📚 Unicode を学ぼう — 書記素クラスタ、正規化、CJK、絵文字、エンコーディングまで、インタラクティブなガイドで解説。"
+        : "📚 Learn Unicode — interactive guides on grapheme clusters, normalization, CJK, emoji, encodings, and more.";
+    return `${intro}\n\n${hashtags}\n${url}`;
+  }
+
+  // Tool page (/) — share input text from the URL if present
+  const params = new URLSearchParams(window.location.search);
+  const inputText = params.get("text") || "";
+  const body = inputText
+    ? `「${inputText}」${t.shareTextWithInput}`
+    : t.shareTextEmpty;
+  return `${body}\n${url}`;
 }
 
-export default function ShareButton({ locale: forcedLocale }: { locale?: "en" | "ja" } = {}) {
+export default function ShareButton({
+  locale: forcedLocale,
+}: { locale?: "en" | "ja" } = {}) {
   const t = useMessages();
   const detectedLocale = useLocale();
   const locale = forcedLocale ?? detectedLocale;
@@ -35,11 +50,11 @@ export default function ShareButton({ locale: forcedLocale }: { locale?: "en" | 
     <button
       type="button"
       onClick={() => {
-        const tweet = buildShareText(locale);
+        const tweet = buildShareText(locale, t);
         window.open(
           `https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}`,
           "_blank",
-          "noopener,noreferrer"
+          "noopener,noreferrer",
         );
       }}
       className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors"

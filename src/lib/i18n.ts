@@ -195,6 +195,7 @@ const translations = {
     shareTextWithInput: "のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
     shareTextEmpty: "Unicode Viewer — 文字列のUnicode構造を確認できるツール 🔍 #Unicode #UnicodeViewer",
     learn: "Learn",
+    tool: "Tool",
     help: "Help",
     helpTitle: "How to use",
     helpSections: [
@@ -348,6 +349,7 @@ const translations = {
     shareTextWithInput: "のUnicode構造を見てみよう 🔍 #Unicode #UnicodeViewer",
     shareTextEmpty: "Unicode Viewer — 文字列のUnicode構造を確認できるツール 🔍 #Unicode #UnicodeViewer",
     learn: "学ぶ",
+    tool: "ツール",
     help: "ヘルプ",
     helpTitle: "使い方",
     helpSections: [
