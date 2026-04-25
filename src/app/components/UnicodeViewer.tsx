@@ -914,7 +914,10 @@ function DetailGlyphPreview({
       >
         {renderBadge(fadeIn)}
         <span className="relative inline-block" style={glyphFontStyle}>
-          <span className="absolute inset-0" style={{ animation: fadeOut }}>
+          <span
+            className="absolute inset-0"
+            style={{ animation: fadeOut, color: "var(--variant-base-color)" }}
+          >
             {baseChar}
           </span>
           <span className="relative" style={{ animation: fadeIn }}>
