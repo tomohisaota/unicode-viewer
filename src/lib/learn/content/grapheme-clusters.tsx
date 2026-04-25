@@ -182,7 +182,7 @@ function Ja() {
           ["NFC（合成）", "c a f é (4 CP)", "é = U+00E9"],
           ["NFD（分解）", "c a f e ◌́ (5 CP)", "e + 結合アキュート = U+0065 U+0301"],
         ]} />
-        <p className="mt-3">画面上は同一で4書記素クラスタ。しかしコードポイント数（4 vs 5）と <C>.length</C> は異なる。</p>
+        <p className="mt-3">画面上は同一で 4 書記素クラスタです。しかしコードポイント数（4 vs 5）と <C>.length</C> の値は異なります。</p>
         <div className="mt-4"><TryItButton text="café" norm={true}>NFC と NFD を比較する</TryItButton></div>
       </Section>
 

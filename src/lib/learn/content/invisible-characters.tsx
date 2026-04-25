@@ -288,11 +288,11 @@ function Ja() {
       <Section title="実用上の影響: 不可視文字がバグを引き起こす場所">
         <p>不可視文字はソフトウェアで実際の問題を引き起こします:</p>
         <ul className="list-disc pl-6 mt-2 flex flex-col gap-2">
-          <li><strong>文字列比較の失敗</strong>: <C>{'"hello" === "hello"'}</C> が、一方に隠れた ZWSP、BOM、またはノーブレークスペースが含まれると false になり得る。</li>
-          <li><strong>JSON/YAML パースエラー</strong>: ファイル先頭の BOM（U+FEFF）がパーサーを壊す。キー名内の ZWSP はマッチ不能にする。</li>
-          <li><strong>URL 操作</strong>: URL 内の不可視文字がセキュリティフィルターをバイパスしつつユーザーには正当に見える。</li>
-          <li><strong>パスワードフィールド</strong>: 不可視文字を含むパスワードをコピー&ペーストすると、ユーザーはパスワードを「知っている」のに一致しない。</li>
-          <li><strong>コードのバグ</strong>: 変数名内の ZWNJ や ZWJ が異なる識別子を作成: <C>price</C> と <C>pri&zwj;ce</C>（隠れた ZWJ 付き）は2つの別の変数。</li>
+          <li><strong>文字列比較の失敗</strong>: <C>{'"hello" === "hello"'}</C> が、一方に隠れた ZWSP、BOM、またはノーブレークスペースが含まれると false になり得ます。</li>
+          <li><strong>JSON/YAML パースエラー</strong>: ファイル先頭の BOM（U+FEFF）がパーサーを壊します。キー名内の ZWSP はキー検索を不能にします。</li>
+          <li><strong>URL 操作</strong>: URL 内の不可視文字がセキュリティフィルターをバイパスしつつ、ユーザーには正当に見えてしまいます。</li>
+          <li><strong>パスワードフィールド</strong>: 不可視文字を含むパスワードをコピー & ペーストすると、ユーザーはパスワードを「知っている」つもりなのに一致しません。</li>
+          <li><strong>コードのバグ</strong>: 変数名内の ZWNJ や ZWJ が異なる識別子を作成してしまいます: <C>price</C> と <C>pri&zwj;ce</C>（隠れた ZWJ 付き）は 2 つの別の変数です。</li>
         </ul>
         <CodeBlock>{`// 一般的な不可視文字の検出:
 function hasInvisible(str) {

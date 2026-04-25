@@ -142,6 +142,19 @@ export const ARTICLES: Article[] = [
     },
   },
   {
+    slug: "font-coverage",
+    category: "cjk",
+    emoji: "🎨",
+    title: {
+      en: "Why One Font Isn't Enough: CJK Variant Coverage Across Fonts",
+      ja: "なぜフォント1つでは足りないのか: CJK異体字とフォント対応の不揃い",
+    },
+    description: {
+      en: "How different CJK fonts implement different IVD collections, why a single font can't show every registered variant, and how this site combines three fonts to render every IVS faithfully.",
+      ja: "CJK フォントごとに対応する IVD コレクションが異なる仕組み、単一フォントで全異体字を表示できない理由、本サイトが 3 つのフォントを組み合わせて全 IVS を正しく描画している舞台裏。",
+    },
+  },
+  {
     slug: "jis-levels",
     category: "cjk",
     emoji: "📊",

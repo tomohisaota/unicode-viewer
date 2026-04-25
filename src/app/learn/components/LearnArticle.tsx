@@ -16,6 +16,7 @@ import HomoglyphsContent from "@/lib/learn/content/homoglyphs";
 import InvisibleCharactersContent from "@/lib/learn/content/invisible-characters";
 import LegacyEncodingsContent from "@/lib/learn/content/legacy-encodings";
 import JisLevelsContent from "@/lib/learn/content/jis-levels";
+import FontCoverageContent from "@/lib/learn/content/font-coverage";
 import WhatwgVsUnicodeOrgContent from "@/lib/learn/content/whatwg-vs-unicode-org";
 
 type ContentComponent = React.ComponentType<{ locale: "en" | "ja" }>;
@@ -34,6 +35,7 @@ export const CONTENT_MAP: Record<string, ContentComponent> = {
   "invisible-characters": InvisibleCharactersContent,
   "legacy-encodings": LegacyEncodingsContent,
   "jis-levels": JisLevelsContent,
+  "font-coverage": FontCoverageContent,
   "whatwg-vs-unicode-org": WhatwgVsUnicodeOrgContent,
 };
 

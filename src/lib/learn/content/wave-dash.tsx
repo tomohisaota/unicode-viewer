@@ -178,9 +178,9 @@ function Ja() {
       <Section title="歴史的経緯: なぜこうなったのか">
         <p>根本原因は1990年代初頭に遡ります:</p>
         <ul className="list-disc pl-6 mt-2 flex flex-col gap-2">
-          <li><strong>1993年</strong>: Microsoft が Windows 3.1J で CP932 を出荷。Unicode のグリフレンダリングが成熟する前にマッピングを作成。</li>
-          <li><strong>1997年</strong>: JIS X 0208:1997 の附属書に公式 Unicode マッピングが収録されたが、Microsoft のものと異なっていた。</li>
-          <li><strong>2000年代</strong>: 不一致が広く認識された頃には、両方のマッピングで作成された文書が膨大に存在。</li>
+          <li><strong>1993 年</strong>: Microsoft が Windows 3.1J で CP932 を出荷しました。Unicode のグリフレンダリングが成熟する前にマッピングが作成されたのです。</li>
+          <li><strong>1997 年</strong>: JIS X 0208:1997 の附属書に公式 Unicode マッピングが収録されましたが、Microsoft のものとは異なっていました。</li>
+          <li><strong>2000 年代</strong>: 不一致が広く認識された頃には、両方のマッピングで作成された文書が膨大に存在していました。</li>
         </ul>
         <p className="mt-3">どちらのマッピングも絶対的に「間違い」ではありません。Microsoft は自社プラットフォームでの見た目を優先し、JIS 標準は意味的な正確性を優先しました。</p>
       </Section>
@@ -188,10 +188,10 @@ function Ja() {
       <Section title="実用上の影響: どこで問題が起きるか">
         <p>波ダッシュ問題は以下のような実際のシナリオで顕在化します:</p>
         <ul className="list-disc pl-6 mt-2 flex flex-col gap-2">
-          <li><strong>データベース移行</strong>: Oracle（JIS/Unicode.org マッピングを使用することが多い）と SQL Server（Microsoft マッピングを使用）間のデータ変換で、文字がサイレントに入れ替わる可能性。</li>
-          <li><strong>メール</strong>: JIS エンコードされたメールを異なるマッピングテーブルでデコードすると誤った文字が表示される。</li>
-          <li><strong>Web フォーム</strong>: macOS（U+301C を使用）で入力した〜と、Windows（歴史的に U+FF5E を使用）で入力した～は、「同じ」文字なのに異なるデータになる。</li>
-          <li><strong>検索</strong>: 〜で検索しても～はヒットしない。ユーザーにとっては同一の文字なのに。</li>
+          <li><strong>データベース移行</strong>: Oracle（JIS/Unicode.org マッピングを使用することが多い）と SQL Server（Microsoft マッピングを使用）間のデータ変換で、文字がサイレントに入れ替わる可能性があります。</li>
+          <li><strong>メール</strong>: JIS エンコードされたメールを異なるマッピングテーブルでデコードすると、誤った文字が表示されます。</li>
+          <li><strong>Web フォーム</strong>: macOS（U+301C を使用）で入力した〜と、Windows（歴史的に U+FF5E を使用）で入力した～は、「同じ」文字でも異なるデータになります。</li>
+          <li><strong>検索</strong>: 〜で検索しても～はヒットしません。ユーザーにとっては同一の文字に見えるのに、です。</li>
         </ul>
         <CodeBlock>{`// 見た目は似ているが異なるコードポイント:
 "〜".codePointAt(0).toString(16)  // "301c" (WAVE DASH)
@@ -219,9 +219,9 @@ function Ja() {
       <Section title="より広いパターン: 日本語だけの問題ではない">
         <p>波ダッシュ問題はマッピング不一致の最も有名な例ですが、他のエンコーディングにも類似の問題が存在します:</p>
         <ul className="list-disc pl-6 mt-2 flex flex-col gap-2">
-          <li><strong>EUC-KR / CP949</strong>: 韓国語エンコーディングにも KS 標準と Microsoft 実装の間でマッピングの不一致がある。</li>
-          <li><strong>Big5 / CP950</strong>: 繁体字中国語エンコーディングも公式標準と Microsoft 拡張の間で同様に乖離。</li>
-          <li><strong>GB2312 / GBK / CP936</strong>: 簡体字中国語エンコーディングは複数の非互換な拡張を経て成長。</li>
+          <li><strong>EUC-KR / CP949</strong>: 韓国語エンコーディングにも KS 標準と Microsoft 実装の間でマッピングの不一致があります。</li>
+          <li><strong>Big5 / CP950</strong>: 繁体字中国語エンコーディングも公式標準と Microsoft 拡張の間で同様に乖離しています。</li>
+          <li><strong>GB2312 / GBK / CP936</strong>: 簡体字中国語エンコーディングは複数の非互換な拡張を経て成長してきました。</li>
         </ul>
         <p className="mt-3">教訓は普遍的です: 文字エンコーディングが複数の当事者によって独立に Unicode にマッピングされた場合、不一致はほぼ不可避でした。Unicode 自体に非はなく、問題はレガシーから Unicode への変換が多対一であることに起因します。</p>
         <div className="mt-4"><TryItButton text="～〜" map="unicode.org">Unicode.org マッピングで表示する</TryItButton></div>
