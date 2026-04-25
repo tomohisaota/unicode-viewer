@@ -24,14 +24,26 @@ const FONTS: Entry[] = [
     url: "https://kamichikoichi.github.io/jigmo/",
   },
   {
+    name: "Source Han Serif JP (源ノ明朝)",
+    version: "2.003",
+    author: "Adobe",
+    license: "SIL Open Font License 1.1",
+    licenseUrl: "https://openfontlicense.org",
+    purpose: {
+      en: "Primary SVS (U+FE00-U+FE0F) source — supplies the U+FE01 \"centered\" variants of CJK punctuation (、︁ 。︁ etc.) used in vertical writing, which Jigmo does not include.",
+      ja: "SVS (U+FE00-FE0F) の主たる供給源。Jigmo に含まれない CJK 句読点の縦書き用 U+FE01 異体字（、︁ 。︁ 等）を提供。",
+    },
+    url: "https://github.com/adobe-fonts/source-han-serif",
+  },
+  {
     name: "IPAmj明朝 (IPAmj Mincho)",
     version: "006.01",
     author: "Information-technology Promotion Agency, Japan (IPA)",
     license: "IPA Font License v1.0",
     licenseUrl: "https://opensource.org/licenses/IPA",
     purpose: {
-      en: "SVS (U+FE00-U+FE0F) overlay — Jigmo ships no SVS table, so IPAmj's Standardized Variation Sequence entries are layered on top (e.g. CJK punctuation 、︀ 、︁ 。︀).",
-      ja: "SVS (U+FE00-FE0F) を補完。Jigmo には SVS テーブルがないため、CJK 句読点 (、︀ 、︁ 。︀ など) を含む Standardized Variation Sequence を IPAmj明朝から取り込んで重ねています。",
+      en: "Secondary SVS overlay layered after Source Han Serif to fill any Moji_Joho-specific SVS entries SHS does not cover.",
+      ja: "源ノ明朝で埋まらない Moji_Joho 固有の SVS を補完するための副次レイヤー。",
     },
     url: "https://moji.or.jp/mojikiban/font/",
   },

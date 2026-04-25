@@ -4,7 +4,7 @@ CJK IVS Fonts
 The `cjk-ivs-*.woff2` files in this directory form a single derived web
 font used by the Unicode Viewer site to render CJK Ideographic Variation
 Sequences (IVS) and Standardized Variation Sequences (SVS). The font is
-assembled from two upstream sources and subset into WOFF2 chunks by
+assembled from three upstream sources and subset into WOFF2 chunks by
 Unicode range (256 code points each) for on-demand loading via CSS
 `unicode-range`.
 
@@ -27,16 +27,29 @@ Original: https://kamichikoichi.github.io/jigmo/
 GlyphWiki: https://glyphwiki.org/
 
 
-2. IPAmj明朝 (IPAmj Mincho) — SVS overlay
---------------------------------------------
+2. Source Han Serif JP (源ノ明朝) — SVS overlay (primary)
+----------------------------------------------------------
+Version 2.003.
+Copyright 2017-2024 Adobe (http://www.adobe.com/).
+Licensed under the SIL Open Font License, Version 1.1.
+https://openfontlicense.org
+
+Provides the Adobe-Japan1 SVS entries that Jigmo lacks — most notably
+the U+FE01 "centred" variants of CJK punctuation (e.g. 、︁ U+3001+FE01,
+。︁ U+3002+FE01) used in vertical writing.
+
+Original: https://github.com/adobe-fonts/source-han-serif
+
+
+3. IPAmj明朝 (IPAmj Mincho) — SVS overlay (Moji_Joho-specific)
+---------------------------------------------------------------
 Version 006.01.
 Copyright (c) Information-technology Promotion Agency, Japan (IPA).
 Licensed under the IPA Font License Agreement v1.0.
 https://opensource.org/licenses/IPA
 
-Only the SVS (U+FE00-U+FE0F) entries are pulled out of IPAmj and copied
-on top of Jigmo. Used for CJK punctuation SVS (e.g. 、︀ 、︁ 。︀) and
-other Standardized Variation Sequences that Jigmo does not cover.
+Layered after Source Han Serif to fill any Moji_Joho-specific SVS
+entries SHS doesn't cover.
 
 Original: https://moji.or.jp/mojikiban/font/
 
