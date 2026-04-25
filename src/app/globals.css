@@ -84,12 +84,10 @@ body {
   }
 }
 
-/* Variant fade compare — alternates between base and variant glyph so the
-   eye picks up the diff as motion. 4s loop:
-     0.0–0.5s  fade base → variant
-     0.5–2.0s  variant held
-     2.0–2.5s  fade variant → base
-     2.5–4.0s  base held                               */
+/* Variant fade compare — alternates between the variant and the base
+   glyph. Common pixels coincide so they stay visible in both phases
+   (the rendering layer just swaps); only the parts that differ between
+   the two glyphs blink in and out, which is what the eye should follow. */
 @keyframes variant-fade-in {
   0%, 100% { opacity: 0 }
   12.5%, 50% { opacity: 1 }
@@ -101,7 +99,7 @@ body {
   62.5% { opacity: 1 }
 }
 @media (prefers-reduced-motion: reduce) {
-  /* Fall back to a static side-by-side feel: keep variant visible. */
+  /* Fall back to a static feel: keep variant visible, hide the base. */
   .variant-fade-in { animation: none !important; opacity: 1 !important }
   .variant-fade-out { animation: none !important; opacity: 0 !important }
 }

@@ -879,6 +879,7 @@ function DetailGlyphPreview({
   const fadeDuration = "5.2s"; // ~1.3× the original 4s loop
   const fadeIn = `variant-fade-in ${fadeDuration} linear infinite`;
   const fadeOut = `variant-fade-out ${fadeDuration} linear infinite`;
+  const maskId = `vfm-${baseCp.toString(16)}-${vsCp.toString(16)}`;
 
   const badgeStyle = {
     fontSize: "10px",
@@ -906,24 +907,82 @@ function DetailGlyphPreview({
           {cluster.grapheme}
         </span>
       </span>
-      {/* Right: alternates between base and variant on a slow fade so
-          the eye picks up structural differences as motion. */}
+      {/* Right: an SVG that does the comparison. Two alternating layers
+          (base in blue / variant in default) crossfade underneath; on
+          top, the variant is rendered through a mask cut from the base
+          glyph so only the common (intersection) pixels show in the
+          default colour. The intersection layer is static, so the
+          shared strokes never blink — only the diff pulses. */}
       <span
         className="inline-flex flex-col items-end gap-1"
         aria-hidden="true"
       >
         {renderBadge(fadeIn)}
-        <span className="relative inline-block" style={glyphFontStyle}>
-          <span
-            className="absolute inset-0"
-            style={{ animation: fadeOut, color: "var(--variant-base-color)" }}
+        <svg
+          width="1em"
+          height="1em"
+          viewBox="0 0 1024 1024"
+          preserveAspectRatio="xMidYMid meet"
+          style={{
+            ...glyphFontStyle,
+            overflow: "visible",
+            color: "var(--gray-900)",
+          }}
+        >
+          <defs>
+            <mask id={maskId}>
+              <rect width="1024" height="1024" fill="black" />
+              <text
+                x="512"
+                y="880"
+                textAnchor="middle"
+                fontSize="1024"
+                fontFamily="var(--font-cjk)"
+                fill="white"
+              >
+                {baseChar}
+              </text>
+            </mask>
+          </defs>
+          {/* Alternating base (blue), fades out during variant phase */}
+          <text
+            x="512"
+            y="880"
+            textAnchor="middle"
+            fontSize="1024"
+            fontFamily="var(--font-cjk)"
+            fill="var(--variant-base-color)"
+            style={{ animation: fadeOut }}
           >
             {baseChar}
-          </span>
-          <span className="relative" style={{ animation: fadeIn }}>
+          </text>
+          {/* Alternating variant, fades in during variant phase */}
+          <text
+            x="512"
+            y="880"
+            textAnchor="middle"
+            fontSize="1024"
+            fontFamily="var(--font-cjk)"
+            fill="currentColor"
+            style={{ animation: fadeIn }}
+          >
             {cluster.grapheme}
-          </span>
-        </span>
+          </text>
+          {/* Common-parts overlay: variant masked through the base shape,
+              so only pixels that exist in both glyphs are drawn — always
+              visible in the default text colour. */}
+          <text
+            x="512"
+            y="880"
+            textAnchor="middle"
+            fontSize="1024"
+            fontFamily="var(--font-cjk)"
+            fill="currentColor"
+            mask={`url(#${maskId})`}
+          >
+            {cluster.grapheme}
+          </text>
+        </svg>
       </span>
     </span>
   );
