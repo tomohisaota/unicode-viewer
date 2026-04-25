@@ -1,0 +1,9 @@
+# Cloudflare Pages custom response headers
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# CJK IVS font chunks: URLs are hash-busted via the ?v=<bundle-hash>
+# query string injected by scripts/generate-font-css.mjs, so the same
+# URL always points at the same bytes. Mark them immutable so browsers
+# don't revalidate for a year.
+/fonts/cjk-ivs-*.woff2
+  Cache-Control: public, max-age=31536000, immutable
