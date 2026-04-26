@@ -845,10 +845,11 @@ function DetailGlyphPreview({
     lineHeight: 1,
   } as const;
 
-  // Vertical padding around the em-box so that combining marks stacking
-  // above/below (Zalgo, accents) have somewhere to overflow without
-  // jiggling the row height across different clusters.
-  const PAD_Y = "0.75em";
+  // Vertical padding around the em-box so that typical combining marks
+  // / accents have somewhere to overflow without jiggling the row
+  // height between clusters. Keep it small — extreme stacks (Zalgo)
+  // will still overflow visibly, which is the honest visualisation.
+  const PAD_Y = "0.2em";
 
   // 1em × 1em dotted reference box, absolutely positioned at the top-left
   // of the line-box (after the wrapper's vertical padding). Visualises
