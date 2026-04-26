@@ -105,10 +105,12 @@ export default function RootLayout({
             __html: `document.documentElement.lang=/^\\/ja(\\/|$)/.test(location.pathname)?"ja":"en"`,
           }}
         />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&display=swap"
-          rel="stylesheet"
-        />
+        {/* Noto Sans Math is now merged into the bundled CJK IVS font
+            (see scripts/generate-font-css.mjs), so we no longer need
+            the Google Fonts stylesheet. Keeping NSM in the font-family
+            chain previously made browsers compute a 1.5em strut for
+            inline content even when NSM didn't supply the glyph,
+            shoving subscripts/descenders well below the line-box. */}
       </head>
       <body className="min-h-full flex flex-col">
         <HtmlLangSetter />

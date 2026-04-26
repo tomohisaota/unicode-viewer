@@ -27,7 +27,7 @@
   --aliased-text: #0e7490;
   --variant-base-color: #3b82f6;
   --variant-only-color: #b91c1c;
-  --font-cjk: 'CjkIvsMincho', 'Noto Sans Math';
+  --font-cjk: 'CjkIvsMincho';
 }
 
 @theme inline {
