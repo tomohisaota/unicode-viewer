@@ -876,9 +876,9 @@ function DetailGlyphPreview({
     ? "var(--aliased-bg)"
     : "var(--gray-50)";
 
-  const fadeDuration = "5.2s"; // ~1.3× the original 4s loop
-  const fadeIn = `variant-fade-in ${fadeDuration} linear infinite`;
-  const fadeOut = `variant-fade-out ${fadeDuration} linear infinite`;
+  // Animation classes are defined in globals.css. Using classes (rather
+  // than inline style) lets @media print override them with !important
+  // so all three colour layers stay visible on paper.
   const maskId = `vfm-${baseCp.toString(16)}-${vsCp.toString(16)}`;
 
   const badgeStyle = {
@@ -889,10 +889,10 @@ function DetailGlyphPreview({
     borderRadius: "4px",
     padding: "2px 5px",
   } as const;
-  const renderBadge = (animation?: string) => (
+  const renderBadge = (fadingIn = false) => (
     <span
-      className="font-mono font-semibold"
-      style={{ ...badgeStyle, animation }}
+      className={`font-mono font-semibold ${fadingIn ? "variant-fade-in" : ""}`}
+      style={badgeStyle}
     >
       {vsLabel}
     </span>
@@ -902,22 +902,22 @@ function DetailGlyphPreview({
     <span className="inline-flex items-end gap-3 sm:gap-4">
       {/* Left: the variant as actually rendered (static reference). */}
       <span className="inline-flex flex-col items-end gap-1">
-        {renderBadge()}
+        {renderBadge(false)}
         <span className="inline-block" style={glyphFontStyle}>
           {cluster.grapheme}
         </span>
       </span>
       {/* Right: an SVG that does the comparison. Two alternating layers
-          (base in blue / variant in default) crossfade underneath; on
-          top, the variant is rendered through a mask cut from the base
-          glyph so only the common (intersection) pixels show in the
-          default colour. The intersection layer is static, so the
-          shared strokes never blink — only the diff pulses. */}
+          (base in blue / variant in red) crossfade underneath; on top,
+          the variant is rendered through a mask cut from the base glyph
+          so only the common (intersection) pixels show in the default
+          colour. The intersection layer is static, so the shared
+          strokes never blink — only the diff pulses. */}
       <span
         className="inline-flex flex-col items-end gap-1"
         aria-hidden="true"
       >
-        {renderBadge(fadeIn)}
+        {renderBadge(true)}
         <svg
           width="1em"
           height="1em"
@@ -952,19 +952,22 @@ function DetailGlyphPreview({
             fontSize="1024"
             fontFamily="var(--font-cjk)"
             fill="var(--variant-base-color)"
-            style={{ animation: fadeOut }}
+            className="variant-fade-out"
           >
             {baseChar}
           </text>
-          {/* Alternating variant, fades in during variant phase */}
+          {/* Alternating variant in red, fades in during variant phase.
+              The static common-parts overlay below paints intersection
+              pixels in the default colour, so only variant-only strokes
+              remain red. */}
           <text
             x="512"
             y="880"
             textAnchor="middle"
             fontSize="1024"
             fontFamily="var(--font-cjk)"
-            fill="currentColor"
-            style={{ animation: fadeIn }}
+            fill="var(--variant-only-color)"
+            className="variant-fade-in"
           >
             {cluster.grapheme}
           </text>

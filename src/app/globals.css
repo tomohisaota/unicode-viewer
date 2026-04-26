@@ -26,6 +26,7 @@
   --aliased-bg: #ecfeff;
   --aliased-text: #0e7490;
   --variant-base-color: #3b82f6;
+  --variant-only-color: #b91c1c;
   --font-cjk: 'CjkIvsMincho', 'Noto Sans Math';
 }
 
@@ -63,6 +64,7 @@
     --aliased-bg: rgba(6, 182, 212, 0.1);
     --aliased-text: #67e8f9;
     --variant-base-color: #93c5fd;
+    --variant-only-color: #fca5a5;
   }
 }
 
@@ -98,8 +100,24 @@ body {
   12.5%, 50% { opacity: 0 }
   62.5% { opacity: 1 }
 }
+.variant-fade-in {
+  animation: variant-fade-in 5.2s linear infinite;
+}
+.variant-fade-out {
+  animation: variant-fade-out 5.2s linear infinite;
+}
 @media (prefers-reduced-motion: reduce) {
   /* Fall back to a static feel: keep variant visible, hide the base. */
   .variant-fade-in { animation: none !important; opacity: 1 !important }
   .variant-fade-out { animation: none !important; opacity: 0 !important }
+}
+@media print {
+  /* On paper, freeze every layer at full opacity so the blue / red /
+     black breakdown (base-only / variant-only / common) is all visible
+     in a single static snapshot rather than just whichever frame the
+     animation happened to be on. */
+  .variant-fade-in, .variant-fade-out {
+    animation: none !important;
+    opacity: 1 !important;
+  }
 }
