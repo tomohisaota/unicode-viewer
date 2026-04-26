@@ -1560,7 +1560,20 @@ function AllCodePointsTable({
                     backgroundColor: "var(--background)",
                   }}
                 >
-                  {row.label}
+                  {/* The td colSpans the whole row, so left:0 stickiness on
+                      the cell itself does nothing. Pin the label content
+                      itself with position:sticky inside the cell so the
+                      group name stays visible when the user scrolls the
+                      encoding columns horizontally. */}
+                  <span
+                    style={{
+                      position: "sticky",
+                      left: "0.75rem",
+                      display: "inline-block",
+                    }}
+                  >
+                    {row.label}
+                  </span>
                 </td>
               </tr>
             );
