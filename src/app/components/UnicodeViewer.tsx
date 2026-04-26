@@ -913,7 +913,18 @@ function DetailGlyphPreview({
     </span>
   );
 
-  if (!isVarSeq || !baseChar) {
+  // Skip the SVG mask comparison for emoji presentation selectors
+  // (VS15 = U+FE0E text style, VS16 = U+FE0F emoji style). Those VSes
+  // toggle colour vs monochrome rendering, which means the bare base
+  // and the variant draw entirely different glyph shapes (filled
+  // colour emoji vs outline). The diff/common visualisation makes no
+  // sense in that case — anti-aliased edge mismatches show up as
+  // spurious blue/red flicker even where the two glyphs visually
+  // match. Just show the static variant glyph.
+  const isEmojiVs =
+    isVarSeq && (cps[1].codePoint === 0xfe0e || cps[1].codePoint === 0xfe0f);
+
+  if (!isVarSeq || !baseChar || isEmojiVs) {
     return wrapGlyph(cluster.grapheme);
   }
 
