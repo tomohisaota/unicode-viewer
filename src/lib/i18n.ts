@@ -45,7 +45,7 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "～〜 — WHATWG vs Unicode.org mapping (wave dash)", value: "～〜" },
     { label: "欄欄 — CJK Compatibility Ideograph (U+F91D → U+6B04)", value: "U+F91D欄" },
     { label: "葛󠄀葛 — IVS (Ideographic Variation Sequence)", value: "葛󠄀葛" },
-    { label: "邉 × 47 — Most IVS variants in Unicode (渡邉のナベ)", value: "邉󠄀邉󠄁邉󠄂邉󠄃邉󠄄邉󠄅邉󠄆邉󠄇邉󠄈邉󠄉邉󠄊邉󠄋邉󠄌邉󠄍邉󠄎邉󠄏邉󠄏邉󠄐邉󠄐邉󠄑邉󠄑邉󠄒邉󠄒邉󠄓邉󠄓邉󠄔邉󠄔邉󠄕邉󠄕邉󠄖邉󠄖邉󠄗邉󠄗邉󠄘邉󠄘邉󠄙邉󠄙邉󠄚邉󠄚邉󠄛邉󠄛邉󠄜邉󠄜邉󠄝邉󠄝邉󠄞邉󠄟" },
+    { label: "邉 × 30 — Distinct IVS variants of the Watanabe nabe", value: "邉󠄁邉󠄂邉󠄃邉󠄄邉󠄅邉󠄆邉󠄇邉󠄈邉󠄉邉󠄊邉󠄋邉󠄌邉󠄍邉󠄎邉󠄐邉󠄑邉󠄒邉󠄓邉󠄔邉󠄕邉󠄖邉󠄗邉󠄘邉󠄙邉󠄚邉󠄛邉󠄜邉󠄝邉󠄞邉󠄟" },
     // --- Special ---
     { label: "\\u0000 — NULL character", value: "\\u0000" },
   ],
@@ -76,8 +76,8 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "～〜 — WHATWG vs Unicode.org マッピング（波ダッシュ問題）", value: "～〜" },
     { label: "欄欄 — CJK互換漢字と正規化（U+F91D → U+6B04）", value: "U+F91D欄" },
     { label: "葛󠄀葛 — IVS（異体字セレクタ）", value: "葛󠄀葛" },
-    { label: "邉 × 16 — IVS 異体字（渡邉のナベ）", value: "邉󠄏邉󠄐邉󠄑邉󠄒邉󠄓邉󠄔邉󠄕邉󠄖邉󠄗邉󠄘邉󠄙邉󠄚邉󠄛邉󠄜邉󠄝邉󠄟" },
-    { label: "邊 × 19 — IVS 異体字（渡邊のナベ）", value: "邊󠄀邊󠄁邊󠄂邊󠄃邊󠄄邊󠄅邊󠄆邊󠄇邊󠄈邊󠄉邊󠄊邊󠄋邊󠄌邊󠄍邊󠄎邊󠄏邊󠄐邊󠄑邊󠄒" },
+    { label: "邉 × 30 — 字形が異なる IVS（渡邉のナベ）", value: "邉󠄁邉󠄂邉󠄃邉󠄄邉󠄅邉󠄆邉󠄇邉󠄈邉󠄉邉󠄊邉󠄋邉󠄌邉󠄍邉󠄎邉󠄐邉󠄑邉󠄒邉󠄓邉󠄔邉󠄕邉󠄖邉󠄗邉󠄘邉󠄙邉󠄚邉󠄛邉󠄜邉󠄝邉󠄞邉󠄟" },
+    { label: "邊 × 20 — 字形が異なる IVS（渡邊のナベ）", value: "邊󠄁邊󠄂邊󠄃邊󠄄邊󠄅邊󠄆邊󠄇邊󠄈邊󠄉邊󠄊邊󠄋邊󠄌邊󠄍邊󠄎邊󠄏邊󠄐邊󠄑邊󠄒邊󠄓邊󠄔" },
     { label: "、。 — SVS: 句読点の字形（角寄せ/中央）+ 数学記号", value: "、︀、︁。︀。︁ ∩︀∪︀" },
     { label: "∩∩︀ ∪∪︀ ∅∅︀ — 数学記号 SVS（セリフ付き）", value: "∩∩︀ ∪∪︀ ∅∅︀" },
     // --- 特殊 ---

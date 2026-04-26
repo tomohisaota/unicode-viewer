@@ -53,8 +53,8 @@ const FONTS: Entry[] = [
     license: "SIL Open Font License 1.1",
     licenseUrl: "https://openfontlicense.org",
     purpose: {
-      en: "Mathematical-symbol SVS variants (e.g. ∅ U+FE00).",
-      ja: "数学記号の SVS 異体字（∅ U+FE00 など）。",
+      en: "Mathematical operator base glyphs (∩ ∪ ∅ etc.) and their U+FE00 SVS variants — Jigmo and the CJK fonts don't cover the U+22xx range, so Noto Sans Math is merged in for both the bare characters and their serif variants.",
+      ja: "数学記号 (∩ ∪ ∅ など) のベース字形と U+FE00 SVS 異体字を提供。Jigmo と CJK フォントは U+22xx 数学演算子をカバーしないため、Noto Sans Math から取り込んでベース文字と SVS を両方確保。",
     },
     url: "https://fonts.google.com/noto/specimen/Noto+Sans+Math",
   },

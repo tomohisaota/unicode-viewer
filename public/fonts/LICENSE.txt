@@ -4,7 +4,7 @@ CJK IVS Fonts
 The `cjk-ivs-*.woff2` files in this directory form a single derived web
 font used by the Unicode Viewer site to render CJK Ideographic Variation
 Sequences (IVS) and Standardized Variation Sequences (SVS). The font is
-assembled from three upstream sources and subset into WOFF2 chunks by
+assembled from four upstream sources and subset into WOFF2 chunks by
 Unicode range (256 code points each) for on-demand loading via CSS
 `unicode-range`.
 
@@ -52,6 +52,20 @@ Layered after Source Han Serif to fill any Moji_Joho-specific SVS
 entries SHS doesn't cover.
 
 Original: https://moji.or.jp/mojikiban/font/
+
+
+4. Noto Sans Math — Math operator base + SVS
+-----------------------------------------------
+Copyright (c) Google / Noto Project.
+Licensed under the SIL Open Font License, Version 1.1.
+https://openfontlicense.org
+
+Supplies math operator code points (∩ U+2229, ∪ U+222A, ∅ U+2205, etc.)
+and their SVS variants ("with serifs" forms at U+FE00) — Jigmo, IPAmj,
+and Source Han Serif do not cover the U+22xx mathematical operator
+range.
+
+Original: https://fonts.google.com/noto/specimen/Noto+Sans+Math
 
 
 Merge priority
