@@ -845,12 +845,76 @@ function DetailGlyphPreview({
     lineHeight: 1,
   } as const;
 
-  if (!isVarSeq || !baseChar) {
-    return (
-      <span className="inline-block" style={glyphFontStyle}>
-        {cluster.grapheme}
+  // Vertical padding around the em-box so that combining marks stacking
+  // above/below (Zalgo, accents) have somewhere to overflow without
+  // jiggling the row height across different clusters.
+  const PAD_Y = "0.75em";
+
+  // 1em × 1em dotted reference box, absolutely positioned at the top-left
+  // of the line-box (after the wrapper's vertical padding). Visualises
+  // the font's em-square — whatever extends past it is overflow
+  // (combining marks, descenders, etc.).
+  const emFrame = (
+    <span
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        top: PAD_Y,
+        left: 0,
+        width: "1em",
+        height: "1em",
+        boxSizing: "border-box",
+        border: "1px dotted var(--gray-400)",
+        pointerEvents: "none",
+      }}
+    />
+  );
+
+  // Wrap the rendered glyph so the em-frame and a separate advance-frame
+  // can both sit on top of it. The advance-frame stretches to whatever
+  // the wrapper's natural width is — that width equals the cluster's
+  // actual advance (≈1em for CJK, <1em for proportional Latin glyphs,
+  // ~2em for emoji). Em-frame is fixed at 1em, so the two frames
+  // coincide for full-width CJK and reveal advance differences for
+  // anything else.
+  const wrapGlyph = (content: React.ReactNode) => (
+    <span
+      style={{
+        ...glyphFontStyle,
+        display: "inline-block",
+        position: "relative",
+        paddingTop: PAD_Y,
+        paddingBottom: PAD_Y,
+      }}
+    >
+      {emFrame}
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: PAD_Y,
+          left: 0,
+          right: 0,
+          height: "1em",
+          boxSizing: "border-box",
+          border: "1px dashed var(--gray-500)",
+          pointerEvents: "none",
+        }}
+      />
+      <span
+        style={{
+          display: "inline-block",
+          height: "1em",
+          lineHeight: 1,
+        }}
+      >
+        {content}
       </span>
-    );
+    </span>
+  );
+
+  if (!isVarSeq || !baseChar) {
+    return wrapGlyph(cluster.grapheme);
   }
 
   const baseCp = cps[0].codePoint;
@@ -899,12 +963,23 @@ function DetailGlyphPreview({
   );
 
   return (
-    <span className="inline-flex items-end gap-3 sm:gap-4">
+    <span
+      className="inline-flex items-end"
+      style={{ gap: "1.25em" }}
+    >
       {/* Left: the variant as actually rendered (static reference). */}
-      <span className="inline-flex flex-col items-end gap-1">
+      <span
+        className="inline-flex flex-col gap-1"
+        style={{
+          ...glyphFontStyle,
+          width: "1em",
+          alignItems: "flex-end",
+          flexShrink: 0,
+        }}
+      >
         {renderBadge(false)}
-        <span className="inline-block" style={glyphFontStyle}>
-          {cluster.grapheme}
+        <span style={{ alignSelf: "flex-start" }}>
+          {wrapGlyph(cluster.grapheme)}
         </span>
       </span>
       {/* Right: an SVG that does the comparison. Two alternating layers
@@ -914,17 +989,34 @@ function DetailGlyphPreview({
           colour. The intersection layer is static, so the shared
           strokes never blink — only the diff pulses. */}
       <span
-        className="inline-flex flex-col items-end gap-1"
+        className="inline-flex flex-col gap-1"
         aria-hidden="true"
+        style={{
+          ...glyphFontStyle,
+          width: "1em",
+          alignItems: "flex-end",
+          flexShrink: 0,
+        }}
       >
         {renderBadge(true)}
+        {/* Match the wrapGlyph wrapper's vertical padding so this SVG's
+            em-frame and the left-side HTML em-frame land at the same
+            vertical position when the outer flex aligns by baseline. */}
+        <span
+          style={{
+            display: "inline-block",
+            paddingTop: PAD_Y,
+            paddingBottom: PAD_Y,
+            alignSelf: "flex-start",
+          }}
+        >
         <svg
           width="1em"
           height="1em"
           viewBox="0 0 1024 1024"
           preserveAspectRatio="xMidYMid meet"
           style={{
-            ...glyphFontStyle,
+            display: "block",
             overflow: "visible",
             color: "var(--gray-900)",
           }}
@@ -939,11 +1031,24 @@ function DetailGlyphPreview({
                 fontSize="1024"
                 fontFamily="var(--font-cjk)"
                 fill="white"
+                textLength="1024"
+                lengthAdjust="spacingAndGlyphs"
               >
                 {baseChar}
               </text>
             </mask>
           </defs>
+          {/* Em-square reference frame */}
+          <rect
+            x="0"
+            y="0"
+            width="1024"
+            height="1024"
+            fill="none"
+            stroke="var(--gray-400)"
+            strokeWidth="2"
+            strokeDasharray="8 8"
+          />
           {/* Alternating base (blue), fades out during variant phase */}
           <text
             x="512"
@@ -986,6 +1091,7 @@ function DetailGlyphPreview({
             {cluster.grapheme}
           </text>
         </svg>
+        </span>
       </span>
     </span>
   );
