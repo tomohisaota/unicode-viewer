@@ -852,32 +852,18 @@ function DetailGlyphPreview({
   // honest visualisation.
   const PAD_Y = "0.4em";
 
-  // 1em × 1em dotted reference box, absolutely positioned at the top-left
-  // of the line-box (after the wrapper's vertical padding). Visualises
-  // the font's em-square — whatever extends past it is overflow
-  // (combining marks, descenders, etc.).
-  const emFrame = (
-    <span
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        top: PAD_Y,
-        left: 0,
-        width: "1em",
-        height: "1em",
-        boxSizing: "border-box",
-        border: "1px dotted var(--gray-400)",
-        pointerEvents: "none",
-      }}
-    />
-  );
-
-  // Wrap the rendered glyph so the em-frame and a separate advance-frame
-  // can both sit on top of it. The text content flows inline at
-  // line-height: 1, giving a 1em line-box; both frames are absolutely
-  // positioned at top:PAD_Y with height:1em so they coincide with that
-  // line-box exactly. Em-frame is fixed at 1em wide; advance-frame
-  // stretches to wrapper width (= cluster's natural advance).
+  // Two layered frames:
+  //   • the inner flex span sizes to the cluster's natural advance and
+  //     carries the dashed advance-frame border around the rendered
+  //     glyph;
+  //   • a separately-positioned absolute span draws the dotted em-frame
+  //     at a fixed 1em × 1em, anchored to the wrapper's left edge.
+  // Because the inner span uses inline-flex with align-items:center
+  // and an explicit 1em height, the rendered glyph is vertically
+  // centred and the line-box can't be stretched by fallback fonts'
+  // strut metrics. For full-width CJK the two frames coincide; for
+  // proportional Latin glyphs the em-frame is wider than advance, and
+  // for wide emoji the advance extends right past the em-frame.
   const wrapGlyph = (content: React.ReactNode) => (
     <span
       style={{
@@ -887,23 +873,35 @@ function DetailGlyphPreview({
         paddingTop: PAD_Y,
         paddingBottom: PAD_Y,
         verticalAlign: "top",
+        lineHeight: 1,
       }}
     >
-      {emFrame}
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          height: "1em",
+          boxSizing: "border-box",
+          border: "1px dashed var(--gray-500)",
+          overflow: "visible",
+          lineHeight: 1,
+        }}
+      >
+        {content}
+      </span>
       <span
         aria-hidden="true"
         style={{
           position: "absolute",
           top: PAD_Y,
           left: 0,
-          right: 0,
+          width: "1em",
           height: "1em",
           boxSizing: "border-box",
-          border: "1px dashed var(--gray-500)",
+          border: "1px dotted var(--gray-400)",
           pointerEvents: "none",
         }}
       />
-      {content}
     </span>
   );
 
@@ -1031,8 +1029,9 @@ function DetailGlyphPreview({
               <rect width="1024" height="1024" fill="black" />
               <text
                 x="512"
-                y="880"
+                y="512"
                 textAnchor="middle"
+            dominantBaseline="central"
                 fontSize="1024"
                 fontFamily="var(--font-cjk)"
                 fill="white"
@@ -1057,8 +1056,9 @@ function DetailGlyphPreview({
           {/* Alternating base (blue), fades out during variant phase */}
           <text
             x="512"
-            y="880"
+            y="512"
             textAnchor="middle"
+            dominantBaseline="central"
             fontSize="1024"
             fontFamily="var(--font-cjk)"
             fill="var(--variant-base-color)"
@@ -1072,8 +1072,9 @@ function DetailGlyphPreview({
               remain red. */}
           <text
             x="512"
-            y="880"
+            y="512"
             textAnchor="middle"
+            dominantBaseline="central"
             fontSize="1024"
             fontFamily="var(--font-cjk)"
             fill="var(--variant-only-color)"
@@ -1086,8 +1087,9 @@ function DetailGlyphPreview({
               visible in the default text colour. */}
           <text
             x="512"
-            y="880"
+            y="512"
             textAnchor="middle"
+            dominantBaseline="central"
             fontSize="1024"
             fontFamily="var(--font-cjk)"
             fill="currentColor"
