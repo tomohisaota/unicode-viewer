@@ -845,11 +845,12 @@ function DetailGlyphPreview({
     lineHeight: 1,
   } as const;
 
-  // Vertical padding around the em-box so that typical combining marks
-  // / accents have somewhere to overflow without jiggling the row
-  // height between clusters. Keep it small — extreme stacks (Zalgo)
-  // will still overflow visibly, which is the honest visualisation.
-  const PAD_Y = "0.2em";
+  // Vertical padding around the em-box. Needs to be wide enough to
+  // accommodate subscripts/superscripts and typical combining marks
+  // whose glyphs sit slightly below baseline or above ascender. Extreme
+  // stacks (Zalgo) still overflow visibly past the box, which is the
+  // honest visualisation.
+  const PAD_Y = "0.4em";
 
   // 1em × 1em dotted reference box, absolutely positioned at the top-left
   // of the line-box (after the wrapper's vertical padding). Visualises
@@ -872,12 +873,11 @@ function DetailGlyphPreview({
   );
 
   // Wrap the rendered glyph so the em-frame and a separate advance-frame
-  // can both sit on top of it. The advance-frame stretches to whatever
-  // the wrapper's natural width is — that width equals the cluster's
-  // actual advance (≈1em for CJK, <1em for proportional Latin glyphs,
-  // ~2em for emoji). Em-frame is fixed at 1em, so the two frames
-  // coincide for full-width CJK and reveal advance differences for
-  // anything else.
+  // can both sit on top of it. The text content flows inline at
+  // line-height: 1, giving a 1em line-box; both frames are absolutely
+  // positioned at top:PAD_Y with height:1em so they coincide with that
+  // line-box exactly. Em-frame is fixed at 1em wide; advance-frame
+  // stretches to wrapper width (= cluster's natural advance).
   const wrapGlyph = (content: React.ReactNode) => (
     <span
       style={{
@@ -886,6 +886,7 @@ function DetailGlyphPreview({
         position: "relative",
         paddingTop: PAD_Y,
         paddingBottom: PAD_Y,
+        verticalAlign: "top",
       }}
     >
       {emFrame}
@@ -902,15 +903,7 @@ function DetailGlyphPreview({
           pointerEvents: "none",
         }}
       />
-      <span
-        style={{
-          display: "inline-block",
-          height: "1em",
-          lineHeight: 1,
-        }}
-      >
-        {content}
-      </span>
+      {content}
     </span>
   );
 
