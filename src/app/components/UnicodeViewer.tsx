@@ -1029,14 +1029,11 @@ function DetailGlyphPreview({
               <rect width="1024" height="1024" fill="black" />
               <text
                 x="512"
-                y="512"
+                y="880"
                 textAnchor="middle"
-            dominantBaseline="central"
                 fontSize="1024"
                 fontFamily="var(--font-cjk)"
                 fill="white"
-                textLength="1024"
-                lengthAdjust="spacingAndGlyphs"
               >
                 {baseChar}
               </text>
@@ -1056,9 +1053,8 @@ function DetailGlyphPreview({
           {/* Alternating base (blue), fades out during variant phase */}
           <text
             x="512"
-            y="512"
+            y="880"
             textAnchor="middle"
-            dominantBaseline="central"
             fontSize="1024"
             fontFamily="var(--font-cjk)"
             fill="var(--variant-base-color)"
@@ -1072,9 +1068,8 @@ function DetailGlyphPreview({
               remain red. */}
           <text
             x="512"
-            y="512"
+            y="880"
             textAnchor="middle"
-            dominantBaseline="central"
             fontSize="1024"
             fontFamily="var(--font-cjk)"
             fill="var(--variant-only-color)"
@@ -1087,9 +1082,8 @@ function DetailGlyphPreview({
               visible in the default text colour. */}
           <text
             x="512"
-            y="512"
+            y="880"
             textAnchor="middle"
-            dominantBaseline="central"
             fontSize="1024"
             fontFamily="var(--font-cjk)"
             fill="currentColor"
