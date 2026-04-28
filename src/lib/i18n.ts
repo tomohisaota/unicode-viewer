@@ -17,60 +17,137 @@ export interface Sample {
   value: string;
 }
 
-const samples: { en: Sample[]; ja: Sample[] } = {
+export interface SampleGroup {
+  heading: string;
+  items: Sample[];
+}
+
+const sampleGroups: { en: SampleGroup[]; ja: SampleGroup[] } = {
   en: [
-    // --- Emoji & Modifiers ---
+    {
+      heading: "Emoji & Modifiers",
+      items: [
     { label: "👨‍👩‍👧‍👦 Family emoji — 1 grapheme, 7 CPs, .length=11", value: "👨‍👩‍👧‍👦" },
     { label: "🏳️‍🌈 Rainbow flag (ZWJ + VS)", value: "🏳️‍🌈" },
     { label: "👍🏽 Skin tone modifier", value: "👍🏽" },
     { label: "🇯🇵🇺🇸🇬🇧 Flag emoji (Regional Indicator pairs)", value: "🇯🇵🇺🇸🇬🇧" },
     { label: "☺︎☺️ — Text vs Emoji presentation (VS15/VS16)", value: "☺︎☺️" },
-    // --- Normalization ---
+      ],
+    },
+    {
+      heading: "Normalization",
+      items: [
     { label: "café — NFC vs NFD (1 CP vs 2 CPs for é)", value: "café" },
     { label: "㍻㌔㍑ — NFKC decomposition (㍻ → 平成)", value: "㍻㌔㍑" },
     { label: "ﬁﬄ — Ligature characters (NFKC → fi, ffl)", value: "ﬁﬄ" },
     { label: "Å Å Å — Same glyph, 3 code points", value: "U+00C5 U+212B U+0041U+030A" },
     { label: "2⁰ H₂O — Super/subscripts (NFKC → 20 H2O)", value: "2⁰ H₂O" },
-    // --- Visual Deception ---
+      ],
+    },
+    {
+      heading: "Visual Deception",
+      items: [
     { label: "AАΑ aа oоο — Homoglyphs (Latin/Cyrillic/Greek)", value: "AАΑ aа oоο" },
     { label: "ab​cd — Zero-width space (invisible character)", value: "ab​cd" },
     { label: "‮RLO‬ — Bidi override (right-to-left)", value: "‮abc‬" },
     { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — Combining marks stacking", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
-    // --- Width & Spaces ---
+      ],
+    },
+    {
+      heading: "Width & Spaces",
+      items: [
     { label: "ABCＡＢＣｱｲｳアイウ — Fullwidth / Halfwidth variants", value: "ABCＡＢＣｱｲｳアイウ" },
     { label: "A B C D　E — 5 kinds of space", value: "A B C D　E" },
-    // --- CJK & Encoding ---
+      ],
+    },
+    {
+      heading: "Display Width Anomalies",
+      items: [
+    { label: "⨌ — Quadruple Integral (U+2A0C, abnormally wide math op)", value: "⨌" },
+    { label: "꧅ — Javanese Pada Luhur (U+A9C5, towering ornament)", value: "꧅" },
+    { label: "𒈙 — Cuneiform LUGAL OPPOSING (U+12219, extreme width)", value: "𒈙" },
+    { label: "𒐫 — Cuneiform NINE SHAR2 (U+1242B, ultra-wide numeric)", value: "𒐫" },
+    { label: "⨌꧅𒈙𒐫 — Side-by-side width showcase", value: "⨌꧅𒈙𒐫" },
+      ],
+    },
+    {
+      heading: "CJK & Encoding",
+      items: [
     { label: "高髙 — JIS level 1 vs CP932 IBM extension", value: "高髙" },
     { label: "繋繫 — JIS X 0208 vs JIS X 0213:2004", value: "繋繫" },
     { label: "～〜 — WHATWG vs Unicode.org mapping (wave dash)", value: "～〜" },
     { label: "欄欄 — CJK Compatibility Ideograph (U+F91D → U+6B04)", value: "U+F91D欄" },
     { label: "葛󠄀葛 — IVS (Ideographic Variation Sequence)", value: "葛󠄀葛" },
     { label: "邉 × 30 — Distinct IVS variants of the Watanabe nabe", value: "邉󠄁邉󠄂邉󠄃邉󠄄邉󠄅邉󠄆邉󠄇邉󠄈邉󠄉邉󠄊邉󠄋邉󠄌邉󠄍邉󠄎邉󠄐邉󠄑邉󠄒邉󠄓邉󠄔邉󠄕邉󠄖邉󠄗邉󠄘邉󠄙邉󠄚邉󠄛邉󠄜邉󠄝邉󠄞邉󠄟" },
-    // --- Special ---
+      ],
+    },
+    {
+      heading: "Stacked & Extreme Kanji",
+      items: [
+    { label: "龘 — Dragon × 3 (U+9F98, 48 strokes, BMP)", value: "龘" },
+    { label: "𪚥 — Dragon × 4 \"taito\" (CJK Ext B → 4 UTF-8 bytes)", value: "𪚥" },
+    { label: "鬱 — 29 strokes, max in 常用漢字 Jōyō", value: "鬱" },
+    { label: "齉 — Nose + Pouch (U+9F49, 36 strokes)", value: "齉" },
+    { label: "龘𪚥 — Dragon stack: BMP vs SMP code points", value: "龘𪚥" },
+      ],
+    },
+    {
+      heading: "Special",
+      items: [
     { label: "\\u0000 — NULL character", value: "\\u0000" },
+      ],
+    },
   ],
   ja: [
-    // --- 絵文字 ---
+    {
+      heading: "絵文字",
+      items: [
     { label: "👨‍👩‍👧‍👦 家族絵文字 — 1書記素 / 7CP / .length=11", value: "👨‍👩‍👧‍👦" },
     { label: "🏳️‍🌈 レインボーフラグ（ZWJ + 異体字セレクタ）", value: "🏳️‍🌈" },
     { label: "👍🏽 肌色修飾子", value: "👍🏽" },
     { label: "🇯🇵🇺🇸🇬🇧 国旗絵文字（地域インジケータの組）", value: "🇯🇵🇺🇸🇬🇧" },
     { label: "☺︎☺️ — テキスト表示 vs 絵文字表示（VS15/VS16）", value: "☺︎☺️" },
-    // --- 正規化 ---
+      ],
+    },
+    {
+      heading: "正規化",
+      items: [
     { label: "café — NFC と NFD の違い（é が 1CP vs 2CP）", value: "café" },
     { label: "㍻㌔㍑ — NFKC で分解される文字（㍻ → 平成）", value: "㍻㌔㍑" },
     { label: "ﬁﬄ — 合字（NFKC → fi, ffl）", value: "ﬁﬄ" },
     { label: "Å Å Å — 見た目は同じ、コードポイントは3種類", value: "U+00C5 U+212B U+0041U+030A" },
     { label: "2⁰ H₂O — 上付き・下付き文字（NFKC → 20 H2O）", value: "2⁰ H₂O" },
-    // --- 視覚的な罠 ---
+      ],
+    },
+    {
+      heading: "視覚的な罠",
+      items: [
     { label: "AАΑ aа oоο — ホモグリフ（ラテン/キリル/ギリシャ）", value: "AАΑ aа oоο" },
     { label: "ab​cd — ゼロ幅スペース（不可視文字）", value: "ab​cd" },
     { label: "‮RLO‬ — 双方向制御文字（右から左）", value: "‮abc‬" },
     { label: "Z̤̈ä̤l̤̈g̤̈ö̤ — 結合マークの重ね", value: "Z̤̈ä̤l̤̈g̤̈ö̤" },
-    // --- 全角・半角・空白 ---
+      ],
+    },
+    {
+      heading: "全角・半角・空白",
+      items: [
     { label: "ABCＡＢＣｱｲｳアイウ — 全角・半角のバリエーション", value: "ABCＡＢＣｱｲｳアイウ" },
     { label: "A B C D　E — 5種類のスペース", value: "A B C D　E" },
-    // --- CJK・エンコーディング ---
+      ],
+    },
+    {
+      heading: "大きすぎる文字",
+      items: [
+    { label: "⨌ — 四重積分（U+2A0C、表示幅が異様に広い数学記号）", value: "⨌" },
+    { label: "꧅ — ジャワ文字 PADA LUHUR（U+A9C5、極端に高い装飾）", value: "꧅" },
+    { label: "𒈙 — 楔形文字 LUGAL OPPOSING（U+12219、超ワイド）", value: "𒈙" },
+    { label: "𒐫 — 楔形数字 NINE SHAR2（U+1242B、特大）", value: "𒐫" },
+    { label: "⨌꧅𒈙𒐫 — 巨大文字を並べて比較", value: "⨌꧅𒈙𒐫" },
+      ],
+    },
+    {
+      heading: "CJK・エンコーディング",
+      items: [
     { label: "高髙 — JIS第一水準 vs CP932 IBM拡張", value: "高髙" },
     { label: "繋繫 — JIS X 0208 vs JIS X 0213:2004", value: "繋繫" },
     { label: "～〜 — WHATWG vs Unicode.org マッピング（波ダッシュ問題）", value: "～〜" },
@@ -80,8 +157,24 @@ const samples: { en: Sample[]; ja: Sample[] } = {
     { label: "邊 × 20 — 字形が異なる IVS（渡邊のナベ）", value: "邊󠄁邊󠄂邊󠄃邊󠄄邊󠄅邊󠄆邊󠄇邊󠄈邊󠄉邊󠄊邊󠄋邊󠄌邊󠄍邊󠄎邊󠄏邊󠄐邊󠄑邊󠄒邊󠄓邊󠄔" },
     { label: "、。 — SVS: 句読点の字形（角寄せ/中央）+ 数学記号", value: "、︀、︁。︀。︁ ∩︀∪︀" },
     { label: "∩∩︀ ∪∪︀ ∅∅︀ — 数学記号 SVS（セリフ付き）", value: "∩∩︀ ∪∪︀ ∅∅︀" },
-    // --- 特殊 ---
+      ],
+    },
+    {
+      heading: "重ね漢字・極端な画数",
+      items: [
+    { label: "龘 — 龍×3（U+9F98、48画、BMP）", value: "龘" },
+    { label: "𪚥 — 龍×4「たいと」（CJK拡張B、UTF-8で4バイト）", value: "𪚥" },
+    { label: "鬱 — 29画、常用漢字で最多画数", value: "鬱" },
+    { label: "齉 — 36画、読み「ノウ」（U+9F49）", value: "齉" },
+    { label: "龘𪚥 — 龍重ね：BMP と SMP の対比", value: "龘𪚥" },
+      ],
+    },
+    {
+      heading: "特殊",
+      items: [
     { label: "\\u0000 — NULL 文字", value: "\\u0000" },
+      ],
+    },
   ],
 };
 
@@ -92,7 +185,7 @@ const translations = {
     inputLabel: "INPUT",
     inputPlaceholder: "Enter a string…",
     samples: "Samples",
-    sampleList: samples.en,
+    sampleGroups: sampleGroups.en,
     characters: "Characters",
     codePoints: "Code Points",
     utf8Bytes: "UTF-8 Bytes",
@@ -246,7 +339,7 @@ const translations = {
     inputLabel: "入力",
     inputPlaceholder: "文字列を入力してください…",
     samples: "サンプルから入力",
-    sampleList: samples.ja,
+    sampleGroups: sampleGroups.ja,
     characters: "文字数",
     codePoints: "コードポイント",
     utf8Bytes: "UTF-8 バイト",

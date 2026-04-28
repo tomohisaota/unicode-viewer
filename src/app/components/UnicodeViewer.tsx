@@ -1657,33 +1657,58 @@ function SampleMenu({
       </button>
       {open && (
         <div
-          className="absolute left-0 top-full mt-1 z-20 rounded-lg py-1 overflow-hidden max-w-[calc(100vw-2rem)]"
+          className="absolute left-0 top-full mt-1 z-20 rounded-lg py-1 max-w-[calc(100vw-2rem)]"
           style={{
             backgroundColor: "var(--background)",
             boxShadow:
               "0px 0px 0px 1px var(--shadow-border), 0px 8px 16px rgba(0,0,0,0.12)",
             minWidth: "min(20rem, calc(100vw - 2rem))",
+            maxHeight: "min(70vh, 32rem)",
+            overflowY: "auto",
           }}
         >
-          {t.sampleList.map((sample, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => {
-                onSelect(sample.value);
-                setOpen(false);
-              }}
-              className="w-full text-left px-3 py-2 text-xs cursor-pointer transition-colors"
-              style={{ color: "var(--gray-600)" }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "var(--gray-50)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              {sample.label}
-            </button>
+          {t.sampleGroups.map((group, gi) => (
+            <div key={gi}>
+              <div
+                className="px-3 py-1.5 text-[11px] font-semibold uppercase"
+                style={{
+                  color: "var(--gray-500)",
+                  letterSpacing: "0.08em",
+                  backgroundColor: "var(--gray-50)",
+                  borderTop:
+                    gi > 0 ? "1px solid var(--shadow-border)" : "none",
+                  borderBottom: "1px solid var(--shadow-border)",
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                }}
+              >
+                {group.heading}
+              </div>
+              <div className="py-1">
+                {group.items.map((sample, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      onSelect(sample.value);
+                      setOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs cursor-pointer transition-colors"
+                    style={{ color: "var(--gray-600)" }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor =
+                        "var(--gray-100)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "transparent")
+                    }
+                  >
+                    {sample.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
