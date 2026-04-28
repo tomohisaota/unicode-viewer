@@ -1657,12 +1657,14 @@ function SampleMenu({
       </button>
       {open && (
         <div
-          className="absolute left-0 top-full mt-1 z-20 rounded-lg py-1 max-w-[calc(100vw-2rem)]"
+          className="absolute left-0 top-full mt-1 z-20 rounded-lg py-1"
           style={{
             backgroundColor: "var(--background)",
             boxShadow:
               "0px 0px 0px 1px var(--shadow-border), 0px 8px 16px rgba(0,0,0,0.12)",
+            width: "max-content",
             minWidth: "min(20rem, calc(100vw - 2rem))",
+            maxWidth: "calc(100vw - 2rem)",
             maxHeight: "min(70vh, 32rem)",
             overflowY: "auto",
           }}
@@ -1690,12 +1692,18 @@ function SampleMenu({
                   <button
                     key={i}
                     type="button"
+                    title={sample.label}
                     onClick={() => {
                       onSelect(sample.value);
                       setOpen(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-xs cursor-pointer transition-colors"
-                    style={{ color: "var(--gray-600)" }}
+                    className="block w-full text-left px-3 py-2 text-xs cursor-pointer transition-colors"
+                    style={{
+                      color: "var(--gray-600)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.backgroundColor =
                         "var(--gray-100)")
