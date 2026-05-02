@@ -91,20 +91,25 @@ export default function UnicodeViewer() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [showNormalization, setShowNormalization] = useState(false);
+  const pushNextUrlRef = useRef(false);
   const locale = useLocale();
   const learnHref = locale === "ja" ? "/ja/learn" : "/learn";
   const creditsHref = locale === "ja" ? "/ja/credits" : "/credits";
   const creditsLabel = locale === "ja" ? "クレジットとライセンス" : "Credits & licenses";
 
-  // Read URL params on mount (client only)
+  // Read URL params on mount and on browser back/forward navigation
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const text = params.get("text");
-    if (text !== null) setRawInput(text);
-    if (params.get("cp") === "0") setConvertCP(false);
-    if (params.get("esc") === "0") setConvertEsc(false);
-    if (params.get("map") === "unicode.org") setMappingVariant("unicode.org");
-    if (params.get("norm") === "1") setShowNormalization(true);
+    const applyFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      setRawInput(params.get("text") ?? "");
+      setConvertCP(params.get("cp") !== "0");
+      setConvertEsc(params.get("esc") !== "0");
+      setMappingVariant(params.get("map") === "unicode.org" ? "unicode.org" : "whatwg");
+      setShowNormalization(params.get("norm") === "1");
+    };
+    applyFromUrl();
+    window.addEventListener("popstate", applyFromUrl);
+    return () => window.removeEventListener("popstate", applyFromUrl);
   }, []);
 
   // Sync state to URL query parameters
@@ -119,7 +124,14 @@ export default function UnicodeViewer() {
     set("esc", convertEsc ? null : "0");
     set("map", mappingVariant === "unicode.org" ? "unicode.org" : null);
     set("norm", showNormalization ? "1" : null);
-    window.history.replaceState(null, "", url.toString());
+    const next = url.toString();
+    if (next === window.location.href) return;
+    if (pushNextUrlRef.current) {
+      pushNextUrlRef.current = false;
+      window.history.pushState(null, "", next);
+    } else {
+      window.history.replaceState(null, "", next);
+    }
   }, [rawInput, convertCP, convertEsc, mappingVariant, showNormalization]);
 
   const input = useMemo(() => {
@@ -334,6 +346,7 @@ export default function UnicodeViewer() {
                   : undefined
               }
               onSetInput={(text) => {
+                pushNextUrlRef.current = true;
                 setRawInput(text);
                 setSelected(null);
               }}
