@@ -332,6 +332,23 @@ const translations = {
     nfkdDesc: "Compatibility Decomposition",
     noChange: "No change",
     copyToInput: "Use as input",
+
+    // Static prose on the home page. Rendered on the server so the exported
+    // HTML is never empty for crawlers that do not run JavaScript.
+    aboutHeading: "What this tool shows",
+    aboutParagraphs: [
+      "Paste any string and it is split the way a reader sees it — into grapheme clusters — and then into the code points behind each one. Every code point is shown with its name, its Unicode block and general category, and the exact UTF-8 and UTF-16 bytes it encodes to.",
+      "The same string is re-encoded into legacy encodings alongside Unicode: Shift_JIS and CP932, EUC-JP, ISO-2022-JP, Big5, GBK, GB18030, EUC-KR and over twenty more. Characters that cannot survive the round trip are called out, which is usually where mojibake starts.",
+      "For CJK text it resolves IRG source references, shows which Ideographic Variation Sequence selects which shape, and reports whether the fonts on the page can actually draw it. The four normalization forms — NFC, NFD, NFKC and NFKD — sit side by side so you can see what each one changes.",
+      "Everything runs in your browser. The text you paste is never uploaded.",
+    ],
+    guidesHeading: "Guides",
+    guidesIntro: "Longer explanations of what the tool is showing you.",
+    otherLocaleGuides: "Read them in Japanese",
+    allGuides: "All guides",
+    portalCreditBefore: "One of the tools at ",
+    portalCreditAfter: "",
+    credits: "Credits & licenses",
   },
   ja: {
     siteTitle: "Unicode Viewer",
@@ -486,6 +503,23 @@ const translations = {
     nfkdDesc: "互換分解",
     noChange: "変化なし",
     copyToInput: "入力にコピー",
+
+    // トップページの静的な本文。JavaScript を実行しないクローラにも本文が
+    // 届くよう、サーバ側で描画される。
+    aboutHeading: "このツールが見せるもの",
+    aboutParagraphs: [
+      "任意の文字列を、読み手が見たとおりの単位（書記素クラスタ）に区切り、その裏にあるコードポイントまで分解します。コードポイントごとに、名前・Unicode ブロック・一般カテゴリと、エンコードした UTF-8 / UTF-16 のバイト列を並べます。",
+      "同じ文字列を、Unicode と並べてレガシーエンコーディングにも変換します。Shift_JIS と CP932、EUC-JP、ISO-2022-JP、Big5、GBK、GB18030、EUC-KR ほか 20 種類以上。往復で戻らない文字は印を付けます。文字化けはたいていそこから始まります。",
+      "CJK では IRG の出典を引き、どの異体字セレクタ（IVS）がどの字形を選ぶのかを示し、そのページのフォントで実際に描けるかまで報告します。正規化は NFC・NFD・NFKC・NFKD の 4 つを横に並べ、どれが何を変えるのかを見比べられます。",
+      "すべてブラウザの中で動きます。貼り付けた文字列がどこかに送られることはありません。",
+    ],
+    guidesHeading: "解説",
+    guidesIntro: "ツールが見せているものの、もう少し長い説明です。",
+    otherLocaleGuides: "English で読む",
+    allGuides: "解説の一覧",
+    portalCreditBefore: "",
+    portalCreditAfter: " の道具のひとつです",
+    credits: "クレジットとライセンス",
   },
 } as const;
 
