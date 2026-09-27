@@ -1,0 +1,38 @@
+<!doctype html>
+<!--
+  アプリのアイコン（public/icon-192.png / icon-512.png）の元。manifest.json と、
+  iPhone のホーム画面（layout.tsx の icons.apple）で使う。
+  iPhone は自分で角を丸めるので、角は丸めず正方形いっぱいに塗る。
+  書き出し（?s= で辺の長さ）:
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars \
+      --window-size=512,512 --screenshot=public/icon-512.png "file://$PWD/scripts/app-icon.html?s=512"
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars \
+      --window-size=192,192 --screenshot=public/icon-192.png "file://$PWD/scripts/app-icon.html?s=192"
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@700&display=block" rel="stylesheet">
+<style>
+  html, body { margin: 0; overflow: hidden; background: #171717; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<svg id="icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#171717"/>
+  <!-- 「U」と右下の「+」をひとまとまりとして真ん中に置く -->
+  <g transform="translate(-40 -22)">
+    <text x="248" y="330" text-anchor="middle" font-family="Geist, -apple-system, sans-serif" font-weight="700" font-size="300" fill="#ffffff">U</text>
+    <path d="M372 342h24v42h42v24h-42v42h-24v-42h-42v-24h42z" fill="#0072f5"/>
+  </g>
+</svg>
+<script>
+  const s = new URLSearchParams(location.search).get('s') || 512;
+  const el = document.getElementById('icon');
+  el.setAttribute('width', s);
+  el.setAttribute('height', s);
+</script>
+</body>
+</html>
