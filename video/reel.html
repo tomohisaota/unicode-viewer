@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>Unicode Viewer Motion Reel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet" />
+<!-- 漢字と異体字（IVS）はサイトと同じフォントで描く。/fonts/ は render.mjs が ../public/fonts/ から配る。 -->
+<link href="../src/app/cjk-ivs-font.css" rel="stylesheet" />
+<!--
+  Unicode Viewer の紹介リール（30 秒）。
+  すべての動きは render(t) が t 秒時点の見た目を決め打ちで描く純関数なので、
+  プレビュー（requestAnimationFrame）と書き出し（render.mjs が 1 コマずつ seek）で同じ絵になる。
+  ?v=1 で 9:16、?render=1 で等倍表示（書き出し用）。
+  コードポイント・バイト列・エンコードの可否・異体字の数は、アプリ本体の処理（../src/lib）を
+  そのまま呼んで出す（./lib.js は render.mjs が lib.ts を束ねたもの）。作らない。
+  色はサイト（src/app/globals.css の :root、明るいほう）からの写し。
+-->
+<style>
+  :root {
+    --plane: #fafafa; --surface: #ffffff; --ink: #171717; --ink2: #4d4d4d; --ink3: #808080; --ink4: #666666;
+    --rule: #ebebeb; --ring: rgba(0,0,0,.08); --input-bg: #f5f5f5; --input-border: #d0d0d0;
+    --blue: #0072f5; --blue-bg: #ebf5ff; --blue-text: #0068d6;
+    --red: #dc2626; --red-bg: #fef2f2; --red-border: #ef4444;
+    --amber: #b45309; --amber-bg: #fff7ed;
+    --sans: Geist, "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    --jp: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    --mono: "Geist Mono", ui-monospace, monospace;
+    --cjk: CjkIvsMincho, "Hiragino Mincho ProN", serif;
+    --emoji: "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+    --W: 1920px; --H: 1080px;
+  }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: absolute; left: 0; top: 0; width: var(--W); height: var(--H); overflow: hidden;
+    background: var(--plane); transform-origin: 0 0; }
+  #stage.v { --W: 1080px; --H: 1920px; }
+  .layer { position: absolute; inset: 0; }
+  .mono { font-family: var(--mono); }
+
+  /* ---- 冒頭の地。二つに割れて、見出しの地が現れる。サイトと同じ白い地のまま、少しだけ沈めた色 ---- */
+  .half { position: absolute; left: 0; width: 100%; height: 50%;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, #ffffff, #ececec 78%);
+    background-size: var(--W) var(--H); will-change: transform; }
+  #halfTop { top: 0; background-position: 0 0; }
+  #halfBot { top: 50%; background-position: 0 calc(var(--H) / -2); }
+  #seam { position: absolute; left: 50%; top: 50%; height: 2px; width: 0; transform: translate(-50%, -50%);
+    background: var(--blue); box-shadow: 0 0 16px 2px rgba(0,114,245,.45), 0 0 50px 8px rgba(0,114,245,.18); }
+
+  /* ---- HUD ---- */
+  #hud { font-family: var(--mono); font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: rgba(23,23,23,.42); }
+  #hud .t { position: absolute; white-space: nowrap; }
+  #hud .corner { position: absolute; width: 22px; height: 22px; border: 0 solid currentColor; }
+  .c-tl { left: 40px; top: 40px; border-left-width: 1.5px !important; border-top-width: 1.5px !important; }
+  .c-tr { right: 40px; top: 40px; border-right-width: 1.5px !important; border-top-width: 1.5px !important; }
+  .c-bl { left: 40px; bottom: 40px; border-left-width: 1.5px !important; border-bottom-width: 1.5px !important; }
+  .c-br { right: 40px; bottom: 40px; border-right-width: 1.5px !important; border-bottom-width: 1.5px !important; }
+  #hudTL { left: 76px; top: 44px; } #hudTR { right: 76px; top: 44px; }
+  #hudBL { left: 76px; bottom: 44px; } #hudBR { right: 76px; bottom: 44px; }
+  #recDot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--red-border); margin-right: 10px; vertical-align: 1px; }
+
+  /* ---- 場面 1：1 文字が、7 つにほどける ---- */
+  #tokens { perspective: 900px; }
+  #tokens span { position: absolute; left: 50%; top: 50%; white-space: nowrap; font-family: var(--mono);
+    font-weight: 400; will-change: transform, opacity; }
+  #hero { position: absolute; left: 50%; top: 50%; font-family: var(--emoji); font-size: 290px; line-height: 1;
+    transform: translate(-50%, -50%); margin-top: -70px; }
+  #stage.v #hero { font-size: 290px; margin-top: -120px; }
+  .part { position: absolute; left: 50%; top: 50%; text-align: center; will-change: transform, opacity; }
+  .part .g { font-family: var(--emoji); line-height: 1; display: flex; align-items: center; justify-content: center; }
+  .part .zwj { border: 2.5px dashed var(--blue); border-radius: 14px; color: var(--blue); font-family: var(--mono);
+    font-weight: 500; box-sizing: border-box; background: rgba(235,245,255,.7); }
+  .part .hx { font-family: var(--mono); font-weight: 500; margin-top: 18px; white-space: nowrap; }
+  #s1text { position: absolute; left: 0; right: 0; top: 50%; margin-top: 190px; text-align: center; color: var(--ink);
+    font-family: var(--jp); font-weight: 700; font-size: 78px; letter-spacing: .04em; }
+  #s1text b { color: var(--blue); font-family: var(--sans); font-weight: 600; }
+  #s1chip { position: absolute; left: 50%; top: 50%; margin-top: 330px; transform: translateX(-50%); }
+  #stage.v #s1text { margin-top: 170px; font-size: 76px; }
+  #stage.v #s1chip { margin-top: 300px; }
+
+  /* 数え上げのチップ（サイトの「1 文字 · 7 CP · 11 UTF-16 · 25 UTF-8」） */
+  .chip { display: inline-flex; align-items: baseline; gap: 12px; white-space: nowrap; border-radius: 99px;
+    padding: 8px 20px; background: var(--surface); box-shadow: 0 0 0 1px var(--ring); color: var(--ink2); font-size: 22px; }
+  .chip b { font-family: var(--mono); font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .chip small { font-size: .72em; opacity: .75; }
+  .chip i { font-style: normal; color: var(--ink3); }
+  .chip.blue { background: var(--blue-bg); box-shadow: none; color: var(--blue-text); }
+  .chip.blue b { color: var(--blue-text); }
+  #s1chip .chip { font-size: 30px; padding: 12px 28px; }
+
+  /* ---- 場面 2：見出し ---- */
+  #s2h { position: absolute; left: 0; right: 0; top: 380px; margin: 0; text-align: center; font-family: var(--jp);
+    font-weight: 700; font-size: 124px; letter-spacing: .02em; }
+  #s2p { position: absolute; left: 0; right: 0; top: 610px; margin: 0; text-align: center; font-family: var(--jp);
+    font-size: 36px; line-height: 1.8; color: var(--ink2); }
+  #stage.v #s2h { top: 700px; font-size: 118px; line-height: 1.3; }
+  #stage.v #s2p { top: 1080px; font-size: 38px; }
+  .ch { display: inline-block; will-change: transform, opacity, filter; }
+  .em { color: var(--blue); }
+
+  /* ---- 場面 3：四つの段 ---- */
+  #numeral { position: absolute; left: 60px; top: 250px; font-family: var(--mono); font-weight: 300;
+    font-size: 520px; line-height: 1; color: #ededed; letter-spacing: -.06em; }
+  #stepText { position: absolute; left: 150px; top: 320px; width: 720px; }
+  #kicker { font-family: var(--mono); font-size: 19px; letter-spacing: .2em; color: var(--blue); text-transform: uppercase; }
+  #kicker::before { content: ""; display: inline-block; width: 44px; height: 1.5px; background: currentColor; vertical-align: 6px; margin-right: 14px; }
+  #stepH { font-family: var(--jp); font-weight: 700; font-size: 140px; line-height: 1.1; margin: 22px 0 28px -8px; letter-spacing: .01em; }
+  #stepSub { font-family: var(--jp); font-weight: 700; font-size: 34px; }
+  #stepBody { font-family: var(--jp); font-size: 25px; line-height: 1.7; color: var(--ink2); margin-top: 14px; }
+  #stepBody .m { font-family: var(--mono); color: var(--blue-text); font-weight: 500; }
+  #stepBody .e { font-family: var(--emoji); }
+  #stepBody .k { font-family: var(--cjk); color: var(--ink); }
+  #card { position: absolute; left: 900px; top: 190px; width: 900px; height: 600px; border-radius: 16px; background: var(--surface);
+    box-shadow: 0 0 0 1px var(--ring), 0 30px 70px -24px rgba(0,0,0,.22), 0 2px 4px rgba(0,0,0,.04); overflow: hidden; }
+  #cardHead { position: absolute; left: 0; right: 0; top: 0; height: 62px; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; padding: 0 28px; gap: 10px; font-size: 18px; }
+  #cardHead .logo { font-weight: 600; font-size: 23px; letter-spacing: -.02em; margin-right: auto; }
+  #cardHead .pill { font-size: 15px; font-weight: 500; padding: 6px 14px; border-radius: 99px; box-shadow: 0 0 0 1px var(--ring); color: var(--ink2); }
+  #cardBody { position: absolute; left: 0; top: 62px; right: 0; bottom: 0; }
+  .pane { position: absolute; inset: 0; padding: 26px 32px; box-sizing: border-box; }
+  #track { position: absolute; left: 0; right: 0; top: 905px; height: 60px; }
+  #trackLine { position: absolute; left: 0; right: 0; top: 0; height: 1.5px; background: var(--rule); }
+  #trackFill { position: absolute; left: 0; top: 0; height: 1.5px; background: var(--blue); }
+  .tnode { position: absolute; top: -7px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--plane); border: 1.5px solid #d0d0d0; box-sizing: border-box; }
+  .tnode span { position: absolute; top: 26px; left: 50%; transform: translateX(-50%); white-space: nowrap;
+    font-family: var(--mono); font-size: 16px; letter-spacing: .12em; color: var(--ink3); }
+  #stage.v #numeral { left: 30px; top: 150px; font-size: 440px; }
+  #stage.v #stepText { left: 80px; top: 240px; width: 920px; }
+  #stage.v #card { left: 60px; top: 720px; width: 960px; height: 780px; }
+  #stage.v #track { top: 1630px; }
+
+  /* 01 分ける：入力と、書記素のセル */
+  .lbl { display: flex; align-items: baseline; gap: 14px; font-size: 16px; color: var(--ink3); }
+  .lbl .blue { color: var(--blue); font-size: 16px; }
+  #in01 { margin-top: 10px; height: 96px; border-radius: 10px; background: var(--input-bg); box-shadow: inset 0 0 0 1px var(--input-border);
+    padding: 20px 24px; box-sizing: border-box; font-size: 44px; line-height: 56px; white-space: nowrap; font-family: Geist, "Apple Color Emoji", var(--jp); }
+  .caret { display: inline-block; width: 2.5px; height: 46px; background: var(--blue); vertical-align: -8px; margin-left: 3px; }
+  .secRow { display: flex; align-items: center; gap: 16px; margin-top: 26px; }
+  .secRow > b { font-family: var(--jp); font-size: 20px; }
+  .secRow .chip { font-size: 18px; padding: 5px 16px; }
+  .cells { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+  .cell { width: 128px; height: 150px; border-radius: 10px; box-shadow: 0 0 0 1px var(--ring); background: var(--surface);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-sizing: border-box; }
+  .cell .g { font-size: 64px; line-height: 1; font-family: Geist, "Apple Color Emoji", var(--jp); height: 70px; display: flex; align-items: center; }
+  .cell .g.k { font-family: var(--cjk); }
+  .cell .l { font-family: var(--mono); font-size: 15px; color: var(--ink3); }
+  .cell.multi .l { color: var(--blue); font-weight: 600; }
+  #stage.v .cell { width: 136px; height: 190px; }
+  #stage.v #p01 .cell { width: 290px; height: 190px; }
+  #stage.v .cell .g { font-size: 68px; height: 74px; }
+  #stage.v #in01 { height: 110px; font-size: 52px; line-height: 64px; }
+
+  .legend { display: flex; align-items: center; gap: 12px; margin-top: 26px; font-family: var(--jp); font-size: 18px; color: var(--ink2); }
+  .legend i { width: 22px; height: 22px; border-radius: 5px; box-shadow: 0 0 0 2px var(--blue); background: var(--blue-bg); }
+  .cursor { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 5; filter: drop-shadow(0 3px 6px rgba(0,0,0,.2)); }
+  .ripple { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; border: 2px solid var(--blue); pointer-events: none; }
+
+  /* 02 覗く：コードポイントごとのバイト列 */
+  #p02 { display: flex; gap: 30px; }
+  #p02 .left { width: 220px; flex: none; }
+  #glyphBox { width: 210px; height: 210px; border: 1.5px dashed #b8b8b8; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+    font-family: var(--emoji); font-size: 150px; line-height: 1; background: var(--plane); border-radius: 6px; }
+  .stat3 { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .stat3 div { font-size: 18px; color: var(--blue-text); background: var(--blue-bg); border-radius: 99px; padding: 6px 16px; width: max-content; }
+  .stat3 b { font-family: var(--mono); font-size: 24px; font-weight: 600; margin-right: 6px; font-variant-numeric: tabular-nums; }
+  table.bt { border-collapse: collapse; flex: 1; }
+  table.bt th { text-align: left; font-weight: 500; font-size: 15px; color: var(--ink4); padding: 0 12px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  table.bt td { padding: 0 12px; height: 56px; border-bottom: 1px solid var(--rule); white-space: nowrap; vertical-align: middle; }
+  table.bt tr.hl td { background: var(--blue-bg); }
+  .cpc { display: flex; align-items: center; gap: 12px; }
+  .cpc .e { font-family: var(--emoji); font-size: 28px; width: 34px; text-align: center; }
+  .cpc .z { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--blue); border: 1.5px dashed var(--blue); border-radius: 5px; padding: 3px 4px; width: 34px; text-align: center; box-sizing: border-box; }
+  .cpc .h { font-family: var(--mono); font-size: 19px; color: var(--blue); font-weight: 500; }
+  .by { display: inline-block; font-family: var(--mono); font-size: 17px; color: var(--ink2); background: var(--input-bg); border-radius: 5px; padding: 3px 7px; margin-right: 6px; }
+  .by.hi { background: #dbeafe; color: var(--blue-text); }
+  .sur { display: block; font-family: var(--jp); font-size: 12px; color: var(--ink3); margin-top: 3px; }
+  #stage.v #p02 { flex-direction: column; gap: 18px; }
+  #stage.v #p02 .left { width: auto; display: flex; gap: 30px; align-items: center; }
+  #stage.v #glyphBox { width: 170px; height: 170px; font-size: 120px; }
+  #stage.v .stat3 { margin-top: 0; flex-direction: row; }
+  #stage.v table.bt td { height: 58px; }
+
+  /* 03 確かめる：レガシーエンコーディング */
+  table.enc { border-collapse: collapse; width: 100%; margin-top: 4px; }
+  table.enc td { height: 62px; border-bottom: 1px solid var(--rule); padding: 0 10px; white-space: nowrap; vertical-align: middle; }
+  table.enc td.name { font-size: 18px; color: var(--ink2); }
+  table.enc td.col-hl { background: var(--blue-bg); }
+  .by.enc { font-size: 15px; padding: 2px 5px; margin-right: 4px; }
+  .ng { display: inline-block; font-family: var(--jp); font-size: 15px; font-weight: 500; color: var(--red); background: var(--red-bg);
+    box-shadow: inset 0 0 0 1px rgba(239,68,68,.35); border-radius: 5px; padding: 3px 10px; }
+  table.enc { table-layout: fixed; }
+  table.enc tr.head td { border-bottom: 0; height: auto; padding: 0 5px 14px; }
+  table.enc .cell { width: 100%; height: 112px; }
+  table.enc .cell.col-hl { box-shadow: 0 0 0 2px var(--blue); }
+  .note { margin-top: 16px; font-size: 15px; color: var(--ink3); }
+  .note b { font-weight: 500; color: var(--ink2); }
+  #stage.v table.enc td { height: 96px; }
+  #stage.v table.enc .cell { height: 170px; }
+  #stage.v .by.enc { font-size: 16px; }
+
+  /* 04 見分ける：異体字セレクタ */
+  .pair { display: flex; align-items: center; gap: 22px; }
+  .pbox { display: flex; align-items: center; gap: 16px; }
+  .pbox .k { font-family: var(--cjk); font-size: 104px; line-height: 1; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center;
+    border: 1.5px dashed #b8b8b8; border-radius: 6px; background: var(--plane); }
+  .pbox .cps { font-family: var(--mono); font-size: 18px; color: var(--ink2); display: flex; flex-direction: column; gap: 8px; }
+  .pbox .cps span { padding: 3px 8px; border-radius: 5px; background: var(--input-bg); width: max-content; }
+  .pbox .cps span.vs { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; }
+  .pair .arrow { font-size: 30px; color: var(--ink3); }
+  .ann { font-family: var(--jp); font-size: 16px; color: var(--ink3); margin-left: 12px; line-height: 1.6; flex: 1; }
+  .ann b { display: block; color: var(--ink2); font-weight: 500; }
+  .vgrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; margin-top: 14px; }
+  .vg { text-align: center; border-radius: 8px; box-shadow: 0 0 0 1px var(--ring); padding: 6px 0 5px; }
+  .vg .k { font-family: var(--cjk); font-size: 46px; line-height: 1.1; }
+  .vg .l { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+  #stage.v .vgrid { grid-template-columns: repeat(8, 1fr); gap: 10px; }
+  #stage.v .vg .k { font-size: 54px; }
+  #stage.v .pair { flex-wrap: wrap; }
+  #stage.v .ann { margin-left: 0; width: 100%; }
+
+  /* ---- 場面 3.5：ほかにも ---- */
+  #featH { position: absolute; left: 0; right: 0; top: 190px; text-align: center; font-family: var(--jp); font-weight: 700;
+    font-size: 72px; letter-spacing: .03em; }
+  #featGrid { position: absolute; left: 50%; top: 360px; width: 1500px; margin-left: -750px; display: grid;
+    grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .fcard { background: var(--surface); border-radius: 16px; padding: 30px 34px; box-shadow: 0 20px 50px -24px rgba(0,0,0,.2), 0 0 0 1px var(--ring); }
+  .fcard .k { font-family: var(--mono); font-size: 15px; letter-spacing: .2em; color: var(--blue); text-transform: uppercase; }
+  .fcard .h { font-family: var(--jp); font-weight: 700; font-size: 36px; margin-top: 12px; }
+  .fcard .b { font-family: var(--jp); font-size: 21px; color: var(--ink2); margin-top: 8px; }
+  #stage.v #featH { top: 330px; font-size: 70px; line-height: 1.35; }
+  #stage.v #featGrid { top: 620px; width: 960px; margin-left: -480px; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  #stage.v .fcard { padding: 30px 28px; }
+  #stage.v .fcard .h { font-size: 34px; }
+
+  /* ---- 場面 4：締め ---- */
+  #endIcon { position: absolute; left: 50%; top: 170px; width: 140px; height: 140px; margin-left: -70px; border-radius: 30px; background: #171717;
+    color: #fff; font-family: Geist; font-weight: 600; font-size: 92px; line-height: 140px; text-align: center; }
+  #endIcon i { position: absolute; right: 16px; bottom: 6px; font-style: normal; color: var(--blue); font-size: 54px; line-height: 1; font-weight: 700; }
+  #endMark { position: absolute; left: 0; right: 0; top: 350px; text-align: center; font-family: Geist; font-weight: 600;
+    font-size: 150px; letter-spacing: -.035em; line-height: 1; }
+  #endLatin { position: absolute; left: 0; right: 0; top: 535px; text-align: center; font-family: var(--mono);
+    font-weight: 400; font-size: 32px; color: var(--blue); letter-spacing: .02em; }
+  #endTag { position: absolute; left: 0; right: 0; top: 605px; text-align: center; font-family: var(--jp); font-weight: 500; font-size: 40px; letter-spacing: .06em; }
+  #endCta { position: absolute; left: 50%; top: 700px; transform: translateX(-50%); display: flex; align-items: center; gap: 14px;
+    background: var(--ink); color: #fff; font-family: var(--jp); font-size: 26px; font-weight: 500; padding: 18px 20px 18px 36px; border-radius: 99px; white-space: nowrap; }
+  #endCta i { display: inline-flex; width: 38px; height: 38px; border-radius: 50%; background: var(--blue); color: #fff;
+    align-items: center; justify-content: center; font-style: normal; font-size: 22px; }
+  #endFine { position: absolute; left: 0; right: 0; top: 800px; text-align: center; font-family: var(--mono); font-size: 18px;
+    letter-spacing: .12em; color: var(--ink3); }
+  #marquee { position: absolute; left: 0; bottom: -14px; white-space: nowrap; font-family: var(--mono); font-weight: 300;
+    font-size: 104px; color: #ebebeb; letter-spacing: -.02em; }
+  #stage.v #endIcon { top: 440px; width: 170px; height: 170px; margin-left: -85px; border-radius: 36px; font-size: 112px; line-height: 170px; }
+  #stage.v #endIcon i { font-size: 64px; right: 20px; bottom: 8px; }
+  #stage.v #endMark { top: 710px; font-size: 112px; }
+  #stage.v #endLatin { top: 870px; font-size: 30px; }
+  #stage.v #endTag { top: 950px; }
+  #stage.v #endCta { top: 1060px; }
+  #stage.v #endFine { top: 1170px; }
+
+  /* ---- プレビュー用の操作 ---- */
+  #ui { position: fixed; left: 12px; bottom: 12px; display: flex; gap: 10px; align-items: center; color: #aaa; font: 13px var(--mono); }
+  #ui input { width: 480px; }
+  body.render #ui { display: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- 明るい地（場面 2〜4） -->
+  <div class="layer" id="light">
+    <div id="scene2">
+      <h1 id="s2h"></h1>
+      <p id="s2p"></p>
+    </div>
+    <div id="scene3">
+      <div id="numeral">01</div>
+      <div id="stepText">
+        <div id="kicker"></div>
+        <div id="stepH"></div>
+        <div id="stepSub"></div>
+        <div id="stepBody"></div>
+      </div>
+      <div id="card">
+        <div id="cardHead"><span class="logo">Unicode Viewer</span><span class="pill">共有</span><span class="pill">学ぶ</span></div>
+        <div id="cardBody">
+          <div class="pane" id="p01"></div>
+          <div class="pane" id="p02"></div>
+          <div class="pane" id="p03"></div>
+          <div class="pane" id="p04"></div>
+        </div>
+      </div>
+      <div id="track"><div id="trackLine"></div><div id="trackFill"></div></div>
+    </div>
+    <div id="featScene">
+      <div id="featH"></div>
+      <div id="featGrid"></div>
+    </div>
+    <div id="scene4">
+      <div id="endIcon">U<i>+</i></div>
+      <div id="endMark">Unicode Viewer</div>
+      <div id="endLatin">see what's inside every character.</div>
+      <div id="endTag">その1文字、ほどいてみる。</div>
+      <div id="endCta">文字列を貼って、ほどく <i>→</i></div>
+      <div id="endFine">unicode-viewer.appbatake.com · 無料 · 登録なし</div>
+      <div id="marquee"></div>
+    </div>
+  </div>
+  <!-- 冒頭の地（場面 1） -->
+  <div class="layer" id="open">
+    <div class="half" id="halfTop"></div>
+    <div class="half" id="halfBot"></div>
+    <div class="layer" id="scene1">
+      <div class="layer" id="tokens"></div>
+      <div id="hero"></div>
+      <div class="layer" id="parts"></div>
+      <div id="s1text"></div>
+      <div id="s1chip"></div>
+    </div>
+    <div id="seam"></div>
+  </div>
+  <div class="layer" id="hud">
+    <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+    <div class="t" id="hudTL">unicode-viewer · U+0000 – U+10FFFF</div>
+    <div class="t" id="hudTR"><span id="recDot"></span><span id="hudTime">00:00.00</span></div>
+    <div class="t" id="hudBL">grapheme · code point · byte</div>
+    <div class="t" id="hudBR">utf-8 · utf-16 · shift_jis</div>
+  </div>
+</div>
+<div id="ui"><button id="play">▶︎</button><input id="scrub" type="range" min="0" max="30" step="0.01" value="0" /><span id="tlabel">0.00</span></div>
+
+<script type="module">
+import {
+  analyzeString, formatByte, formatUtf16, getLegacyEncoding, LANGUAGE_ENCODINGS,
+  getAnnotationKey, getIvsVariants, hasFontGlyph, isAliasedToDefault,
+} from './lib.js';
+
+const params = new URLSearchParams(location.search);
+const VERT = params.has('v');
+const RENDER = params.has('render');
+const DUR = 30, FPS = 30;
+const $ = (s) => document.querySelector(s);
+const stage = $('#stage');
+if (VERT) stage.classList.add('v');
+if (RENDER) document.body.classList.add('render');
+const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080;
+
+// ---- 時間の道具 ----
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eOut = (p) => 1 - Math.pow(1 - p, 3);
+const eInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const eBack = (p) => { const c = 1.6; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+const show = (el, o) => { el.style.opacity = o; el.style.visibility = o > 0.001 ? 'visible' : 'hidden'; };
+const rise = (el, p, dy = 16) => { el.style.opacity = p; el.style.transform = `translateY(${(1 - p) * dy}px)`; };
+
+// ---- 計算：アプリの処理（src/lib）をそのまま呼ぶ ----
+// サイトの「1 文字 · 7 CP · 11 UTF-16 · 25 UTF-8」と同じ数え方。
+const stats = (s) => {
+  const gs = analyzeString(s);
+  const cps = gs.flatMap((g) => g.codePoints);
+  return { graphemes: gs, chars: gs.length, cp: cps.length,
+    u16: cps.reduce((a, c) => a + c.utf16Units.length, 0), u8: cps.reduce((a, c) => a + c.utf8Bytes.length, 0) };
+};
+const bytes = (arr, fmt = formatByte, cls = '') => arr.map((b) => `<span class="by ${cls}">${fmt(b)}</span>`).join('');
+const cellLabel = (g) => (g.codePoints.length > 1 ? `${g.codePoints.length} CP` : g.codePoints[0].hex.slice(2));
+const isZwj = (c) => getAnnotationKey(c.codePoint) === 'zwj';
+
+// 冒頭と 02 の題材：家族の絵文字（サイトのサンプル「クセのある文字列」の最初の一つ）。
+const FAMILY = '👨‍👩‍👧‍👦';
+const FAM = stats(FAMILY);
+const famCps = FAM.graphemes[0].codePoints;
+// 01 の題材：家族の絵文字、国旗、結合文字の é（e + U+0301。NFD で入力したもの）。
+const S1 = FAMILY + '🇯🇵' + 'café'.normalize('NFD');
+const S1S = stats(S1);
+// 03 の題材：サンプル「高髙」と「～〜」をつないだもの。サイトの初期設定（WHATWG の対応表）で引く。
+const S3 = '高髙～〜';
+const ENCS = [['shift_jis', 'Shift_JIS'], ['cp932', 'CP932'], ['euc-jp', 'EUC-JP'], ['iso-2022-jp', 'ISO-2022-JP']];
+const S3G = analyzeString(S3);
+const ENC_TABLE = ENCS.map(([id, name]) => ({ id, name, cells: S3G.map((g) => getLegacyEncoding(g.codePoints[0].codePoint, id, 'whatwg')) }));
+// 04 の題材：サンプル「葛󠄀葛」と「邉 × 30」。
+const KUZU = '葛', KUZU_VS = '葛\u{E0100}';
+const kuzuVsCps = analyzeString(KUZU_VS)[0].codePoints;
+const NABE = '邉', nabeCp = NABE.codePointAt(0);
+const nabeIvs = getIvsVariants(nabeCp);
+const nabeDistinct = nabeIvs.filter((vs) => hasFontGlyph(nabeCp, vs));
+const nabeAliased = nabeIvs.filter((vs) => !hasFontGlyph(nabeCp, vs) && isAliasedToDefault(nabeCp, vs));
+// レガシーエンコーディングの数（サイトの言語ごとの一覧に載っているもの、重なりを除いて）。
+const N_ENC = new Set(Object.values(LANGUAGE_ENCODINGS).flat().map((e) => e.value)).size;
+
+// 本文は計算結果から組み立てる（書き写さない）。
+const cp0 = famCps[0];
+const BODY1 = `見た目は <span class="m">${S1S.chars}</span> 文字、中身は <span class="m">${S1S.cp}</span> コードポイント。`;
+const BODY2 = `<span class="e">${cp0.char}</span> は UTF-8 で <span class="m">${cp0.utf8Bytes.length}</span> バイト、UTF-16 で <span class="m">${cp0.utf16Units.length}</span> 単位${cp0.utf16Units.length === 2 ? '（サロゲートペア）' : ''}。`;
+const kIdx = 1;   // 髙
+const sj = ENC_TABLE[0].cells[kIdx], cp932 = ENC_TABLE[1].cells[kIdx];
+const BODY3 = `<span class="k">${S3G[kIdx].grapheme}</span> は Shift_JIS に${sj.encodable ? 'ある' : '無く'}、CP932 なら <span class="m">${cp932.encodable ? cp932.bytes.map(formatByte).join(' ') : '非対応'}</span>。`;
+const BODY4 = `<span class="k">${NABE}</span> には <span class="m">${nabeIvs.length}</span> の IVS。うち <span class="m">${nabeDistinct.length}</span> が別の字形。`;
+
+// ---- 1 文字ずつ出す見出し ----
+function chars(el, html) {
+  el.innerHTML = html.replace(/<br>|<em>(.*?)<\/em>|(.)/g, (m, em, c) => (m === '<br>' ? m : em
+    ? [...em].map((x) => `<span class="ch em">${x}</span>`).join('')
+    : `<span class="ch">${c}</span>`));
+  return [...el.querySelectorAll('.ch')];
+}
+function revealChars(list, t, start, gap = 0.045, dur = 0.5) {
+  list.forEach((c, i) => {
+    const p = eOut(seg(t, start + i * gap, start + i * gap + dur));
+    c.style.opacity = p;
+    c.style.transform = `translateY(${(1 - p) * 26}px)`;
+    c.style.filter = `blur(${(1 - p) * 8}px)`;
+  });
+}
+const s2h = chars($('#s2h'), VERT ? 'その<em>1文字</em>、<br>ほどいてみる。' : 'その<em>1文字</em>、ほどいてみる。');
+const s2p = chars($('#s2p'), VERT ? 'コードポイント、バイト列、<br>Shift_JIS まで。' : 'コードポイント、バイト列、Shift_JIS まで。');
+
+// ---- 場面 1：ほどける家族 ----
+$('#hero').textContent = FAMILY;
+const PW = VERT ? { e: 120, z: 64, gap: 12, font: 104, hx: 17 } : { e: 172, z: 86, gap: 18, font: 150, hx: 22 };
+const partW = famCps.map((c) => (isZwj(c) ? PW.z : PW.e));
+const rowW = partW.reduce((a, b) => a + b, 0) + PW.gap * (famCps.length - 1);
+let acc = -rowW / 2;
+const parts = famCps.map((c, i) => {
+  const el = document.createElement('div');
+  el.className = 'part';
+  const zwj = isZwj(c);
+  el.style.width = `${partW[i]}px`;
+  el.innerHTML = zwj
+    ? `<div class="g zwj" style="height:${PW.font * 1.1}px;font-size:${PW.hx}px">ZWJ</div><div class="hx" style="font-size:${PW.hx}px;color:var(--blue)">${c.hex}</div>`
+    : `<div class="g" style="height:${PW.font * 1.1}px;font-size:${PW.font}px">${c.char}</div><div class="hx" style="font-size:${PW.hx}px;color:var(--ink2)">${c.hex}</div>`;
+  $('#parts').appendChild(el);
+  const x = acc + partW[i] / 2;
+  acc += partW[i] + PW.gap;
+  return { el, x, zwj };
+});
+const s1chip = (s, p = 1) => `<span class="chip"><b>${Math.round(s.chars * p)}</b><small>文字</small><i>·</i><b>${Math.round(s.cp * p)}</b><small>CP</small><i>·</i><b>${Math.round(s.u16 * p)}</b><small>UTF-16</small><i>·</i><b>${Math.round(s.u8 * p)}</b><small>UTF-8</small></span>`;
+
+// 奥から漂ってくる記号。どれもアプリの処理で出した値（コードポイント、UTF-8、UTF-16、Shift_JIS のバイト）。
+const TOKENS = [...new Set([
+  ...famCps.map((c) => c.hex),
+  ...famCps.slice(0, 2).map((c) => c.utf8Bytes.map(formatByte).join(' ')),
+  famCps[0].utf16Units.map(formatUtf16).join(' '),
+  ...analyzeString('🇯🇵').flatMap((g) => g.codePoints.map((c) => c.hex)),
+  ...analyzeString('é'.normalize('NFD'))[0].codePoints.map((c) => c.hex),
+  ...kuzuVsCps.map((c) => c.hex),
+  S3G[1].codePoints[0].hex, S3G[3].codePoints[0].hex,
+  ENC_TABLE[1].cells[1].bytes.map(formatByte).join(' '),
+  ENC_TABLE[0].cells[2].bytes.map(formatByte).join(' '),
+  'NFC', 'NFD', 'Shift_JIS',
+])];
+// 置き場所は決め打ち。ほどけた列と字幕の帯を避け、記号どうしが重ならないように散らす（中心からの px）。
+const SLOTS = VERT
+  ? [[-300, -760], [150, -800], [330, -640], [-340, -560], [80, -520], [300, -420], [-200, -390], [-60, -660],
+     [-300, 470], [250, 500], [0, 590], [-340, 660], [320, 690], [-150, 760], [180, 820], [-360, 830]]
+  : [[-760, -400], [-380, -410], [0, -420], [380, -400], [760, -410], [-800, -140], [800, -150], [-780, 120], [780, 130],
+     [-560, -270], [560, -280], [-820, 290], [-760, 440], [-420, 450], [420, 440], [760, 450]];
+const tokenEls = TOKENS.slice(0, SLOTS.length).map((w, i) => {
+  const el = document.createElement('span');
+  el.textContent = w;
+  $('#tokens').appendChild(el);
+  const [x, y] = SLOTS[(i * 7) % SLOTS.length];
+  return { el, x, y, z0: -900 + (i % 5) * 200, size: 20 + (i % 4) * 6, hot: i % 4 === 0 };
+});
+
+// ---- 段（場面 3） ----
+const STEPS = [
+  { t0: 7.8, t1: 12.0, num: '01', kicker: 'Step 01 · Graphemes', h: '分ける。', sub: '見たままの1文字と、その中身。', body: BODY1 },
+  { t0: 12.0, t1: 17.0, num: '02', kicker: 'Step 02 · Bytes', h: '覗く。', sub: 'UTF-8 と UTF-16 のバイト列まで。', body: BODY2 },
+  { t0: 17.0, t1: 21.5, num: '03', kicker: 'Step 03 · Legacy', h: '確かめる。', sub: 'Shift_JIS で、化けないか。', body: BODY3 },
+  { t0: 21.5, t1: 25.5, num: '04', kicker: 'Step 04 · Variants', h: '見分ける。', sub: '異体字セレクタで変わる字形。', body: BODY4 },
+];
+const trackNodes = STEPS.map((s, i) => {
+  const n = document.createElement('div');
+  n.className = 'tnode';
+  n.style.left = `${[20, 40, 60, 80][i]}%`;
+  n.innerHTML = `<span>${s.num} ${s.h.replace('。', '')}</span>`;
+  $('#track').appendChild(n);
+  return n;
+});
+
+// 01：入力欄に 1 書記素ずつ打ち込み、セルが並ぶ。数え上げは打った分だけ計算し直す。
+$('#p01').innerHTML = `
+  <div class="lbl">入力<span class="blue">クセのある文字列 ▾</span></div>
+  <div id="in01"></div>
+  <div class="secRow"><b>入力</b><span id="chip01"></span></div>
+  <svg class="cursor" id="cur01" width="40" height="52" viewBox="0 0 20 26"><path d="M2 2v19l5-4.5 3.4 7.5 3.2-1.4-3.3-7.4H17z" fill="#171717" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+  <div class="cells" id="cells01">${S1S.graphemes.map((g) => `<div class="cell${g.codePoints.length > 1 ? ' multi' : ''}"><div class="g">${g.grapheme}</div><div class="l">${cellLabel(g)}</div></div>`).join('')}</div>`;
+$('#p01').insertAdjacentHTML('beforeend', `<div class="legend" id="legend01"><i></i>1文字に見えて、中身は複数のコードポイント</div>`);
+const cells01 = [...document.querySelectorAll('#cells01 .cell')];
+const cur01 = $('#cur01');
+const prefix01 = S1S.graphemes.map((_, k) => stats(S1S.graphemes.slice(0, k + 1).map((g) => g.grapheme).join('')));
+
+// 02：家族の絵文字の詳細。コードポイントごとの UTF-8 / UTF-16。
+$('#p02').innerHTML = `
+  <div class="left"><div id="glyphBox">${FAMILY}</div>
+    <div class="stat3"><div><b>${FAM.cp}</b>CP</div><div><b>${FAM.u16}</b>UTF-16</div><div><b>${FAM.u8}</b>UTF-8</div></div></div>
+  <table class="bt"><thead><tr><th>コードポイント</th><th>UTF-8</th><th>UTF-16</th></tr></thead><tbody>
+  ${famCps.map((c) => `<tr><td><div class="cpc">${isZwj(c) ? '<span class="z">ZWJ</span>' : `<span class="e">${c.char}</span>`}<span class="h">${c.hex}</span></div></td>
+    <td>${bytes(c.utf8Bytes)}</td>
+    <td>${bytes(c.utf16Units, formatUtf16)}${c.utf16Units.length === 2 ? '<span class="sur">上位サロゲート / 下位サロゲート</span>' : ''}</td></tr>`).join('')}
+  </tbody></table>`;
+const rows02 = [...document.querySelectorAll('#p02 tbody tr')];
+
+// 03：レガシーエンコーディング。バイト列か「非対応」。
+$('#p03').innerHTML = `
+  <table class="enc"><colgroup><col style="width:160px">${S3G.map(() => '<col>').join('')}</colgroup><tbody>
+  <tr class="head"><td></td>${S3G.map((g) => `<td><div class="cell"><div class="g k">${g.grapheme}</div><div class="l">${cellLabel(g)}</div></div></td>`).join('')}</tr>
+  ${ENC_TABLE.map((r) => `<tr><td class="name">${r.name}</td>${r.cells.map((c) => `<td>${c.encodable ? bytes(c.bytes, formatByte, 'enc') : '<span class="ng">非対応</span>'}</td>`).join('')}</tr>`).join('')}</tbody></table>
+  <div class="note">JIS ↔ Unicode マッピング：<b>WHATWG (Microsoft)</b></div>`;
+const rows03 = [...document.querySelectorAll('#p03 tbody tr:not(.head)')];
+const cells03 = [...document.querySelectorAll('#p03 tr.head .cell')];
+
+// 04：葛 と 葛󠄀、邉 の異体字。
+$('#p04').innerHTML = `
+  <div class="pair">
+    <div class="pbox"><div class="k">${KUZU}</div><div class="cps">${analyzeString(KUZU)[0].codePoints.map((c) => `<span>${c.hex}</span>`).join('')}</div></div>
+    <div class="pbox" id="kuzuVs"><div class="k">${KUZU_VS}</div><div class="cps">${kuzuVsCps.map((c) => `<span class="${getAnnotationKey(c.codePoint) === 'ivs' ? 'vs' : ''}">${c.hex}</span>`).join('')}</div></div>
+    <div class="ann"><b>漢字異体字セレクタ (IVS)</b>直前のCJK漢字の特定の字形を選択する</div>
+  </div>
+  <div class="secRow" style="margin-top:22px"><b style="font-family:var(--cjk);font-size:26px">${NABE}</b><span class="chip" id="chip04"><span>IVS&nbsp; <b>${nabeIvs.length}</b> 登録 (異形 <b>${nabeDistinct.length}</b> / 同字形 <b>${nabeAliased.length}</b>)</span></span></div>
+  <div class="vgrid">${nabeDistinct.map((vs) => `<div class="vg"><div class="k">${NABE}${String.fromCodePoint(vs)}</div><div class="l">${vs.toString(16).toUpperCase()}</div></div>`).join('')}</div>`;
+const vgs = [...document.querySelectorAll('#p04 .vg')];
+const panes = ['#p01', '#p02', '#p03', '#p04'].map($);
+
+// ほかにも
+const FEATS = [
+  ['normalization', '正規化を比べる', 'NFC・NFD・NFKC・NFKD を並べて'],
+  ['encodings', `${N_ENC} のエンコーディング`, 'Big5・GBK・EUC-KR・KOI8-R ほか'],
+  ['irg source', '漢字の出典', 'IRG ソースを 日・中・台・韓 で'],
+  ['jis level', 'JIS 水準', '第一〜第四水準と、面区点'],
+  ['invisible', '見えない文字', 'ZWJ・BOM・方向制御に注記'],
+  ['share', 'URL で共有', '入力も設定も、そのまま送れる'],
+];
+$('#featGrid').innerHTML = FEATS.map(([k, h, b]) => `<div class="fcard"><div class="k">${k}</div><div class="h">${h}</div><div class="b">${b}</div></div>`).join('');
+const featCards = [...document.querySelectorAll('.fcard')];
+const featH = chars($('#featH'), VERT ? 'ほかにも、<br><em>ほどける</em>。' : 'ほかにも、<em>ほどける</em>。');
+// 締めの帯は「Unicode Viewer」のコードポイント。
+$('#marquee').textContent = Array(6).fill(analyzeString('Unicode Viewer').flatMap((g) => g.codePoints.map((c) => c.hex)).join(' ') + ' · ').join('');
+
+// ---- t 秒の絵 ----
+// 驚き → 見出し → 四つの段 → ほかにも → 締め
+const T1 = 4.8, T2 = 7.8, TF = 25.5, T4 = 27.5;
+
+function render(t) {
+  $('#hudTime').textContent = `00:${t.toFixed(2).padStart(5, '0')}`;
+  show($('#hud'), 1 - seg(t, 29.2, 29.9) * 0.6);
+
+  // --- 場面 1：1 文字が 7 つにほどける ---
+  const split = eInOut(seg(t, T1 + 0.2, T1 + 1.2));
+  $('#halfTop').style.transform = `translateY(${-split * H * 0.5}px)`;
+  $('#halfBot').style.transform = `translateY(${split * H * 0.5}px)`;
+  $('#seam').style.width = `${eOut(seg(t, T1 - 0.5, T1 + 0.15)) * W}px`;
+  show($('#seam'), seg(t, T1 - 0.5, T1 - 0.3) * (1 - seg(t, T1 + 0.6, T1 + 1.2)));
+  show($('#scene1'), 1 - seg(t, T1 - 0.4, T1));
+  show($('#open'), t < T1 + 1.3 ? 1 : 0);
+  // 大きな 1 文字。少し呼吸して、2.0 秒からほどける。
+  const heroIn = eOut(seg(t, 0.1, 0.9)), heroOut = eInOut(seg(t, 2.0, 2.6));
+  $('#hero').style.opacity = heroIn * (1 - heroOut);
+  $('#hero').style.transform = `translate(-50%, -50%) scale(${(0.9 + 0.1 * heroIn + 0.015 * Math.sin(t * 3)) * (1 - 0.35 * heroOut)})`;
+  $('#hero').style.filter = `blur(${heroOut * 10}px)`;
+  const cy = VERT ? -140 : -90;
+  parts.forEach((p, i) => {
+    const q = eBack(seg(t, 2.1 + i * 0.05, 2.8 + i * 0.05));
+    const o = seg(t, 2.05 + i * 0.05, 2.35 + i * 0.05);
+    p.el.style.opacity = o;
+    p.el.style.transform = `translate(-50%, -50%) translate(${p.x * q}px, ${cy}px) scale(${0.55 + 0.45 * q})`;
+    // ZWJ は遅れて青く光る。見えない糸。
+    if (p.zwj) p.el.querySelector('.zwj').style.boxShadow = `0 0 ${24 * seg(t, 3.0, 3.4) * (1 - seg(t, 3.9, 4.5))}px rgba(0,114,245,.45)`;
+  });
+  tokenEls.forEach((w, i) => {
+    const z = w.z0 + t * 180;
+    const o = clamp(seg(t, 0.2 + i * 0.07, 1.0 + i * 0.07)) * clamp(1 - (z - 50) / 300) * 0.8;
+    const k = (900 - z) / 900;
+    w.el.style.transform = `translate(-50%, -50%) translate3d(${w.x * k}px, ${w.y * k}px, ${z}px)`;
+    w.el.style.opacity = o;
+    w.el.style.fontSize = `${w.size}px`;
+    w.el.style.color = w.hot ? 'var(--blue)' : 'rgba(23,23,23,.45)';
+  });
+  const a1 = eOut(seg(t, 0.6, 1.3)) * (1 - seg(t, 2.1, 2.4)), a2 = eOut(seg(t, 2.6, 3.3));
+  const blurIn = (p) => `opacity:${p};display:inline-block;transform:translateY(${(1 - p) * 20}px);filter:blur(${(1 - p) * 6}px)`;
+  $('#s1text').innerHTML = a2 > 0
+    ? `<span style="${blurIn(a2)}">中身は、<b>${famCps.length}</b>つ。</span>`
+    : `<span style="${blurIn(a1)}">見た目は、<b>${FAM.chars}</b>文字。</span>`;
+  const c1 = eOut(seg(t, 3.2, 4.0));
+  $('#s1chip').innerHTML = s1chip(FAM, c1);
+  $('#s1chip').style.opacity = seg(t, 3.2, 3.4);
+
+  // --- 場面 2：見出し ---
+  show($('#scene2'), seg(t, T1 + 0.3, T1 + 0.5) * (1 - seg(t, T2 - 0.35, T2)));
+  revealChars(s2h, t, T1 + 0.5, 0.07, 0.6);
+  revealChars(s2p, t, T1 + 1.3, 0.03, 0.5);
+
+  // --- 場面 3：四つの段 ---
+  show($('#scene3'), seg(t, T2 - 0.1, T2 + 0.2) * (1 - seg(t, TF - 0.3, TF)));
+  const k = STEPS.findIndex((s) => t < s.t1);
+  const si = k < 0 ? 3 : k, st = STEPS[si];
+  const lt = t - st.t0;
+  $('#numeral').textContent = st.num;
+  $('#kicker').textContent = st.kicker;
+  $('#stepH').textContent = st.h;
+  $('#stepSub').textContent = st.sub;
+  $('#stepBody').innerHTML = st.body;
+  const inP = eOut(seg(lt, 0, 0.6)), outP = seg(t, st.t1 - 0.3, st.t1);
+  const last = si === 3;
+  $('#numeral').style.opacity = inP * (last ? 1 : 1 - outP);
+  $('#numeral').style.transform = `translateX(${(1 - inP) * -60}px)`;
+  $('#stepText').style.opacity = inP * (last ? 1 : 1 - outP);
+  $('#stepText').style.transform = `translateY(${(1 - inP) * 30}px)`;
+  // 本文は少し遅れて出す（先に見出しを読ませる）。
+  $('#stepBody').style.opacity = eOut(seg(lt, 0.9, 1.4));
+  const cardIn = eBack(seg(t, T2 + 0.1, T2 + 0.8));
+  $('#card').style.transform = `translateY(${(1 - cardIn) * 80}px)`;
+  $('#card').style.opacity = seg(t, T2 + 0.1, T2 + 0.4);
+  $('#trackFill').style.width = `${seg(t, T2, TF - 0.3) * 100}%`;
+  trackNodes.forEach((n, i) => {
+    const on = t >= STEPS[i].t0 + 0.1;
+    n.style.background = on ? 'var(--blue)' : 'var(--plane)';
+    n.style.borderColor = on ? 'var(--blue)' : '#d0d0d0';
+    n.querySelector('span').style.color = on ? 'var(--ink)' : 'var(--ink3)';
+  });
+  // 中身は段ごとに入れ替える。前の段は上へ抜け、次の段は下から入る。
+  panes.forEach((p, i) => {
+    const o = i === si ? eOut(seg(lt, 0, 0.35)) * (last ? 1 : 1 - outP) : 0;
+    show(p, o);
+    p.style.transform = `translateY(${(1 - eOut(seg(lt, 0, 0.35))) * 24}px)`;
+  });
+
+  if (si === 0) {
+    // 01 分ける：1 書記素ずつ打ち込む。数え上げは打った分の文字列をアプリの処理で数えたもの。
+    const n = S1S.graphemes.length;
+    const typed = Math.floor(clamp((lt - 0.5) / 1.5) * n + 1e-9);
+    const shown = S1S.graphemes.slice(0, typed).map((g) => g.grapheme).join('');
+    const blink = typed >= n ? (Math.floor(lt * 2.2) % 2 === 0 ? 1 : 0) : 1;
+    $('#in01').innerHTML = `${shown}<span class="caret" style="opacity:${blink}"></span>`;
+    $('#chip01').innerHTML = typed ? s1chip(prefix01[typed - 1]) : s1chip({ chars: 0, cp: 0, u16: 0, u8: 0 });
+    cells01.forEach((c, i) => {
+      const p = eBack(seg(lt, 0.5 + (i + 1) * (1.5 / n) - 0.1, 0.5 + (i + 1) * (1.5 / n) + 0.25));
+      c.style.opacity = seg(lt, 0.5 + (i + 1) * (1.5 / n) - 0.1, 0.5 + (i + 1) * (1.5 / n));
+      c.style.transform = `translateY(${(1 - p) * 20}px)`;
+      // 中身が複数のセル（家族・国旗・é）を青く縁取る。
+      const multi = S1S.graphemes[i].codePoints.length > 1;
+      const hl = multi ? eOut(seg(lt, 2.4 + i * 0.08, 2.8 + i * 0.08)) : 0;
+      c.style.boxShadow = hl > 0 ? `0 0 0 ${1 + hl}px rgba(0,114,245,${0.08 + 0.92 * hl})` : '';
+      c.style.background = hl > 0 ? `rgba(235,245,255,${hl})` : '';
+    });
+    rise($('#legend01'), eOut(seg(lt, 2.5, 2.9)), 10);
+    // カーソルが入ってきて、家族のセルを押す。
+    const pane = $('#p01').getBoundingClientRect(), cell = cells01[0].getBoundingClientRect();
+    const sc = pane.width / $('#p01').offsetWidth || 1;
+    const tx = (cell.left - pane.left) / sc + cell.width / sc * 0.62, ty = (cell.top - pane.top) / sc + cell.height / sc * 0.62;
+    const mv = eInOut(seg(lt, 2.9, 3.5)), press = seg(lt, 3.55, 3.65) * (1 - seg(lt, 3.7, 3.85));
+    cur01.style.transform = `translate(${tx + (1 - mv) * 360}px, ${ty + (1 - mv) * 150}px) scale(${1 - 0.12 * press})`;
+    show(cur01, seg(lt, 2.8, 3.0));
+    if (lt > 3.6) cells01[0].style.boxShadow = '0 0 0 2px var(--blue)';
+  } else if (si === 1) {
+    // 02 覗く：行ごとにバイト列が出る。最初の 👨 の行を照らす。
+    $('#glyphBox').style.transform = `scale(${0.9 + 0.1 * eBack(seg(lt, 0.1, 0.6))})`;
+    rows02.forEach((r, i) => {
+      rise(r, eOut(seg(lt, 0.4 + i * 0.22, 0.8 + i * 0.22)), 12);
+      r.classList.toggle('hl', i === 0 && lt > 2.8);
+      r.querySelectorAll('td:nth-child(3) .by').forEach((b) => b.classList.toggle('hi', i === 0 && lt > 2.8 && cp0.utf16Units.length === 2));
+    });
+  } else if (si === 2) {
+    // 03 確かめる：エンコーディングごとに行が埋まる。髙 の列を照らす。
+    cells03.forEach((c, i) => {
+      rise(c, eOut(seg(lt, 0.2 + i * 0.08, 0.6 + i * 0.08)), 14);
+      c.classList.toggle('col-hl', i === kIdx && lt > 2.4);
+    });
+    rows03.forEach((r, ri) => {
+      r.querySelector('.name').style.opacity = eOut(seg(lt, 0.6 + ri * 0.28, 0.9 + ri * 0.28));
+      [...r.querySelectorAll('td:not(.name)')].forEach((td, ci) => {
+        const p = eOut(seg(lt, 0.7 + ri * 0.28 + ci * 0.06, 1.05 + ri * 0.28 + ci * 0.06));
+        [...td.children].forEach((ch) => { ch.style.opacity = p; ch.style.transform = `translateY(${(1 - p) * 8}px)`; });
+        td.classList.toggle('col-hl', ci === kIdx && lt > 2.4);
+      });
+    });
+  } else {
+    // 04 見分ける：葛 に異体字セレクタが付いて字形が変わる。続いて 邉 の異形が並ぶ。
+    const pair = $('#p04 .pair');
+    rise(pair.children[0], eOut(seg(lt, 0.2, 0.6)));
+    rise(pair.children[1], eOut(seg(lt, 0.5, 0.9)));
+    rise(pair.children[2], eOut(seg(lt, 0.9, 1.3)));
+    const vs = $('#kuzuVs .vs');
+    if (vs) vs.style.boxShadow = `0 0 0 ${2 * seg(lt, 1.0, 1.2)}px var(--blue)`;
+    rise($('#p04 .secRow'), eOut(seg(lt, 1.2, 1.6)));
+    vgs.forEach((g, i) => {
+      const d = 1.4 + (i % 10) * 0.05 + Math.floor(i / 10) * 0.12;
+      const p = eBack(seg(lt, d, d + 0.45));
+      g.style.opacity = seg(lt, d, d + 0.2);
+      g.style.transform = `translateY(${(1 - p) * 18}px) scale(${0.85 + 0.15 * p})`;
+    });
+  }
+
+  // --- 場面 3.5：ほかにも ---
+  show($('#featScene'), seg(t, TF, TF + 0.3) * (1 - seg(t, T4 - 0.3, T4)));
+  revealChars(featH, t, TF + 0.1, 0.04, 0.5);
+  featCards.forEach((c, i) => {
+    const p = eOut(seg(t, TF + 0.4 + i * 0.1, TF + 0.95 + i * 0.1));
+    c.style.opacity = p; c.style.transform = `translateY(${(1 - p) * 40}px)`;
+  });
+
+  // --- 場面 4：締め ---
+  show($('#scene4'), seg(t, T4, T4 + 0.35));
+  const i1 = eBack(seg(t, T4 + 0.05, T4 + 0.6));
+  $('#endIcon').style.opacity = seg(t, T4 + 0.05, T4 + 0.3);
+  $('#endIcon').style.transform = `scale(${0.7 + 0.3 * i1})`;
+  const m = eOut(seg(t, T4 + 0.25, T4 + 0.85));
+  $('#endMark').style.opacity = m; $('#endMark').style.filter = `blur(${(1 - m) * 12}px)`;
+  $('#endMark').style.letterSpacing = `${-0.035 + (1 - m) * 0.12}em`;
+  rise($('#endLatin'), eOut(seg(t, T4 + 0.6, T4 + 1.1)));
+  rise($('#endTag'), eOut(seg(t, T4 + 0.75, T4 + 1.25)));
+  const l4 = eBack(seg(t, T4 + 1.0, T4 + 1.5));
+  $('#endCta').style.opacity = seg(t, T4 + 1.0, T4 + 1.2);
+  $('#endCta').style.transform = `translateX(-50%) scale(${0.85 + 0.15 * l4})`;
+  $('#endFine').style.opacity = seg(t, T4 + 1.3, T4 + 1.7);
+  $('#marquee').style.transform = `translateX(${-(t - T4) * 90}px)`;
+  $('#marquee').style.opacity = seg(t, T4 + 0.4, T4 + 1.2);
+}
+
+// ---- 書き出しとプレビュー ----
+window.__meta = { DUR, FPS };
+window.__render = (t) => render(t);
+// 異体字のフォントは unicode-range で必要な分だけ読まれる。書き出す前に、使う字をすべて読み込んでおく。
+const CJK_TEXT = [S3, KUZU, KUZU_VS, NABE, ...nabeDistinct.map((vs) => NABE + String.fromCodePoint(vs))].join('');
+// （サイトのフォント束には読めない小さな woff2 がいくつかあり、load が失敗扱いになるので、失敗は無視する。）
+window.__ready = document.fonts.load('100px CjkIvsMincho', CJK_TEXT).catch(() => {})
+  .then(() => Promise.all(['400', '500', '700'].map((w) => document.fonts.load(`${w} 40px "Noto Sans JP"`, 'その1文字、ほどいてみる。見た目は中身'))))
+  .then(() => document.fonts.ready)
+  .then(() => { render(0); });
+if (!RENDER) {
+  const fit = () => { const s = Math.min(innerWidth / W, (innerHeight - 50) / H); stage.style.transform = `scale(${s})`; };
+  addEventListener('resize', fit); fit();
+  let playing = true, t0 = performance.now(), tcur = 0;
+  const scrub = $('#scrub');
+  $('#play').onclick = () => { playing = !playing; t0 = performance.now() - tcur * 1000; };
+  scrub.oninput = () => { playing = false; tcur = +scrub.value; render(tcur); $('#tlabel').textContent = tcur.toFixed(2); };
+  const loop = (now) => {
+    if (playing) { tcur = ((now - t0) / 1000) % DUR; scrub.value = tcur; $('#tlabel').textContent = tcur.toFixed(2); render(tcur); }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

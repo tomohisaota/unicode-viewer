@@ -43,6 +43,16 @@ http://localhost:3000 で開発サーバーが起動します。
 - [Encodings](./doc/encodings.md) - レガシーエンコーディングの実装詳細、Wave Dash 問題
 - [Development](./doc/development.md) - 開発環境のセットアップ、ビルド、テスト、デプロイ
 
+## 紹介動画
+
+X 向けの紹介動画（30 秒、16:9 と 9:16）を [video/](./video/) で作っています。数字は `src/lib` の処理で出しています。作り方と構成は [video/PROMPT.md](./video/PROMPT.md) を参照してください。
+
+```bash
+cd video && npm install
+npm run render      # out/unicode-viewer-reel-16x9.mp4
+npm run render:v    # out/unicode-viewer-reel-9x16.mp4
+```
+
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
