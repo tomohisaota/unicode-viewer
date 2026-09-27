@@ -177,6 +177,23 @@ for range in "13312-19903" "19968-40959" "63744-64255"; do
 done
 ```
 
+分割したら、グリフが 1 つも入らなかったチャンクを消す。範囲に字が無いと、`.notdef` だけの空の
+フォント (約 900 バイト) ができ、ブラウザが `OTS parsing error: glyf: zero-length table` で弾いて
+コンソールに警告を出す。表示は後ろの書体で補われるので害は小さいが、無駄なリクエストになる
+(2026-09 に `cjk-ivs-2300` / `2900` / `2B00` の 3 つがこれだった)。消したあと `npm run font:css` で CSS を作り直す:
+
+```bash
+python3 - <<'PY'
+import glob, os
+from fontTools.ttLib import TTFont
+for f in sorted(glob.glob("public/fonts/cjk-ivs-*.woff2")):
+    if not TTFont(f).getBestCmap():
+        print("remove empty chunk:", f)
+        os.remove(f)
+PY
+npm run font:css
+```
+
 **ポイント:**
 - 各チャンクにベース文字範囲 + IVS セレクタ範囲 (`U+E0100-E01EF`) を含める
 - `--layout-features='*'` で OpenType feature テーブルを保持
