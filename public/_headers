@@ -1,6 +1,14 @@
 # Cloudflare Pages custom response headers
 # https://developers.cloudflare.com/pages/configuration/headers/
 
+# HSTS(2026-11-09): 一度 https で開いたブラウザは、以後 http:// で打っても最初から https で接続する。
+# appbatake.com 配下はすべて Cloudflare の https なので includeSubDomains でよい。preload は付けない(外すのに時間がかかる)。
+# Permissions-Policy: 文字を見るだけの道具なので、位置・カメラ・マイク・センサー・決済・USB はすべて閉じる。
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), accelerometer=(), gyroscope=(), magnetometer=(), payment=(), usb=()
+
+
 # CJK IVS font chunks: URLs are hash-busted via the ?v=<bundle-hash>
 # query string injected by scripts/generate-font-css.mjs, so the same
 # URL always points at the same bytes. Mark them immutable so browsers
