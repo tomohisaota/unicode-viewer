@@ -4,7 +4,15 @@
 # HSTS(2026-11-09): 一度 https で開いたブラウザは、以後 http:// で打っても最初から https で接続する。
 # appbatake.com 配下はすべて Cloudflare の https なので includeSubDomains でよい。preload は付けない(外すのに時間がかかる)。
 # Permissions-Policy: 文字を見るだけの道具なので、位置・カメラ・マイク・センサー・決済・USB はすべて閉じる。
+#
+# CSP(2026-11-09): 外部から読み込むものは一つもない。フォント・JS・CSS・画像・RSC のデータ(*.txt)はすべて同じオリジン。
+# script-src の 'unsafe-inline' は、Next.js の静的エクスポートが RSC ペイロードをインライン <script> で埋めるため
+# (静的サイトには nonce を出すサーバが無く、ハッシュはビルドごとに変わる。houno-tanzaku と同じ事情)。
+# style-src の 'unsafe-inline' はグリフの表示に style 属性を使うため。
+# connect-src 'self' はページ遷移時の RSC 取得と sw.js のキャッシュ。worker-src / manifest-src は PWA の service worker と manifest。
+# 外部リンク(unicode.org など)は <a> で開くだけなので CSP は関係ない。
 /*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Permissions-Policy: geolocation=(), camera=(), microphone=(), accelerometer=(), gyroscope=(), magnetometer=(), payment=(), usb=()
 
