@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node scripts/generate-font-css.mjs && next dev",
     "build": "node scripts/generate-font-css.mjs && next build",
+    "deploy": "npm run build && npx -y wrangler pages deploy out --project-name unicode-viewer",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

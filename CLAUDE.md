@@ -13,7 +13,7 @@
 Cloudflare Pages にデプロイする。Git 連携はなく、wrangler CLI で手動デプロイ。
 
 ```bash
-npm run build && npx wrangler pages deploy out --project-name unicode-viewer
+npm run deploy   # = npm run build && npx -y wrangler pages deploy out --project-name unicode-viewer
 ```
 
 `npm run build` は `scripts/generate-font-css.mjs` を先に実行して `src/app/cjk-ivs-font.css` のフォント URL に最新のバンドルハッシュ (`?v=XXXX`) を埋め込み、ブラウザのキャッシュを自動的にバストする。`next build` を直接呼ばずに必ず `npm run build` を経由すること。
