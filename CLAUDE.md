@@ -18,6 +18,8 @@ npm run deploy   # = npm run build && npx -y wrangler pages deploy out --project
 
 `npm run build` は `scripts/generate-font-css.mjs` を先に実行して `src/app/cjk-ivs-font.css` のフォント URL に最新のバンドルハッシュ (`?v=XXXX`) を埋め込み、ブラウザのキャッシュを自動的にバストする。`next build` を直接呼ばずに必ず `npm run build` を経由すること。
 
+`npm run build` は最後に `scripts/csp-hash.mjs` も実行し、各ページに直接書かれたインライン `<script>`(RSC ペイロードと `<html lang>` の切り替え)の sha256 を数えて、`out/_headers` にページごとの CSP を書き足す(2026-11-09 に `'unsafe-inline'` から切り替えた)。`public/_headers` の `script-src` は `'self'` だけなので、`next build` だけで出すとインラインのスクリプトが動かず画面が止まる。ページが増えて `_headers` のルールが 100 を超えるとビルドが止まる(Pages の上限)。
+
 - プロジェクト名: `unicode-viewer`
 - 本番ドメイン: `unicode-viewer.pages.dev`, `unicode-viewer.appbatake.com`
 - 静的エクスポート: `next.config.ts` の `output: "export"` で `out/` に出力
